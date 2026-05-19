@@ -11,8 +11,10 @@
   "scripts": {
     "start": "node server/main.bundled.cjs --stdio",
     "build": "esbuild server/main.js --bundle --platform=node --format=cjs --outfile=server/main.bundled.cjs",
-    "smoke": "node server/smoke.js",
-    "smoke:source": "SMOKE_TARGET=source node server/smoke.js",
+    "smoke": "node server/smoke.js && node examples/example/smoke.js",
+    "smoke:server": "node server/smoke.js",
+    "smoke:example": "node examples/example/smoke.js",
+    "smoke:source": "SMOKE_TARGET=source node server/smoke.js && node examples/example/smoke.js",
     "validate": "bun cli/validate-documents.js",
     "validate:strict": "bun cli/validate-documents.js --strict",
     "validate:json": "bun cli/validate-documents.js --json",

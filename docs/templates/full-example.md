@@ -3,8 +3,11 @@
 End-to-end walkthrough: a PRD-style template, a conforming instance, and
 a broken instance with the diagnostics the validator emits.
 
-The example is deliberately denser than `examples/minimal-vault/` — it
-exercises every rule kind so you can see how they compose.
+This walkthrough mirrors the bundled [`examples/example/`](../../examples/example)
+vault, which exercises every rule kind so you can see how they compose. The
+example also doubles as the plugin's test dataset — see
+`tests/example-vault.expectations.json` for the per-doc diagnostic
+expectations.
 
 ## Layout
 

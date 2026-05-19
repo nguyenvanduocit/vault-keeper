@@ -44,7 +44,7 @@ claude-code-vault-keeper/
 ├── cli/
 │   └── validate-documents.js    #   Full-vault validator (the `bin` entry)
 │
-├── examples/minimal-vault/      # Runnable reference vault
+├── examples/example/            # Runnable reference vault + test dataset
 ├── tests/                       # Bun test suite
 └── docs/                        # ← you are here
 ```

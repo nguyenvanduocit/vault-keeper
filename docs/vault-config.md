@@ -106,7 +106,7 @@ the vault, you don't need a config file at all. The defaults work.
 }
 ```
 
-This is what [`examples/minimal-vault/`](../examples/minimal-vault) ships.
+This is what [`examples/example/`](../examples/example) ships.
 
 ### Multi-section vault with custom exclusions
 

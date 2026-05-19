@@ -36,15 +36,19 @@ bun install         # populates runtime deps for the CLI validator
 
 ## Verify the install
 
-The bundled example vault under `examples/minimal-vault/` is a runnable
-reference. From this plugin's root:
+The bundled example vault under `examples/example/` is a runnable reference
+that doubles as the plugin's test dataset. It contains both VALID and
+deliberately INVALID instances (suffixed `-invalid.md`) so every rule the
+validator enforces has a fixture. From this plugin's root:
 
 ```bash
-bun cli/validate-documents.js --root examples/minimal-vault --json
+bun cli/validate-documents.js --root examples/example --json
 ```
 
-Expected output: a single JSON document, `summary.invalid === 0`, exit
-code `0`.
+Expected output: a single JSON document whose `summary.invalid` is greater
+than zero (the invalid fixtures fire on purpose) and an exit code of `1`.
+The matching `tests/example-vault.expectations.json` lists exactly which
+diagnostic each fixture should emit.
 
 ## Set up your own vault
 

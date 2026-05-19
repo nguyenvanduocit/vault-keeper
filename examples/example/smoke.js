@@ -1,29 +1,30 @@
 #!/usr/bin/env node
 /**
- * examples/minimal-vault/smoke.js — foreign-vault LSP smoke driver.
+ * examples/example/smoke.js — foreign-vault LSP smoke driver.
  *
- * Proves the SHIPPED LSP bundle works against a vault that is NOT
- * vault-shaped: `vaultRoot: "docs"`, its OWN `templates/note-template.md`
- * (claude-code-vault-keeper ships no templates), no `product-knowledge/`.
+ * Proves the SHIPPED LSP bundle works against THIS vault — `vaultRoot: docs`,
+ * the vault's OWN `templates/note-template.md` (claude-code-vault-keeper
+ * ships no templates), no `product-knowledge/`.
  *
  * Mechanics mirror server/smoke.js (LSP framing, request/response pump) but
  * the assertion is vault-specific: open an INVALID note (missing the
  * template-required `owner` field) and assert the server publishes ≥1
- * diagnostic. A diagnostic can only fire if the bundle:
+ * diagnostic that names `owner` or `required`. A diagnostic can only fire if
+ * the bundle:
  *   1. resolved the project root to this example vault,
  *   2. read `.claude/vault-keeper.json` (vaultRoot=docs) so the doc under
  *      `docs/` is classified a vault file,
  *   3. loaded THIS vault's `templates/note-template.md` validation_rules.
  *
- * This is the exit-criterion #3b evidence. Exit 0 on success, 1 otherwise.
- * Run: `node examples/minimal-vault/smoke.js` from the repo root.
+ * Exit 0 on success, 1 otherwise. Run: `node examples/example/smoke.js` from
+ * the repo root.
  */
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { resolve, dirname } from "node:path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const exampleRoot = __dirname; // examples/minimal-vault
+const exampleRoot = __dirname; // examples/example
 const repoRoot = resolve(__dirname, "..", "..");
 const serverPath = resolve(repoRoot, "server", "main.bundled.cjs");
 
@@ -105,19 +106,20 @@ async function main() {
       processId: process.pid,
       rootUri: `file://${exampleRoot}`,
       workspaceFolders: [
-        { uri: `file://${exampleRoot}`, name: "minimal-vault-smoke" },
+        { uri: `file://${exampleRoot}`, name: "example-smoke" },
       ],
       capabilities: {},
     },
   });
-  const initResp = await waitForMessage(
+  await waitForMessage(
     (m) => m.id === 1 && m.result?.capabilities,
     "initialize response",
   );
   send({ jsonrpc: "2.0", method: "initialized", params: {} });
 
-  // Doc lives under docs/ (the configured vaultRoot) — NOT product-knowledge/.
-  const uri = `file://${exampleRoot}/docs/notes/note-002-invalid.md`;
+  // Doc lives under docs/ (the configured vaultRoot). Filename matches the
+  // note template's path_regex so vault-side rules apply.
+  const uri = `file://${exampleRoot}/docs/notes/note-999-smoke-invalid.md`;
   send({
     jsonrpc: "2.0",
     method: "textDocument/didOpen",
@@ -140,10 +142,10 @@ async function main() {
   const diags = notif.params.diagnostics;
 
   console.log(
-    `smoke(minimal-vault): server resolved root, loaded vault's own templates/`,
+    `smoke(example): server resolved root, loaded vault's own templates/`,
   );
   console.log(
-    `smoke(minimal-vault): received ${diags.length} diagnostic(s) for the invalid note`,
+    `smoke(example): received ${diags.length} diagnostic(s) for the invalid note`,
   );
   for (const d of diags) {
     console.log(
@@ -164,7 +166,7 @@ async function main() {
       /required/i.test(d.message),
   );
 
-  console.log("\nsmoke(minimal-vault): assertions:");
+  console.log("\nsmoke(example): assertions:");
   console.log(`  ${sawDiagnostics ? "PASS" : "FAIL"} diagnostics published (≥1)`);
   console.log(
     `  ${sawMissingOwner ? "PASS" : "FAIL"} template required-field rule loaded from this vault's templates/ (missing owner flagged)`,
@@ -178,7 +180,7 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("smoke(minimal-vault): failed:", err);
+  console.error("smoke(example): failed:", err);
   child.kill("SIGTERM");
   process.exit(1);
 });

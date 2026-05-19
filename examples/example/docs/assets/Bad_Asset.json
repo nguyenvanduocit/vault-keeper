@@ -1,0 +1,3 @@
+{
+  "_comment": "This file's filename intentionally violates the slug convention (lowercase letters, digits, hyphens only). It exercises the asset-slug pass in cli/validate-documents.js — non-markdown assets under the configured vault folders are still slug-checked."
+}

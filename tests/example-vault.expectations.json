@@ -1,0 +1,135 @@
+{
+  "_schema": {
+    "description": "Per-document expected validator output for examples/example/. Each key is a vault-relative path; the value declares the doc's expected `valid` boolean plus the field-codes of the diagnostics it should produce. The test (tests/example-vault.test.js) runs `cli/validate-documents.js --root examples/example --json` once and asserts each result matches its entry here. Adding a new fixture doc = adding a new entry. No test code changes.",
+    "entryShape": {
+      "valid": "boolean — must match result.valid exactly",
+      "errors": "array of error-field codes — every code must appear in result.errors[*].field; result.errors.length must equal this list's length",
+      "warnings": "array of warning-field codes — every code must appear in result.warnings[*].field; result.warnings.length must equal this list's length"
+    }
+  },
+
+  "docs/assets/Bad_Asset.json": {
+    "valid": false,
+    "errors": ["filename"],
+    "warnings": []
+  },
+
+  "docs/decisions/d-001-microservice-split.md": {
+    "valid": true,
+    "errors": [],
+    "warnings": []
+  },
+  "docs/decisions/d-002-not-enough-approvers-invalid.md": {
+    "valid": false,
+    "errors": ["approvers"],
+    "warnings": []
+  },
+  "docs/decisions/d-003-missing-summary-invalid.md": {
+    "valid": false,
+    "errors": ["decision_summary"],
+    "warnings": []
+  },
+  "docs/decisions/d-004-warn-due-date-invalid.md": {
+    "valid": true,
+    "errors": [],
+    "warnings": ["due_date"]
+  },
+
+  "docs/notes/note-001-onboarding.md": {
+    "valid": true,
+    "errors": [],
+    "warnings": []
+  },
+
+  "docs/prds/prd-001-checkout-redesign.md": {
+    "valid": true,
+    "errors": [],
+    "warnings": []
+  },
+  "docs/prds/prd-002-search-relevance.md": {
+    "valid": true,
+    "errors": [],
+    "warnings": []
+  },
+  "docs/prds/prd-003-bad-date-invalid.md": {
+    "valid": false,
+    "errors": ["created"],
+    "warnings": []
+  },
+  "docs/prds/prd-004-bad-status-invalid.md": {
+    "valid": true,
+    "errors": [],
+    "warnings": ["status"]
+  },
+  "docs/prds/prd-005-missing-rice-invalid.md": {
+    "valid": false,
+    "errors": ["rice"],
+    "warnings": []
+  },
+  "docs/prds/prd-006-missing-shipped-date-invalid.md": {
+    "valid": false,
+    "errors": ["shipped_date"],
+    "warnings": []
+  },
+  "docs/prds/prd-007-missing-ship-section-invalid.md": {
+    "valid": false,
+    "errors": ["body_section:## Ship Timeline"],
+    "warnings": []
+  },
+  "docs/prds/prd-008-bad-rice-reach-invalid.md": {
+    "valid": false,
+    "errors": ["rice.reach"],
+    "warnings": []
+  },
+  "docs/prds/prd-009-bad-priority-invalid.md": {
+    "valid": false,
+    "errors": ["priority"],
+    "warnings": []
+  },
+  "docs/prds/prd-010-leaked-rules-invalid.md": {
+    "valid": true,
+    "errors": [],
+    "warnings": ["validation_rules"]
+  },
+  "docs/prds/prd-011-missing-template-invalid.md": {
+    "valid": false,
+    "errors": ["template"],
+    "warnings": []
+  },
+  "docs/prds/prd-012-broken-link-invalid.md": {
+    "valid": false,
+    "errors": ["relationships.implements_bet"],
+    "warnings": []
+  },
+  "docs/prds/prd-013-bad-rice-type-invalid.md": {
+    "valid": false,
+    "errors": ["rice.reach"],
+    "warnings": []
+  },
+  "docs/prds/prd-014-missing-template-file-invalid.md": {
+    "valid": false,
+    "errors": ["template"],
+    "warnings": []
+  },
+  "docs/prds/prd-bad-name-invalid.md": {
+    "valid": false,
+    "errors": ["location"],
+    "warnings": []
+  },
+
+  "docs/tasks/t-001-impl-checkout.md": {
+    "valid": true,
+    "errors": [],
+    "warnings": []
+  },
+  "docs/tasks/t-002-verify-checkout.md": {
+    "valid": true,
+    "errors": [],
+    "warnings": []
+  },
+  "docs/tasks/t-003-missing-owner-invalid.md": {
+    "valid": false,
+    "errors": ["owner"],
+    "warnings": []
+  }
+}

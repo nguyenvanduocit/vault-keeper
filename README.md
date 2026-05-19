@@ -28,7 +28,7 @@ claude plugin install claude-code-vault-keeper@vault-keeper
 bun install
 
 # 3. Validate the bundled example vault
-bun cli/validate-documents.js --root examples/minimal-vault --json
+bun cli/validate-documents.js --root examples/example --json
 ```
 
 ## Documentation

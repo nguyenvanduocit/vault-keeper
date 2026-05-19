@@ -27,13 +27,13 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { loadVaultConfig } from "../lib/vault-config.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// Hermetic root: the bundled `tests/fixtures/vault-mini` vault that ships
-// with this plugin. Self-contained — no external checkout dependency.
+// Hermetic root: the bundled `examples/example` vault that ships with this
+// plugin. Self-contained — no external checkout dependency.
 // SMOKE_PROJECT_ROOT overrides for ad-hoc runs against a real vault.
 const repoRoot = resolve(__dirname, "..");
 const projectRoot =
   process.env.SMOKE_PROJECT_ROOT ||
-  resolve(repoRoot, "tests/fixtures/vault-mini");
+  resolve(repoRoot, "examples/example");
 // Default to the bundled artifact (what ships); allow source via env for
 // quick edit-test cycles before re-bundling.
 const useBundle = process.env.SMOKE_TARGET !== "source";
@@ -113,9 +113,14 @@ function waitForResponse(id, label, timeoutMs = 10000) {
  */
 function findRealTaskFile() {
   const vaultRoot = loadVaultConfig(projectRoot).vaultRoot;
-  const tasksDir = resolve(projectRoot, vaultRoot, "03-engineering/tasks");
+  const tasksDir = resolve(projectRoot, vaultRoot, "tasks");
   if (!existsSync(tasksDir)) return null;
-  const files = readdirSync(tasksDir).filter((f) => f.startsWith("t-") && f.endsWith(".md"));
+  const files = readdirSync(tasksDir).filter(
+    (f) =>
+      f.startsWith("t-") &&
+      f.endsWith(".md") &&
+      !f.endsWith("-invalid.md"),
+  );
   if (files.length === 0) return null;
   // Prefer a file with a relative link (../) to another .md
   for (const f of files) {
@@ -149,21 +154,26 @@ async function main() {
   // ── Assertion group 1: Capabilities advertisement ─────────────────────────
   const caps = initResp.result.capabilities;
 
-  // 2. didOpen — broken PRD targeting product-knowledge so it's a vault file
+  // 2. didOpen — broken PRD targeting the configured vault root so it's
+  // classified as a vault file. Multiple violations packed in to exercise
+  // every diagnostic path: validation_rules leak (warning), bad date regex
+  // (error), missing Ship Timeline body section (conditional error,
+  // status=shipped), malformed Relationships bullet (body warning),
+  // malformed AC heading (body warning).
   const brokenText = `---
 template: templates/prd-template.md
 document_type: prd
+title: Bogus smoke PRD
 prd_type: feature
 status: shipped
 owner: 'someone@example.com'
 created: not-a-date
-updated: 2026-05-12
-rice_score:
+shipped_date: '2099-01-01'
+rice:
   reach: 50
   impact: 1
-  confidence: 0.8
+  confidence: 80
   effort: 2
-  total: 20
 validation_rules:
   required_fields: [a, b]
 ---
@@ -178,9 +188,10 @@ validation_rules:
 ### AC1 - missing dashes
 `;
   // Build the URI under the configured vaultRoot so isVaultFile classifies it
-  // as a vault doc even against a foreign vault (vaultRoot != product-knowledge).
+  // as a vault doc, and match the PRD template's path_regex so per-template
+  // rules apply.
   const smokeVaultRoot = loadVaultConfig(projectRoot).vaultRoot;
-  const uri = `file://${projectRoot}/${smokeVaultRoot}/02-product/prds/2099-01-01-prd-999-bogus.md`;
+  const uri = `file://${projectRoot}/${smokeVaultRoot}/prds/prd-999-bogus.md`;
   send({
     jsonrpc: "2.0",
     method: "textDocument/didOpen",
@@ -235,10 +246,12 @@ validation_rules:
   const wsSymbols = wsResp.result || [];
 
   // ── Assertion group 5: hover at frontmatter field ─────────────────────────
-  // "status:" is at line 4, character 0 in the broken PRD
+  // "status:" is at line 5, character 0 in the broken PRD
+  // (line 0 = `---`, 1 = template, 2 = document_type, 3 = title,
+  //  4 = prd_type, 5 = status, 6 = owner, ...)
   const hoverId = sendRequest("textDocument/hover", {
     textDocument: { uri },
-    position: { line: 4, character: 0 },
+    position: { line: 5, character: 0 },
   });
   const hoverResp = await waitForResponse(hoverId, "hover response");
 
