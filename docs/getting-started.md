@@ -106,7 +106,7 @@ vault-keeper install-claude-code-plugin
 Wraps the two-step manual install:
 
 ```bash
-claude marketplace add https://github.com/nguyenvanduocit/claude-code-vault-keeper.git
+claude plugin marketplace add https://github.com/nguyenvanduocit/claude-code-vault-keeper.git
 claude plugin install claude-code-vault-keeper@vault-keeper
 ```
 

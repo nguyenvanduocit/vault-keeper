@@ -9,7 +9,7 @@
  * Subcommands:
  *   validate                     — full-vault validation (delegates to validate-documents.js)
  *   doctor                       — environment + vault + plugin health-check
- *   install-claude-code-plugin   — wraps `claude marketplace add` + `claude plugin install`
+ *   install-claude-code-plugin   — wraps `claude plugin marketplace add` + `claude plugin install`
  *   init [dir]                   — scaffold a minimal vault skeleton
  *   help [cmd]                   — usage banner (top-level or per-command)
  *   --version / -v               — print the package version
@@ -95,7 +95,7 @@ Exit codes:
 
 Install this package into Claude Code via its plugin manifest. Equivalent to:
 
-  claude marketplace add ${PLUGIN_MARKETPLACE_URL}
+  claude plugin marketplace add ${PLUGIN_MARKETPLACE_URL}
   claude plugin install ${PLUGIN_NAME}
 
 Requires the \`claude\` CLI on \$PATH. If absent, the command prints the
@@ -299,21 +299,22 @@ async function runInstallPlugin(_args) {
       `❌ The \`claude\` CLI was not found on $PATH.\n` +
         `   Install Claude Code first: https://claude.com/claude-code\n` +
         `   Then run the manual steps yourself:\n\n` +
-        `     claude marketplace add ${PLUGIN_MARKETPLACE_URL}\n` +
+        `     claude plugin marketplace add ${PLUGIN_MARKETPLACE_URL}\n` +
         `     claude plugin install ${PLUGIN_NAME}\n`,
     );
     return 1;
   }
 
-  console.log(`▶ claude marketplace add ${PLUGIN_MARKETPLACE_URL}`);
+  console.log(`▶ claude plugin marketplace add ${PLUGIN_MARKETPLACE_URL}`);
   const addCode = await runChild('claude', [
+    'plugin',
     'marketplace',
     'add',
     PLUGIN_MARKETPLACE_URL,
   ]);
   if (addCode !== 0) {
     console.error(
-      `\n❌ \`claude marketplace add\` exited with code ${addCode}.`,
+      `\n❌ \`claude plugin marketplace add\` exited with code ${addCode}.`,
     );
     return addCode;
   }

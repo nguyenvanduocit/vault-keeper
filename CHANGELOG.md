@@ -43,7 +43,7 @@ an alias for backwards compatibility.
   - `doctor [--json]` — health-check: Node version, bun runtime, claude
     CLI, LSP bundle, cwd vault config, cwd `templates/` dir. Returns a
     structured report or human-readable checklist. Exit 1 on any error.
-  - `install-claude-code-plugin` — wraps `claude marketplace add` +
+  - `install-claude-code-plugin` — wraps `claude plugin marketplace add` +
     `claude plugin install`. Prints manual steps when `claude` is absent
     rather than failing silently.
   - `init [<dir>] [--force]` — scaffolds a minimal vault skeleton
