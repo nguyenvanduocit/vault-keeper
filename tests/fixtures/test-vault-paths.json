@@ -1,0 +1,21 @@
+{
+  "vaultRoot": "product-knowledge",
+  "vaultFolders": ["product-knowledge", ".specify/specs"],
+  "excludePatterns": [
+    "**/README.md",
+    "**/.vitepress/**",
+    "**/node_modules/**",
+    "**/03-engineering/codebase/**",
+    "**/BOARD.md",
+    "**/02-product/design/design-system/design-md/**",
+    "**/CLAUDE.md",
+    "**/CLAUDE.local.md"
+  ],
+  "namingPatterns": {
+    "product-knowledge/01-strategy/dibbs": "^(?:\\d{4}-\\d{2}-\\d{2}-)?dibb-\\d{3}-[\\w-]+\\.md$",
+    "product-knowledge/02-product/prds": "^(?:\\d{4}-\\d{2}-\\d{2}-)?prd-\\d{3}-[\\w-]+\\.md$",
+    "product-knowledge/02-product/user-stories": "^\\d{4}-\\d{2}-\\d{2}-story-\\d{3}-[\\w-]+\\.md$",
+    "product-knowledge/03-engineering/decisions": "^\\d{4}-\\d{2}-\\d{2}-adr-\\d{3}-[\\w-]+\\.md$",
+    "product-knowledge/01-strategy/research": "^\\d{4}-\\d{2}-\\d{2}-research-\\d{3}-[\\w-]+\\.md$"
+  }
+}

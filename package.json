@@ -1,0 +1,36 @@
+{
+  "name": "claude-code-vault-keeper",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "description": "Generic knowledge-vault tooling for Claude Code — LSP server (server/main.bundled.cjs) and CLI validator (cli/validate-documents.js, exposed as the `vault-keeper-validate` bin). Templates own the rules via `validation_rules` frontmatter; the plugin is vault-agnostic. Config-driven via `.claude/vault-keeper.json`; pre-built LSP bundle ships so cloners need no install for editor diagnostics.",
+  "main": "server/main.bundled.cjs",
+  "bin": {
+    "vault-keeper-validate": "cli/validate-documents.js"
+  },
+  "scripts": {
+    "start": "node server/main.bundled.cjs --stdio",
+    "build": "esbuild server/main.js --bundle --platform=node --format=cjs --outfile=server/main.bundled.cjs",
+    "smoke": "node server/smoke.js",
+    "smoke:source": "SMOKE_TARGET=source node server/smoke.js",
+    "validate": "bun cli/validate-documents.js",
+    "validate:strict": "bun cli/validate-documents.js --strict",
+    "validate:json": "bun cli/validate-documents.js --json",
+    "test": "bun test ./tests"
+  },
+  "dependencies": {
+    "glob": "^10.3.10",
+    "gray-matter": "^4.0.3",
+    "js-yaml": "^4.1.0",
+    "mdast-util-to-string": "^4.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12",
+    "yaml": "^2.5.1"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-marketplace.json",
+  "name": "vault-keeper",
+  "owner": {
+    "name": "nguyenvanduocit",
+    "email": "nguyenvanduocit@gmail.com"
+  },
+  "description": "Marketplace exposing claude-code-vault-keeper — generic, config-driven knowledge-vault tooling (LSP diagnostics server + CLI validator + shared markdown parsing lib). Any vault can `claude marketplace add <this-repo>` then install the plugin; the vault supplies its own templates/ with validation_rules and an optional .claude/vault-keeper.json.",
+  "plugins": [
+    {
+      "name": "claude-code-vault-keeper",
+      "source": ".",
+      "description": "Generic knowledge-vault tooling for Claude Code — per-keystroke LSP diagnostics + navigation + hover + completion + code-action + code-lens + inlay-hint + rename + document-formatting, a full-vault CLI validator (vault-keeper-validate), and a shared body/template parsing lib. Vault-agnostic via optional .claude/vault-keeper.json (defaults: whole repo is the vault). The consuming vault brings its own templates/ — this plugin ships none."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+[
+  {
+    "name": "git-sync-watcher",
+    "command": "\"${CLAUDE_PLUGIN_ROOT}/scripts/poll-fetch.sh\" \"${CLAUDE_PROJECT_DIR}\"",
+    "description": "Polls git fetch --all, auto-fast-forwards safe upstream advances, notifies only on manual-resolution conflicts",
+    "when": "on-skill-invoke:vault.monitor-git-sync"
+  }
+]
