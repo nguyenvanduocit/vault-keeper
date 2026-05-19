@@ -200,6 +200,11 @@ Node ≥ 18.
   for editor diagnostics.
 - **Shared parser & formatter library** — the same code drives editor and CI.
   What passes locally passes in CI; no "works on my machine."
+- **Public programmatic API** — `import { parseBody, validateDocument,
+  loadTemplateRules, formatVaultDocument, … } from 'claude-code-vault-keeper'`.
+  Reuse the same primitives the CLI and LSP build on to write custom
+  reporters, dashboards, CI gates, pre-commit hooks, or editor integrations.
+  See [`docs/programmatic-usage.md`](docs/programmatic-usage.md).
 - **No domain knowledge.** Every rule comes from a template you wrote. Drop
   `vault-keeper` into any markdown folder and it adapts.
 
@@ -211,6 +216,9 @@ Node ≥ 18.
 - [Templates](docs/templates/README.md) — author rules your vault enforces.
 - [CLI reference](docs/cli-validator.md) — every flag, every exit code.
 - [LSP features](docs/lsp-features.md) — what each editor surface does.
+- [Programmatic usage](docs/programmatic-usage.md) — `import { parseBody,
+  validateDocument, … } from 'claude-code-vault-keeper'` for custom
+  scripts, dashboards, CI gates, and editor integrations.
 - [CI/CD integration](docs/ci-cd-integration.md) — GitHub Actions / GitLab /
   generic Bash.
 - [Vault config](docs/vault-config.md) — `.claude/vault-keeper.json` reference.

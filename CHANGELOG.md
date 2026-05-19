@@ -4,6 +4,66 @@ All notable changes to `claude-code-vault-keeper` are tracked here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.7.0] — 2026-05-19
+
+Promotes the plugin's internal modules to a first-class **public
+programmatic API**. Until now, importing `parseBody`, `validateDocument`,
+`loadTemplateRules`, the canonical formatter, etc. required reaching
+into deep file paths — and even those were unreliable because the
+package had no `exports` map. This release publishes a single
+documented import surface so external scripts (custom dashboards, CI
+gates, editor integrations, bulk-rewrite tools) can build on the same
+primitives the CLI and LSP use.
+
+### Added
+
+- **Barrel `lib/index.js`** re-exports the full public API. `import { … }
+  from 'claude-code-vault-keeper'` now resolves and gives you parsers
+  (`parseBody`, `parseDocument`, `parseSectionRules`), validators
+  (`applyRules`, `validateDocument`, `validateBuffer`,
+  `validateSlug`, …), the canonical formatter
+  (`formatVaultDocument` + async variant), the conditional-rule DSL
+  (`evaluateCondition`, `getField`), config helpers
+  (`resolveProjectRoot`, `loadVaultConfig`), high-level orchestrators
+  (`findDocuments`, `findAllFiles`), and a `VERSION` constant.
+- **`exports` map** in `package.json` declares named subpaths for each
+  module (`./parser`, `./validators`, `./formatter`, `./template-rules`,
+  `./vault-config`, `./orchestrator`, `./lsp-validator`, …). Original
+  deep paths (`claude-code-vault-keeper/lib/<x>.js`,
+  `claude-code-vault-keeper/cli/<x>.js`,
+  `claude-code-vault-keeper/server/<x>.js`) still resolve via wildcard
+  entries for backwards compatibility.
+- **`docs/programmatic-usage.md`** rewritten: full module map, copy-paste
+  examples for single-file / whole-vault validation, building a custom
+  reporter, building a vault dashboard, pre-commit hooks, and JSON-CLI
+  invocation. The barrel is the recommended surface; subpaths are the
+  smaller alternative.
+- **`tests/public-api.test.js`** asserts that every advertised export
+  resolves from the package's `exports` map — both the barrel and each
+  named subpath — and that the orchestrator side-effect guard does NOT
+  fire on import (so `import { validateDocument } from
+  'claude-code-vault-keeper'` doesn't chdir or exit the host process).
+
+### Changed
+
+- `package.json#main` now points at `lib/index.js` (the barrel) instead
+  of the LSP bundle. The LSP bundle remains accessible via the
+  `./lsp-bundle` subpath and via the `vault-keeper-validate` /
+  `vault-keeper` bins; the change only affects the default resolution
+  of `import x from 'claude-code-vault-keeper'`.
+- `formatVaultDocumentAsync` docs updated: it takes `{ projectRoot }`
+  and reads `template:` from the document's own frontmatter — the
+  previous doc claim of a separate `templatePath` option was wrong.
+
+### Compatibility
+
+- No behavior change for the CLI (`vault-keeper`, `vault-keeper-validate`)
+  or the LSP. All bins continue to dispatch through the same entry
+  points.
+- Adding the `exports` map narrows what's importable to the listed
+  paths — but every path the previous docs referenced is preserved via
+  wildcard back-compat entries, so existing scripts continue to work.
+
 ## [0.6.1] — 2026-05-19
 
 Hotfix for v0.6.0. The published bins were silently no-ops when invoked

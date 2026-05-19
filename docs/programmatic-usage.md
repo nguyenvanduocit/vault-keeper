@@ -1,42 +1,88 @@
 # Programmatic usage
 
-Beyond the `vault-keeper-validate` CLI and the LSP server, every layer of
-the plugin is importable as plain ES modules. Build your own scripts on
-top of them — CI gates, bulk-rewrites, custom reporters, editor
-integrations — without shelling out to the CLI.
+Beyond the `vault-keeper` CLI and the LSP server, every layer of the
+plugin is importable as a plain ES module. Build your own scripts on top
+of it — CI gates, bulk-rewrites, custom reporters, editor integrations,
+dashboards that surface vault state — without shelling out to the CLI.
 
 All modules are pure ESM (`"type": "module"` in `package.json`); import
-them with `import` from a Bun or Node project that points at this repo
-(workspace dep, git submodule, npm-link, or `bun install` from a local
-path).
+them from a Bun or Node ≥ 18 project that depends on the package.
 
-```js
-// package.json
-{
-  "dependencies": {
-    "claude-code-vault-keeper": "file:../claude-code-vault-keeper"
-  }
-}
+```bash
+bun add claude-code-vault-keeper
+# or, against a local checkout:
+bun add file:../claude-code-vault-keeper
 ```
 
-> File paths shown below are relative to the plugin root. The plugin has
-> no `exports` map yet — import each module by its full path
-> (e.g. `claude-code-vault-keeper/lib/template-rules.js`).
+## The barrel
 
-## Module map
+`import` directly from the package name to get the public surface —
+parsers, validators, formatter, the orchestrator, config helpers, and
+the LSP-side per-buffer validator are all re-exported from one barrel:
 
-| Module | Purpose |
+```js
+import {
+  // I/O
+  parseDocument, resolveDocPath,
+
+  // Parsing
+  parseBody, parseSectionRules, loadTemplateSectionRules,
+
+  // Template rules
+  loadTemplateRules, normalizeRules,
+
+  // Validators (pure)
+  CONFIG,
+  applyRules,
+  validateTemplateField,
+  validateTemplateMetaLeak,
+  validateSlug, validatePaths, suggestSlug,
+  stripCodeRegions,
+  inferDocType, isTemplateFile, isTemplateInstance, findTemplateMetaLeaks,
+
+  // Formatter
+  formatVaultDocument, formatVaultDocumentAsync,
+
+  // Conditional DSL (used by validation_rules.conditional_required_fields)
+  evaluateCondition, getField,
+
+  // Vault config
+  resolveProjectRoot, loadVaultConfig,
+
+  // Orchestrator (file-walking + per-doc validation)
+  validateDocument, findDocuments, findAllFiles, validateLinkExistence,
+
+  // LSP-side variant — validates an in-memory buffer, no FS scan
+  validateBuffer,
+
+  // Package version (string)
+  VERSION,
+} from 'claude-code-vault-keeper';
+```
+
+## Subpath exports
+
+If you want a smaller import surface, the package exposes one subpath
+per logical module:
+
+| Subpath | What's there |
 |---|---|
-| `cli/validate-documents.js` | Orchestrator. `validateDocument` + `findDocuments` + `findAllFiles`. |
-| `lib/doc-io.js` | `parseDocument(filepath)` — read a markdown file, return `{frontmatter, body}`. |
-| `lib/vault-config.js` | `resolveProjectRoot(opts)` + `loadVaultConfig(root)`. |
-| `lib/template-rules.js` | `loadTemplateRules(templatePath, root)` + `normalizeRules(obj)`. |
-| `lib/template-section-rules.js` | `parseSectionRules(body)` + `loadTemplateSectionRules(path)`. |
-| `lib/body-parser.js` | `parseBody(markdown, {formatHints})` — body section + warning extraction. |
-| `lib/canonical-formatter.js` | `formatVaultDocument(text)` + `formatVaultDocumentAsync(text)`. |
-| `lib/validators.js` | Pure validators (`validateTemplateField`, `validateSlug`, …) + `applyRules`. |
-| `lib/conditional-eval.js` | `evaluate(expression, context)` + `getField(obj, path)`. |
-| `server/validator.js` | `validateBuffer({text, filepath, projectRoot})` — in-memory variant. |
+| `claude-code-vault-keeper/parser` | `parseBody` |
+| `claude-code-vault-keeper/doc-io` | `parseDocument`, `resolveDocPath` |
+| `claude-code-vault-keeper/template-rules` | `loadTemplateRules`, `normalizeRules` |
+| `claude-code-vault-keeper/template-section-rules` | `parseSectionRules`, `loadTemplateSectionRules`, `getRequiredSections` |
+| `claude-code-vault-keeper/validators` | `applyRules`, `validateSlug`, `validatePaths`, … `CONFIG` |
+| `claude-code-vault-keeper/formatter` | `formatVaultDocument`, `formatVaultDocumentAsync` |
+| `claude-code-vault-keeper/conditional-eval` | `evaluate`, `getField` |
+| `claude-code-vault-keeper/vault-config` | `resolveProjectRoot`, `loadVaultConfig` |
+| `claude-code-vault-keeper/orchestrator` | `validateDocument`, `findDocuments`, `findAllFiles` |
+| `claude-code-vault-keeper/lsp-validator` | `validateBuffer` |
+| `claude-code-vault-keeper/package.json` | The manifest (read `version` etc.) |
+
+Deep imports of original files (`claude-code-vault-keeper/lib/<x>.js`,
+`claude-code-vault-keeper/cli/<x>.js`, `claude-code-vault-keeper/server/<x>.js`)
+still work via wildcard entries in the `exports` map — but the named
+subpaths above are the supported surface. Prefer them in new code.
 
 ## Validating a single file
 
@@ -44,7 +90,7 @@ path).
 that wires every rule together.
 
 ```js
-import { validateDocument } from 'claude-code-vault-keeper/cli/validate-documents.js';
+import { validateDocument } from 'claude-code-vault-keeper';
 
 const result = await validateDocument('docs/notes/note-001-hello.md');
 
@@ -100,8 +146,8 @@ import {
   findAllFiles,
   validateDocument,
   validateSlug,
-} from 'claude-code-vault-keeper/cli/validate-documents.js';
-import { resolveProjectRoot } from 'claude-code-vault-keeper/lib/vault-config.js';
+  resolveProjectRoot,
+} from 'claude-code-vault-keeper';
 
 const root = resolveProjectRoot({ root: '/abs/path/to/vault' });
 process.chdir(root);
@@ -137,7 +183,7 @@ When you want to introspect or report on a template's rules without
 running a validation pass:
 
 ```js
-import { loadTemplateRules } from 'claude-code-vault-keeper/lib/template-rules.js';
+import { loadTemplateRules } from 'claude-code-vault-keeper';
 
 const rules = await loadTemplateRules('templates/note-template.md', root);
 
@@ -160,8 +206,7 @@ object + the body text, get back an `Issue[]`. Useful for editor
 integrations that haven't written the file to disk yet.
 
 ```js
-import { loadTemplateRules } from 'claude-code-vault-keeper/lib/template-rules.js';
-import { applyRules } from 'claude-code-vault-keeper/lib/validators.js';
+import { loadTemplateRules, applyRules } from 'claude-code-vault-keeper';
 
 const rules = await loadTemplateRules('templates/note-template.md', root);
 const frontmatter = { template: 'templates/note-template.md', title: 'Hi' };
@@ -177,7 +222,7 @@ operating on a string instead of a file path. This is what the LSP uses
 on every keystroke.
 
 ```js
-import { validateBuffer } from 'claude-code-vault-keeper/server/validator.js';
+import { validateBuffer } from 'claude-code-vault-keeper';
 
 const text = `---
 template: templates/note-template.md
@@ -204,17 +249,29 @@ the body parser (the same warnings the LSP surfaces as `field=body`
 diagnostics).
 
 ```js
-import { parseBody } from 'claude-code-vault-keeper/lib/body-parser.js';
-import { loadTemplateSectionRules } from 'claude-code-vault-keeper/lib/template-section-rules.js';
+import {
+  parseBody,
+  loadTemplateSectionRules,
+} from 'claude-code-vault-keeper';
 
 const sectionRules = await loadTemplateSectionRules(
   'templates/prd-template.md',
   root,
 );
 
-const { sections, warnings } = await parseBody(body, {
-  formatHints: sectionRules,
-});
+const parsed = await parseBody(body, { formatHints: sectionRules });
+
+// Structured body data — pick what you need:
+parsed.relationships;       // typed edges from ## Relationships
+parsed.acceptanceCriteria;  // AC entities + implementing/verifying refs
+parsed.userStories;         // PRD → story refinements
+parsed.contributions;       // ## Contributions log
+parsed.statusHistory;       // ## Status History rows
+parsed.phaseHistory;        // ## Phase History rows
+parsed.riceScore;           // RICE Score table
+parsed.shipTimeline;        // Ship Timeline + extensions
+parsed.derived;             // computed lifecycle timestamps
+parsed.warnings;            // body-format diagnostics
 ```
 
 ## Canonical formatting
@@ -223,23 +280,26 @@ The same rewrites the CLI applies on `vault-keeper-format` / the LSP
 applies on `textDocument/formatting`:
 
 ```js
-import { formatVaultDocumentAsync } from 'claude-code-vault-keeper/lib/canonical-formatter.js';
+import { formatVaultDocumentAsync } from 'claude-code-vault-keeper';
 
-const formatted = await formatVaultDocumentAsync(originalText, {
-  templatePath: 'templates/note-template.md',
+// Async form: reads the template referenced in `originalText`'s
+// frontmatter to learn the canonical section order.
+const { formatted, changed } = await formatVaultDocumentAsync(originalText, {
   projectRoot: root,
 });
 ```
 
-The sync `formatVaultDocument(text, opts)` skips body parsing — fast
-path when you only need frontmatter re-ordering.
+The sync `formatVaultDocument(text, { sections })` accepts an explicit
+section slug list instead of resolving the template from disk — fast
+path when you've already loaded the template rules or only need
+frontmatter re-ordering.
 
 ## Building a custom reporter
 
 Pure result data → render however you want.
 
 ```js
-import { validateDocument, findDocuments } from 'claude-code-vault-keeper/cli/validate-documents.js';
+import { validateDocument, findDocuments } from 'claude-code-vault-keeper';
 
 const docs = await findDocuments();
 const results = await Promise.all(docs.map((d) => validateDocument(d)));
@@ -269,6 +329,64 @@ Stable `error_type` tags currently emitted:
 | `path-regex-bad-regex` | Template's `path_regex` does not compile. |
 | `bundle-readme-template-mismatch` | Bundle README declared the wrong template (or none). |
 
+## Building a dashboard
+
+`parseBody` + `parseDocument` + `findDocuments` are the right ingredients
+for a "what's in my vault?" view. The example below walks every doc and
+emits a CSV of status + owner + AC count — feed it into a spreadsheet,
+a Markdown report, or a static-site generator.
+
+```js
+import {
+  findDocuments,
+  parseDocument,
+  parseBody,
+  loadTemplateRules,
+  resolveProjectRoot,
+} from 'claude-code-vault-keeper';
+
+const root = resolveProjectRoot({ root: '/abs/path/to/vault' });
+process.chdir(root);
+process.env.CLAUDE_PROJECT_DIR = root;
+
+const docs = await findDocuments();
+const rows = [];
+
+for (const filepath of docs) {
+  const { frontmatter, body, error } = await parseDocument(filepath);
+  if (error) continue;
+
+  // Optional: pull the template's `body_section_formats` so parseBody
+  // emits warnings in the same vocabulary the LSP uses.
+  const rules = await loadTemplateRules(frontmatter.template, root);
+  const parsed = await parseBody(body, {
+    formatHints: rules?.body_section_formats,
+  });
+
+  rows.push({
+    path: filepath,
+    template: frontmatter.template ?? '',
+    status: frontmatter.status ?? '',
+    owner: frontmatter.owner ?? '',
+    title: frontmatter.title ?? '',
+    relationships: parsed.relationships.length,
+    acs: parsed.acceptanceCriteria.length,
+    contributions: parsed.contributions.length,
+    statusHistoryLen: parsed.statusHistory.length,
+    started_at: parsed.derived.started_at,
+    shipped_at: parsed.derived.shipped_at,
+    warnings: parsed.warnings.length,
+  });
+}
+
+// Emit CSV (or JSON, or feed into any view layer)
+const headers = Object.keys(rows[0]);
+console.log(headers.join(','));
+for (const r of rows) {
+  console.log(headers.map((h) => JSON.stringify(r[h] ?? '')).join(','));
+}
+```
+
 ## Pre-commit script example
 
 ```js
@@ -276,8 +394,10 @@ Stable `error_type` tags currently emitted:
 // scripts/vault-precommit.mjs — fail the commit on any vault error.
 
 import { execFileSync } from 'node:child_process';
-import { validateDocument } from 'claude-code-vault-keeper/cli/validate-documents.js';
-import { resolveProjectRoot } from 'claude-code-vault-keeper/lib/vault-config.js';
+import {
+  validateDocument,
+  resolveProjectRoot,
+} from 'claude-code-vault-keeper';
 
 const root = resolveProjectRoot();
 process.chdir(root);
