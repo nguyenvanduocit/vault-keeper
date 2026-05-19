@@ -9,7 +9,7 @@
   "plugins": [
     {
       "name": "claude-code-vault-keeper",
-      "source": ".",
+      "source": "./",
       "description": "Generic knowledge-vault tooling for Claude Code — per-keystroke LSP diagnostics + navigation + hover + completion + code-action + code-lens + inlay-hint + rename + document-formatting, a full-vault CLI validator (vault-keeper-validate), and a shared body/template parsing lib. Vault-agnostic via optional .claude/vault-keeper.json (defaults: whole repo is the vault). The consuming vault brings its own templates/ — this plugin ships none."
     }
   ]
