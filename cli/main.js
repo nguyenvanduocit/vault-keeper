@@ -37,7 +37,7 @@ const REPO_HTTPS_URL = (pkg.repository?.url ?? '')
   .replace(/\.git$/, '');
 const PLUGIN_MARKETPLACE_URL =
   (pkg.repository?.url ?? '').replace(/^git\+/, '') ||
-  'https://github.com/nguyenvanduocit/vault-keeper.git';
+  'https://github.com/nguyenvanduocit/claude-code-vault-keeper.git';
 const PLUGIN_NAME = 'vault-keeper@vault-keeper';
 
 // ── Help text ───────────────────────────────────────────────────────────────

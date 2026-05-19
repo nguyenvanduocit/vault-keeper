@@ -106,7 +106,7 @@ vault-keeper install-claude-code-plugin
 Wraps the two-step manual install:
 
 ```bash
-claude marketplace add https://github.com/nguyenvanduocit/vault-keeper.git
+claude marketplace add https://github.com/nguyenvanduocit/claude-code-vault-keeper.git
 claude plugin install vault-keeper@vault-keeper
 ```
 
@@ -242,6 +242,6 @@ For a deeper editor walkthrough see [lsp-features](lsp-features.md).
 - Stuck on an error? Check [troubleshooting](troubleshooting.md).
 - Browse the bundled `examples/example/` for a working vault that exercises
   every rule kind — both the
-  [README map](https://github.com/nguyenvanduocit/vault-keeper/blob/main/examples/example/README.md)
-  and [`tests/example-vault.expectations.json`](https://github.com/nguyenvanduocit/vault-keeper/blob/main/tests/example-vault.expectations.json)
+  [README map](https://github.com/nguyenvanduocit/claude-code-vault-keeper/blob/main/examples/example/README.md)
+  and [`tests/example-vault.expectations.json`](https://github.com/nguyenvanduocit/claude-code-vault-keeper/blob/main/tests/example-vault.expectations.json)
   enumerate every fixture and the diagnostic it demonstrates.

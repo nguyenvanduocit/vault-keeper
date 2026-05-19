@@ -1,6 +1,6 @@
 # vault-keeper
 
-[![CI](https://github.com/nguyenvanduocit/vault-keeper/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nguyenvanduocit/vault-keeper/actions/workflows/ci.yml)
+[![CI](https://github.com/nguyenvanduocit/claude-code-vault-keeper/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nguyenvanduocit/claude-code-vault-keeper/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/vault-keeper.svg)](https://www.npmjs.com/package/vault-keeper)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -211,8 +211,8 @@ A self-contained reference vault that exercises every rule kind lives at
 
 ## Repo
 
-Source: <https://github.com/nguyenvanduocit/vault-keeper>
-Issues: <https://github.com/nguyenvanduocit/vault-keeper/issues>
+Source: <https://github.com/nguyenvanduocit/claude-code-vault-keeper>
+Issues: <https://github.com/nguyenvanduocit/claude-code-vault-keeper/issues>
 Releasing: see [`docs/releasing.md`](docs/releasing.md).
 
 Cloning is for contributors. End users install via `bunx` / `npx` / `bun add` /

@@ -85,14 +85,14 @@ deprecate a version but not delete it after 72 h).
    ```
 
 5. **Watch the release workflow run** —
-   <https://github.com/nguyenvanduocit/vault-keeper/actions/workflows/release.yml>.
+   <https://github.com/nguyenvanduocit/claude-code-vault-keeper/actions/workflows/release.yml>.
    It re-runs tests, asserts the tag-vs-package version, publishes to
    npm, then opens a GitHub Release.
 
 6. **Verify** —
    - `npm view vault-keeper version` → matches the tag.
    - `bunx vault-keeper@X.Y.Z --version` → matches.
-   - <https://github.com/nguyenvanduocit/vault-keeper/releases/tag/vX.Y.Z>
+   - <https://github.com/nguyenvanduocit/claude-code-vault-keeper/releases/tag/vX.Y.Z>
      has the CHANGELOG content as its body.
 
 ## Manual override

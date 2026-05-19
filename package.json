@@ -46,11 +46,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nguyenvanduocit/vault-keeper.git"
+    "url": "git+https://github.com/nguyenvanduocit/claude-code-vault-keeper.git"
   },
-  "homepage": "https://github.com/nguyenvanduocit/vault-keeper#readme",
+  "homepage": "https://github.com/nguyenvanduocit/claude-code-vault-keeper#readme",
   "bugs": {
-    "url": "https://github.com/nguyenvanduocit/vault-keeper/issues"
+    "url": "https://github.com/nguyenvanduocit/claude-code-vault-keeper/issues"
   },
   "keywords": [
     "claude-code",

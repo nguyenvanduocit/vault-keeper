@@ -12,20 +12,17 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [0.7.0] — 2026-05-19
 
-Renamed the npm package, the Claude Code plugin manifest, **and** the
-GitHub repository from `claude-code-vault-keeper` to **`vault-keeper`**
-so the package, the binary, the plugin, and the repo all share one
-name. Install command becomes `npm i vault-keeper`
-(was `npm i claude-code-vault-keeper`); the `vault-keeper` binary on
-`$PATH` is unchanged. Claude Code plugin install becomes
-`claude plugin install vault-keeper@vault-keeper` (was
+Renamed the npm package + Claude Code plugin manifest from
+`claude-code-vault-keeper` to **`vault-keeper`** so the package, the
+binary, and the plugin all share one name. Install command becomes
+`npm i vault-keeper` (was `npm i claude-code-vault-keeper`); the
+`vault-keeper` binary on `$PATH` is unchanged. Claude Code plugin install
+becomes `claude plugin install vault-keeper@vault-keeper` (was
 `claude plugin install claude-code-vault-keeper@vault-keeper`).
 
-The GitHub repo URL is now
-`github.com/nguyenvanduocit/vault-keeper`. GitHub redirects the old
-path automatically — existing clones, links, and `claude marketplace
-add` URLs of the old repo continue to work — but new tooling should
-point at the new URL.
+The GitHub repo URL — `github.com/nguyenvanduocit/claude-code-vault-keeper`
+— is **unchanged**; only the npm name and the Claude Code plugin
+manifest name moved.
 
 ### Why
 
