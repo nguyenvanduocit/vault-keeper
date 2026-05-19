@@ -14,7 +14,7 @@ When this skill is invoked, Claude MUST spawn `scripts/poll-fetch.sh "${CLAUDE_P
 Run in parallel via `Bash`; do NOT narrate to the user unless one fails:
 
 1. **Git repo present** — `git -C "${CLAUDE_PROJECT_DIR:-$PWD}" rev-parse --is-inside-work-tree` must return `true`. If not → refuse with one line: "not in a git repo".
-2. **Poll script exists** — `ls "${CLAUDE_PLUGIN_ROOT:-.claude/plugins/claude-code-vault-keeper}/scripts/poll-fetch.sh"` must succeed.
+2. **Poll script exists** — `ls "${CLAUDE_PLUGIN_ROOT:-.claude/plugins/vault-keeper}/scripts/poll-fetch.sh"` must succeed.
 3. **Dedup** — if a `poll-fetch.sh` process for this repo is already running (`ps aux | grep '[p]oll-fetch.sh'`), STOP. Do not spawn a duplicate, do not announce — silent no-op.
 
 If any check fails, surface the single root cause and stop. Otherwise proceed to arming without commentary.

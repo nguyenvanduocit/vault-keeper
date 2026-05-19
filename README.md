@@ -1,11 +1,8 @@
 # vault-keeper
 
 [![CI](https://github.com/nguyenvanduocit/claude-code-vault-keeper/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/nguyenvanduocit/claude-code-vault-keeper/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/claude-code-vault-keeper.svg)](https://www.npmjs.com/package/claude-code-vault-keeper)
+[![npm version](https://img.shields.io/npm/v/vault-keeper.svg)](https://www.npmjs.com/package/vault-keeper)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-*Published on npm as **`claude-code-vault-keeper`** — the `vault-keeper`
-binary is what you'll actually type.*
 
 > Your vault has 1,247 notes. How many use `status: done` vs `status: completed`?
 > How many tag with `#book` vs `#books`? How many books are missing a `rating:` field?
@@ -126,16 +123,16 @@ section ordering, link-target checks, and a small DSL (`and`, `or`, `in`,
 
 ```bash
 # 1. Scaffold a sample vault (no install)
-bunx -p claude-code-vault-keeper vault-keeper init my-vault
+bunx -p vault-keeper vault-keeper init my-vault
 cd my-vault
 
 # 2. Look at templates/note-template.md — those are the rules
 # 3. Validate
-bunx -p claude-code-vault-keeper vault-keeper validate
+bunx -p vault-keeper vault-keeper validate
 # → Valid: 1/1, exit 0
 
 # 4. Break notes/note-001-hello.md (e.g. delete `owner:`)
-bunx -p claude-code-vault-keeper vault-keeper validate
+bunx -p vault-keeper vault-keeper validate
 # → exit 1, explains exactly what broke and how to fix it
 ```
 
@@ -172,9 +169,9 @@ That's it. Open any `.md` in your vault and the LSP highlights problems live.
 
 | Path | When | Command |
 |---|---|---|
-| **One-shot** | Trying it out, one-off CI check. | `bunx -p claude-code-vault-keeper vault-keeper <cmd>` |
-| **Global** | Many vaults; want `vault-keeper` on `$PATH`. | `bun add -g claude-code-vault-keeper` |
-| **Project dev-dep** | Vault lives inside a JS/TS repo. | `bun add -D claude-code-vault-keeper` |
+| **One-shot** | Trying it out, one-off CI check. | `bunx -p vault-keeper vault-keeper <cmd>` |
+| **Global** | Many vaults; want `vault-keeper` on `$PATH`. | `bun add -g vault-keeper` |
+| **Project dev-dep** | Vault lives inside a JS/TS repo. | `bun add -D vault-keeper` |
 | **Claude Code plugin** | Inline LSP diagnostics in your editor. | `vault-keeper install-claude-code-plugin` |
 
 `npm` / `npx` work everywhere `bun` / `bunx` do — no bun runtime required.

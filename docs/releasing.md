@@ -1,6 +1,6 @@
 # Releasing
 
-`claude-code-vault-keeper` ships to npm via GitHub Actions. The release
+`vault-keeper` ships to npm via GitHub Actions. The release
 flow is **tag-driven**: pushing a semver tag (`vX.Y.Z`) triggers
 [`.github/workflows/release.yml`](../.github/workflows/release.yml), which
 verifies the tag matches `package.json`, runs the full test + smoke
@@ -19,11 +19,11 @@ No long-lived secret on GitHub. Setup:
 
 1. Sign in at <https://www.npmjs.com>.
 2. Go to the package page →
-   [npmjs.com/package/claude-code-vault-keeper/access](https://www.npmjs.com/package/claude-code-vault-keeper/access).
+   [npmjs.com/package/vault-keeper/access](https://www.npmjs.com/package/vault-keeper/access).
 3. **Trusted publishers** → **Add trusted publisher** → GitHub Actions.
 4. Fields:
    - Organization or user: `nguyenvanduocit`
-   - Repository: `claude-code-vault-keeper`
+   - Repository: `vault-keeper`
    - Workflow filename: `release.yml`
    - Environment: *(leave blank)*
 5. Save. From now on, the workflow's `id-token: write` permission +
@@ -90,8 +90,8 @@ deprecate a version but not delete it after 72 h).
    npm, then opens a GitHub Release.
 
 6. **Verify** —
-   - `npm view claude-code-vault-keeper version` → matches the tag.
-   - `bunx claude-code-vault-keeper@X.Y.Z --version` → matches.
+   - `npm view vault-keeper version` → matches the tag.
+   - `bunx vault-keeper@X.Y.Z --version` → matches.
    - <https://github.com/nguyenvanduocit/claude-code-vault-keeper/releases/tag/vX.Y.Z>
      has the CHANGELOG content as its body.
 

@@ -6,7 +6,7 @@ you need to extend it or trace a bug back to its source.
 ## Module map
 
 ```
-claude-code-vault-keeper/
+vault-keeper/
 ├── .claude-plugin/
 │   ├── plugin.json              # Plugin manifest
 │   └── marketplace.json         # Marketplace entry

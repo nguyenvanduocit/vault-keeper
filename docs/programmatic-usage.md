@@ -14,14 +14,14 @@ path).
 // package.json
 {
   "dependencies": {
-    "claude-code-vault-keeper": "file:../claude-code-vault-keeper"
+    "vault-keeper": "file:../vault-keeper"
   }
 }
 ```
 
 > File paths shown below are relative to the plugin root. The plugin has
 > no `exports` map yet — import each module by its full path
-> (e.g. `claude-code-vault-keeper/lib/template-rules.js`).
+> (e.g. `vault-keeper/lib/template-rules.js`).
 
 ## Module map
 
@@ -44,7 +44,7 @@ path).
 that wires every rule together.
 
 ```js
-import { validateDocument } from 'claude-code-vault-keeper/cli/validate-documents.js';
+import { validateDocument } from 'vault-keeper/cli/validate-documents.js';
 
 const result = await validateDocument('docs/notes/note-001-hello.md');
 
@@ -100,8 +100,8 @@ import {
   findAllFiles,
   validateDocument,
   validateSlug,
-} from 'claude-code-vault-keeper/cli/validate-documents.js';
-import { resolveProjectRoot } from 'claude-code-vault-keeper/lib/vault-config.js';
+} from 'vault-keeper/cli/validate-documents.js';
+import { resolveProjectRoot } from 'vault-keeper/lib/vault-config.js';
 
 const root = resolveProjectRoot({ root: '/abs/path/to/vault' });
 process.chdir(root);
@@ -137,7 +137,7 @@ When you want to introspect or report on a template's rules without
 running a validation pass:
 
 ```js
-import { loadTemplateRules } from 'claude-code-vault-keeper/lib/template-rules.js';
+import { loadTemplateRules } from 'vault-keeper/lib/template-rules.js';
 
 const rules = await loadTemplateRules('templates/note-template.md', root);
 
@@ -160,8 +160,8 @@ object + the body text, get back an `Issue[]`. Useful for editor
 integrations that haven't written the file to disk yet.
 
 ```js
-import { loadTemplateRules } from 'claude-code-vault-keeper/lib/template-rules.js';
-import { applyRules } from 'claude-code-vault-keeper/lib/validators.js';
+import { loadTemplateRules } from 'vault-keeper/lib/template-rules.js';
+import { applyRules } from 'vault-keeper/lib/validators.js';
 
 const rules = await loadTemplateRules('templates/note-template.md', root);
 const frontmatter = { template: 'templates/note-template.md', title: 'Hi' };
@@ -177,7 +177,7 @@ operating on a string instead of a file path. This is what the LSP uses
 on every keystroke.
 
 ```js
-import { validateBuffer } from 'claude-code-vault-keeper/server/validator.js';
+import { validateBuffer } from 'vault-keeper/server/validator.js';
 
 const text = `---
 template: templates/note-template.md
@@ -204,8 +204,8 @@ the body parser (the same warnings the LSP surfaces as `field=body`
 diagnostics).
 
 ```js
-import { parseBody } from 'claude-code-vault-keeper/lib/body-parser.js';
-import { loadTemplateSectionRules } from 'claude-code-vault-keeper/lib/template-section-rules.js';
+import { parseBody } from 'vault-keeper/lib/body-parser.js';
+import { loadTemplateSectionRules } from 'vault-keeper/lib/template-section-rules.js';
 
 const sectionRules = await loadTemplateSectionRules(
   'templates/prd-template.md',
@@ -223,7 +223,7 @@ The same rewrites the CLI applies on `vault-keeper-format` / the LSP
 applies on `textDocument/formatting`:
 
 ```js
-import { formatVaultDocumentAsync } from 'claude-code-vault-keeper/lib/canonical-formatter.js';
+import { formatVaultDocumentAsync } from 'vault-keeper/lib/canonical-formatter.js';
 
 const formatted = await formatVaultDocumentAsync(originalText, {
   templatePath: 'templates/note-template.md',
@@ -239,7 +239,7 @@ path when you only need frontmatter re-ordering.
 Pure result data → render however you want.
 
 ```js
-import { validateDocument, findDocuments } from 'claude-code-vault-keeper/cli/validate-documents.js';
+import { validateDocument, findDocuments } from 'vault-keeper/cli/validate-documents.js';
 
 const docs = await findDocuments();
 const results = await Promise.all(docs.map((d) => validateDocument(d)));
@@ -276,8 +276,8 @@ Stable `error_type` tags currently emitted:
 // scripts/vault-precommit.mjs — fail the commit on any vault error.
 
 import { execFileSync } from 'node:child_process';
-import { validateDocument } from 'claude-code-vault-keeper/cli/validate-documents.js';
-import { resolveProjectRoot } from 'claude-code-vault-keeper/lib/vault-config.js';
+import { validateDocument } from 'vault-keeper/cli/validate-documents.js';
+import { resolveProjectRoot } from 'vault-keeper/lib/vault-config.js';
 
 const root = resolveProjectRoot();
 process.chdir(root);
@@ -322,7 +322,7 @@ const out = execFileSync('bun', [
   'cli/validate-documents.js',
   '--root', '/path/to/vault',
   '--json',
-], { cwd: '/path/to/claude-code-vault-keeper', encoding: 'utf-8' });
+], { cwd: '/path/to/vault-keeper', encoding: 'utf-8' });
 
 const { summary, results } = JSON.parse(out);
 console.log(`invalid: ${summary.invalid}, warnings: ${summary.warningCount}`);

@@ -406,7 +406,7 @@ root.
 5. `.lsp.json` exists and points at the bundle.
 
 The Claude Code LSP console (visible inside the editor) prints
-`claude-code-vault-keeper: projectRoot=…` on initialize. If that
+`vault-keeper: projectRoot=…` on initialize. If that
 line shows `(unresolved)` the LSP couldn't find a vault root — add a
 `.claude/vault-keeper.json` file or a `templates/` directory.
 

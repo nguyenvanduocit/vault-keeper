@@ -110,7 +110,7 @@ let VAULT_FOLDERS = loadVaultConfig().vaultFolders;
 connection.onInitialize((params) => {
   projectRoot = resolveProjectRoot(params);
   connection.console.info(
-    `claude-code-vault-keeper: projectRoot=${projectRoot ?? "(unresolved)"}`,
+    `vault-keeper: projectRoot=${projectRoot ?? "(unresolved)"}`,
   );
   if (projectRoot) {
     // Re-resolve vault folders against the now-known project root so a
@@ -144,12 +144,12 @@ connection.onInitialize((params) => {
       callHierarchyProvider: true,
       ...PROVIDER_CAPABILITIES,
     },
-    serverInfo: { name: "claude-code-vault-keeper", version: PKG_VERSION },
+    serverInfo: { name: "vault-keeper", version: PKG_VERSION },
   };
 });
 
 connection.onInitialized(() => {
-  connection.console.info("claude-code-vault-keeper: initialized, ready for documents");
+  connection.console.info("vault-keeper: initialized, ready for documents");
 });
 
 // ── Validation pipeline ──────────────────────────────────────────────────────

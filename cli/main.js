@@ -38,7 +38,7 @@ const REPO_HTTPS_URL = (pkg.repository?.url ?? '')
 const PLUGIN_MARKETPLACE_URL =
   (pkg.repository?.url ?? '').replace(/^git\+/, '') ||
   'https://github.com/nguyenvanduocit/claude-code-vault-keeper.git';
-const PLUGIN_NAME = 'claude-code-vault-keeper@vault-keeper';
+const PLUGIN_NAME = 'vault-keeper@vault-keeper';
 
 // ── Help text ───────────────────────────────────────────────────────────────
 
@@ -181,7 +181,7 @@ async function runDoctor(args) {
 
   // Package version + LSP bundle
   checks.push({
-    name: 'claude-code-vault-keeper',
+    name: 'vault-keeper',
     status: 'ok',
     detail: `v${pkg.version} @ ${pkgRoot}`,
   });
@@ -291,7 +291,7 @@ async function runDoctor(args) {
 
 async function runInstallPlugin(_args) {
   console.log(
-    `Installing claude-code-vault-keeper as a Claude Code plugin...\n`,
+    `Installing vault-keeper as a Claude Code plugin...\n`,
   );
   const claudeDetect = await detectBinary('claude', ['--version']);
   if (!claudeDetect.ok) {

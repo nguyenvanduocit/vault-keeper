@@ -87,7 +87,7 @@ describe('vault-keeper (multi-tool CLI)', () => {
     const { code, stdout } = runCli(['doctor']);
     expect(code).toBe(0);
     expect(stdout).toContain('Node ≥ 18');
-    expect(stdout).toContain('claude-code-vault-keeper');
+    expect(stdout).toContain('vault-keeper');
     expect(stdout).toContain('LSP bundle');
     expect(stdout).toContain('Summary:');
   });

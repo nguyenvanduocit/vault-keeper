@@ -1,8 +1,68 @@
 # Changelog
 
-All notable changes to `claude-code-vault-keeper` are tracked here. The
-format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
-the project adheres to [Semantic Versioning](https://semver.org/).
+All notable changes are tracked here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project
+adheres to [Semantic Versioning](https://semver.org/).
+
+> **Note:** versions ≤ 0.6.1 were published on npm under the name
+> `claude-code-vault-keeper`. The package was renamed to **`vault-keeper`**
+> in v0.7.0 to match the binary name. The legacy npm name is deprecated
+> with a redirect notice; install paths and historical CHANGELOG entries
+> still reference it for accuracy.
+
+## [0.7.0] — 2026-05-19
+
+Renamed the npm package + Claude Code plugin manifest from
+`claude-code-vault-keeper` to **`vault-keeper`** so the package, the
+binary, and the plugin all share one name. Install command becomes
+`npm i vault-keeper` (was `npm i claude-code-vault-keeper`); the
+`vault-keeper` binary on `$PATH` is unchanged. Claude Code plugin install
+becomes `claude plugin install vault-keeper@vault-keeper` (was
+`claude plugin install claude-code-vault-keeper@vault-keeper`).
+
+The GitHub repo URL — `github.com/nguyenvanduocit/claude-code-vault-keeper`
+— is **unchanged**; only the npm name and the Claude Code plugin
+manifest name moved.
+
+### Why
+
+Two names (package vs. binary) created discoverability friction:
+`npm search vault-keeper` missed the package, blog posts that wrote
+`vault-keeper` couldn't be copy-pasted into `npm install`, and a future
+squatter could have shipped malware under the unclaimed `vault-keeper`
+name. With the rename, the brand is one word everywhere.
+
+### Migration
+
+Existing users on the old name:
+
+```bash
+npm uninstall claude-code-vault-keeper && npm i vault-keeper
+# or:
+bun remove claude-code-vault-keeper && bun add vault-keeper
+```
+
+Existing Claude Code plugin users:
+
+```bash
+claude plugin uninstall claude-code-vault-keeper@vault-keeper
+claude plugin install vault-keeper@vault-keeper
+```
+
+The CLI surface, flag set, exit codes, LSP behavior, config file, and
+template-rule vocabulary are **unchanged** from 0.6.1.
+
+### Changed
+
+- `package.json`: `name` → `vault-keeper`, version bumped to 0.7.0.
+- `.claude-plugin/plugin.json`: `name` → `vault-keeper`, version bumped
+  to 0.7.0.
+- `.claude-plugin/marketplace.json`: `plugins[0].name` → `vault-keeper`.
+- README, docs/*, examples/*, CLAUDE.md, server logs (`server/main.js`
+  `serverInfo.name` + console banner), `cli/main.js` (`PLUGIN_NAME`,
+  install messaging), `tests/cli-main.test.js`: every non-URL mention of
+  the old package name is now `vault-keeper`. GitHub URLs preserved.
+- LSP bundle (`server/main.bundled.cjs`) rebuilt from updated source.
 
 ## [0.6.1] — 2026-05-19
 

@@ -23,7 +23,7 @@ curl -fsSL https://bun.sh/install | bash
 export PATH="$HOME/.bun/bin:$PATH"
 
 # Install plugin runtime deps + validate
-cd path/to/claude-code-vault-keeper && bun install --frozen-lockfile
+cd path/to/vault-keeper && bun install --frozen-lockfile
 bun cli/validate-documents.js --root "$CI_PROJECT_DIR" --strict
 ```
 
@@ -54,12 +54,12 @@ jobs:
       # The plugin may live at the repo root OR nested as a submodule /
       # plugin path. Adjust working-directory accordingly.
       - name: Install plugin runtime deps
-        working-directory: ./vendor/claude-code-vault-keeper
+        working-directory: ./vendor/vault-keeper
         run: bun install --frozen-lockfile
 
       - name: Validate vault
         run: |
-          bun ./vendor/claude-code-vault-keeper/cli/validate-documents.js \
+          bun ./vendor/vault-keeper/cli/validate-documents.js \
             --root "$GITHUB_WORKSPACE" \
             --strict \
             --json > vault-validation.json
@@ -113,8 +113,8 @@ validate-vault:
   image: oven/bun:latest
   stage: test
   script:
-    - cd vendor/claude-code-vault-keeper && bun install --frozen-lockfile && cd ../..
-    - bun ./vendor/claude-code-vault-keeper/cli/validate-documents.js
+    - cd vendor/vault-keeper && bun install --frozen-lockfile && cd ../..
+    - bun ./vendor/vault-keeper/cli/validate-documents.js
         --root "$CI_PROJECT_DIR"
         --strict
         --json > vault-validation.json
@@ -144,7 +144,7 @@ if [ -z "$CHANGED" ]; then
 fi
 
 for f in $CHANGED; do
-  bun /path/to/claude-code-vault-keeper/cli/validate-documents.js --path "$f"
+  bun /path/to/vault-keeper/cli/validate-documents.js --path "$f"
 done
 ```
 
@@ -156,7 +156,7 @@ vaults:
 ```bash
 #!/usr/bin/env bash
 # .git/hooks/pre-commit
-bun /path/to/claude-code-vault-keeper/cli/validate-documents.js \
+bun /path/to/vault-keeper/cli/validate-documents.js \
   --root "$PWD" --strict
 ```
 
@@ -170,7 +170,7 @@ repos:
     hooks:
       - id: vault-keeper-validate
         name: vault-keeper-validate
-        entry: bash -c 'bun /path/to/claude-code-vault-keeper/cli/validate-documents.js --strict'
+        entry: bash -c 'bun /path/to/vault-keeper/cli/validate-documents.js --strict'
         language: system
         pass_filenames: false
         files: '\.md$'

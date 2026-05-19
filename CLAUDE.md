@@ -1,9 +1,9 @@
-# claude-code-vault-keeper — Plugin authoring principle
+# vault-keeper — Plugin authoring principle
 
 ## Generic plugin, template-driven validation
 
 > **This plugin is generic infrastructure, not a vault-specific implementation.**
-> The goal: any team can drop `claude-code-vault-keeper` into their own knowledge vault and have it work — without forking the plugin or patching its JS. Vault-shaped settings (content root, scanned folders, exclude globs) come from `.claude/vault-keeper.json`; per-template path shape, required fields, and lifecycle live in template frontmatter. With no config file the built-in defaults apply (whole repo is the vault).
+> The goal: any team can drop `vault-keeper` into their own knowledge vault and have it work — without forking the plugin or patching its JS. Vault-shaped settings (content root, scanned folders, exclude globs) come from `.claude/vault-keeper.json`; per-template path shape, required fields, and lifecycle live in template frontmatter. With no config file the built-in defaults apply (whole repo is the vault).
 
 To preserve that property, two rules are non-negotiable:
 
@@ -25,7 +25,7 @@ If you find yourself adding a new code path that does `if (someVaultSpecificCond
 2. Extend the validator to read that field generically and enforce the constraint based on the field's value.
 3. The new field belongs to TEMPLATES; the new ENFORCEMENT belongs to the plugin.
 
-This keeps the plugin reusable: any vault adopting `claude-code-vault-keeper` just authors its own templates with its own `validation_rules`, and the plugin enforces them without modification.
+This keeps the plugin reusable: any vault adopting `vault-keeper` just authors its own templates with its own `validation_rules`, and the plugin enforces them without modification.
 
 ## Concrete examples of template-driven fields the plugin already honors
 

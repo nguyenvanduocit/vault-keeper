@@ -1,7 +1,7 @@
 # Example vault — fixture map
 
 This directory is a **self-contained reference vault** and the **canonical
-test dataset** for `claude-code-vault-keeper`. Every rule kind a template
+test dataset** for `vault-keeper`. Every rule kind a template
 can declare is exercised by at least one fixture, and a coverage assertion
 in `tests/example-vault.test.js` fails if a new validator diagnostic ships
 without a matching fixture here.

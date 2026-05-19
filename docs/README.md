@@ -1,6 +1,6 @@
 # Documentation
 
-`claude-code-vault-keeper` is a template-driven markdown validation engine.
+`vault-keeper` is a template-driven markdown validation engine.
 Documents declare which template they conform to; templates declare their
 own validation rules; the engine enforces them generically.
 

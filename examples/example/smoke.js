@@ -3,7 +3,7 @@
  * examples/example/smoke.js — foreign-vault LSP smoke driver.
  *
  * Proves the SHIPPED LSP bundle works against THIS vault — `vaultRoot: docs`,
- * the vault's OWN `templates/note-template.md` (claude-code-vault-keeper
+ * the vault's OWN `templates/note-template.md` (vault-keeper
  * ships no templates), no `product-knowledge/`.
  *
  * Mechanics mirror server/smoke.js (LSP framing, request/response pump) but

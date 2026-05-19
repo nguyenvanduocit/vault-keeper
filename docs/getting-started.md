@@ -24,11 +24,11 @@ it on purpose so you can see what a real error looks like.
 
 ```bash
 # 1. Scaffold
-bunx -p claude-code-vault-keeper vault-keeper init /tmp/vk-demo
+bunx -p vault-keeper vault-keeper init /tmp/vk-demo
 cd /tmp/vk-demo
 
 # 2. Validate — should pass
-bunx -p claude-code-vault-keeper vault-keeper validate
+bunx -p vault-keeper vault-keeper validate
 # → "Valid: 1/1", exit 0
 
 # 3. Break it — remove the owner: line
@@ -36,7 +36,7 @@ sed -i '' '/^owner:/d' notes/note-001-hello.md   # macOS
 # or:  sed -i '/^owner:/d' notes/note-001-hello.md   # Linux
 
 # 4. Validate again — should fail with a clear fix
-bunx -p claude-code-vault-keeper vault-keeper validate
+bunx -p vault-keeper vault-keeper validate
 ```
 
 You'll see something like:
@@ -63,9 +63,9 @@ use, pick one:
 
 | Style | Use when | Command |
 |---|---|---|
-| **One-shot** (no install) | One-off check, CI runner pulls fresh each time. | `bunx -p claude-code-vault-keeper vault-keeper <cmd>` (or `npx -p claude-code-vault-keeper vault-keeper <cmd>`) |
-| **Project dev-dep** | Vault lives inside a JS/TS repo that already runs `npm`/`bun`. | `bun add -D claude-code-vault-keeper` (or `npm i -D claude-code-vault-keeper`) |
-| **Global** | You author many vaults; want `vault-keeper` in `$PATH`. | `bun add -g claude-code-vault-keeper` (or `npm i -g claude-code-vault-keeper`) |
+| **One-shot** (no install) | One-off check, CI runner pulls fresh each time. | `bunx -p vault-keeper vault-keeper <cmd>` (or `npx -p vault-keeper vault-keeper <cmd>`) |
+| **Project dev-dep** | Vault lives inside a JS/TS repo that already runs `npm`/`bun`. | `bun add -D vault-keeper` (or `npm i -D vault-keeper`) |
+| **Global** | You author many vaults; want `vault-keeper` in `$PATH`. | `bun add -g vault-keeper` (or `npm i -g vault-keeper`) |
 | **Claude Code plugin** | You want inline LSP diagnostics in your editor. | `vault-keeper install-claude-code-plugin` |
 
 You do **not** need to `git clone` the repo to use `vault-keeper`. Cloning is
@@ -107,7 +107,7 @@ Wraps the two-step manual install:
 
 ```bash
 claude marketplace add https://github.com/nguyenvanduocit/claude-code-vault-keeper.git
-claude plugin install claude-code-vault-keeper@vault-keeper
+claude plugin install vault-keeper@vault-keeper
 ```
 
 If `claude` isn't on `$PATH`, the command prints the manual steps instead of

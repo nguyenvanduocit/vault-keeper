@@ -44500,7 +44500,7 @@ var VAULT_FOLDERS = loadVaultConfig().vaultFolders;
 connection.onInitialize((params) => {
   projectRoot = resolveProjectRoot2(params);
   connection.console.info(
-    `claude-code-vault-keeper: projectRoot=${projectRoot ?? "(unresolved)"}`
+    `vault-keeper: projectRoot=${projectRoot ?? "(unresolved)"}`
   );
   if (projectRoot) {
     VAULT_FOLDERS = loadVaultConfig(projectRoot).vaultFolders;
@@ -44527,11 +44527,11 @@ connection.onInitialize((params) => {
       callHierarchyProvider: true,
       ...PROVIDER_CAPABILITIES
     },
-    serverInfo: { name: "claude-code-vault-keeper", version: PKG_VERSION }
+    serverInfo: { name: "vault-keeper", version: PKG_VERSION }
   };
 });
 connection.onInitialized(() => {
-  connection.console.info("claude-code-vault-keeper: initialized, ready for documents");
+  connection.console.info("vault-keeper: initialized, ready for documents");
 });
 var pendingTimers = /* @__PURE__ */ new Map();
 var DEBOUNCE_MS = 250;
