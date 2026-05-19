@@ -4,6 +4,31 @@ All notable changes to `claude-code-vault-keeper` are tracked here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.8.0] — 2026-05-19
+
+Ships the **Claude Code skill suite** that turns the plugin from "LSP + CLI" into six verbs the user types inside a Claude session. All skills are vault-agnostic — they read `validation_rules` from templates at runtime via the v0.7.0 public API, hardcode nothing.
+
+### Added
+
+- **Five Claude Code skills committed for the first time:**
+  - `/vault.setup` — interview-driven onboarding; scaffolds via `vault-keeper init`, then extends templates per the user's answers.
+  - `/vault.new <type> [slug]` — scaffolds a new document from `templates/<type>-template.md`. Reads `required_fields`, `field_rules`, `path_regex` via `loadTemplateRules`; generates frontmatter placeholders per field shape; derives the target path from the regex's literal prefix; validates after write.
+  - `/vault.health` — digests `vault-keeper doctor --json` + `vault-keeper validate --json` into a report grouped by template, folder, and rule kind.
+  - `/vault.fix` — applies `formatVaultDocument` deterministically (frontmatter key order, body section order, AC/relationship normalization, whitespace), re-validates, reports residuals that need human judgment.
+  - `/vault.sync` — validate-then-push pipeline; refuses to push if validate fails; manages stash, rebase, restore, commit, push as a single gated chain.
+- **`skills/README.md`** — catalog index for the six skills (`vault.monitor-git-sync` was already shipped).
+- **`tests/skills-lint.test.js`** — guards skill frontmatter shape and cross-references between skills. Asserts the six v0.8.0 skills are present, each has a valid `name:` + `description:` frontmatter, and every `/vault.<x>` cross-reference resolves to an actual skill directory.
+
+### Changed
+
+- `README.md` — `What's in the box` mentions the six-skill catalog.
+- `docs/getting-started.md` — post-install section lists the six verbs the user can type after `claude plugin install`.
+
+### Compatibility
+
+- No JS source changes. Public API surface from v0.7.0 is unchanged. CLI surface from v0.6.0 is unchanged. Existing scripts continue to work.
+- Skills are auto-discovered by Claude Code from the `skills/` directory; no plugin manifest changes were required.
+
 ## [0.7.0] — 2026-05-19
 
 Promotes the plugin's internal modules to a first-class **public

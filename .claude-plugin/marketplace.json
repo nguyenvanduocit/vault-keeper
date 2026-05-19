@@ -5,7 +5,7 @@
     "name": "nguyenvanduocit",
     "email": "nguyenvanduocit@gmail.com"
   },
-  "description": "Marketplace exposing claude-code-vault-keeper — generic, config-driven knowledge-vault tooling (LSP diagnostics server + CLI validator + shared markdown parsing lib). Any vault can `claude plugin marketplace add <this-repo>` then install the plugin; the vault supplies its own templates/ with validation_rules and an optional .claude/vault-keeper.json.",
+  "description": "Marketplace exposing claude-code-vault-keeper — generic, config-driven knowledge-vault tooling (LSP diagnostics server + CLI validator + shared markdown parsing lib + Claude Code skills). Any vault can `claude plugin marketplace add <this-repo>` then install the plugin; the vault supplies its own templates/ with validation_rules and an optional .claude/vault-keeper.json.",
   "plugins": [
     {
       "name": "claude-code-vault-keeper",
