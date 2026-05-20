@@ -3,8 +3,9 @@
  * Document validation orchestrator.
  *
  * Scans the configured vault root, parses each markdown doc's frontmatter via
- * gray-matter, resolves its declared `template:` to load `validation_rules`
- * from that template's frontmatter, then enforces the rules generically.
+ * gray-matter, resolves its declared `template:` to load the composable field
+ * schema from that template's frontmatter, then enforces it generically via
+ * the schema engine (`applyFieldSchema` / `applyBodySchema`).
  *
  * The plugin owns no per-doc-type knowledge — folder-placement, required
  * fields, conditional rules, state machines, sections, body section-rules
@@ -22,13 +23,14 @@
  */
 
 import { stat } from 'fs/promises';
-import { realpathSync } from 'node:fs';
+import { realpathSync, existsSync } from 'node:fs';
 import { join, dirname, relative } from 'path';
 import { pathToFileURL } from 'node:url';
 import { glob } from 'glob';
 import { resolveProjectRoot } from '../lib/vault-config.js';
 import { parseDocument, resolveDocPath } from '../lib/doc-io.js';
 import { loadTemplateRules } from '../lib/template-rules.js';
+import { applyFieldSchema, applyBodySchema } from '../lib/schema-engine.js';
 import {
   CONFIG,
   inferDocType,
@@ -36,7 +38,6 @@ import {
   isTemplateInstance,
   findTemplateMetaLeaks,
   validateTemplateField,
-  applyRules,
   validateTemplateMetaLeak,
   suggestSlug,
   validateSlug,
@@ -44,43 +45,6 @@ import {
   validatePaths,
   validateSectionRulesLeak,
 } from '../lib/validators.js';
-
-/**
- * Validate the document path matches the regex its template declares.
- *
- * Each template self-declares `path_regex` (single regex string) under its
- * `validation_rules` block. The validator compiles the regex and tests
- * against the doc's repo-relative path. When the field is null/absent the
- * check is skipped — leaves room for templates that intentionally span every
- * folder.
- *
- * Path is normalized to forward slashes regardless of platform separator so
- * regexes authored on macOS/Linux match identically on Windows.
- */
-function validatePathRegex(rules, filepath, projectRoot) {
-  if (!rules || !rules.path_regex) return [];
-  let re;
-  try {
-    re = new RegExp(rules.path_regex);
-  } catch (err) {
-    return [{
-      level: 'error',
-      field: 'template',
-      error_type: 'path-regex-bad-regex',
-      message: `Template's path_regex is not a valid regex: ${err.message}`,
-      fix: `Fix the regex in the template's validation_rules.path_regex.`,
-    }];
-  }
-  const rel = relative(projectRoot || process.cwd(), filepath).split(/[\\/]/).join('/');
-  if (re.test(rel)) return [];
-  return [{
-    level: 'error',
-    field: 'location',
-    error_type: 'path-regex-mismatch',
-    message: `Document path "${rel}" does not match template's path_regex.`,
-    fix: `Move/rename the file to match: ${rules.path_regex}`,
-  }];
-}
 
 // stripCodeRegions, validatePaths → imported from ../lib/validators.js above.
 
@@ -137,10 +101,11 @@ async function validateLinkExistence(frontmatter, _filepath) {
  *      (template field shape, naming pattern, path absoluteness, bidirectional
  *      links).
  *   4. Resolve the doc's template (`frontmatter.template`) and load its
- *      `validation_rules`. If the template can't be resolved or has no rules,
- *      emit an actionable error and skip template-driven rule application —
- *      we cannot validate against an unknown schema.
- *   5. Apply the loaded rules.
+ *      composable field schema. If the template can't be resolved, emit an
+ *      actionable error and skip schema-driven validation — we cannot
+ *      validate against an unknown schema.
+ *   5. Surface any template meta-validation errors, then run
+ *      `applyFieldSchema` (frontmatter) and `applyBodySchema` (body).
  *
  * `options.projectRoot` lets tests load fixture templates from a sandbox dir
  * rather than process.cwd().
@@ -180,9 +145,9 @@ async function validateDocument(filepath, options = {}) {
   allIssues.push(...await validateLinkExistence(fm, filepath));
 
   // Template-driven rules. loadTemplateRules returns null when the template
-  // cannot be resolved — file missing, malformed YAML, or no validation_rules
-  // block. Without a schema we cannot validate; emit an actionable error and
-  // skip rule-dependent validators. Cross-cutting validators (above) keep
+  // cannot be resolved — file missing, malformed YAML, or unparseable
+  // frontmatter. Without a schema we cannot validate; emit an actionable error
+  // and skip rule-dependent validators. Cross-cutting validators (above) keep
   // their results — they don't depend on template rules. The missing-template
   // case is already covered by validateTemplateField, so we only synthesize an
   // error here when the template field IS set but loading still failed.
@@ -192,13 +157,37 @@ async function validateDocument(filepath, options = {}) {
       allIssues.push({
         level: 'error',
         field: 'template',
-        message: `Cannot load validation_rules from template '${fm.template}' — file not found, malformed YAML, or missing validation_rules block`,
-        fix: `Verify '${fm.template}' exists (relative to repo root) and contains a 'validation_rules:' block in its frontmatter. See templates/README.md for the template registry.`,
+        message: `Cannot load schema from template '${fm.template}' — file not found or malformed YAML`,
+        fix: `Verify '${fm.template}' exists (relative to repo root) and contains valid frontmatter. See templates/README.md for the template registry.`,
       });
     }
   } else {
-    allIssues.push(...applyRules(rules, fm, doc.body, filepath));
-    allIssues.push(...validatePathRegex(rules, filepath, options.projectRoot));
+    // Surface template meta-validation issues (malformed field specs, etc.)
+    if (rules.templateErrors?.length) {
+      allIssues.push(...rules.templateErrors);
+    }
+
+    // Construct docMeta for the schema engine. repoRelativePath is
+    // POSIX-normalized so regexes authored on macOS/Linux match on Windows.
+    const projectRoot = options.projectRoot || process.cwd();
+    const docMeta = {
+      repoRelativePath: relative(projectRoot, filepath).split(/[\\/]/).join('/'),
+      fileExists: (relPath) => existsSync(join(projectRoot, relPath)),
+    };
+
+    // Frontmatter field validation (includes synthetic $path via the engine).
+    if (rules.fields) {
+      allIssues.push(...applyFieldSchema(
+        { fields: rules.fields, strict: rules.strict },
+        fm,
+        docMeta,
+      ));
+    }
+
+    // Body section-rules validation.
+    if (rules.bodySchema?.length) {
+      allIssues.push(...applyBodySchema(rules.bodySchema, doc.body, docMeta));
+    }
   }
 
   // Bundle README template mismatch.
@@ -228,7 +217,7 @@ async function validateDocument(filepath, options = {}) {
     valid: errors.length === 0,
     errors,
     warnings,
-    rulesSource: rules?.__source ?? null,
+    rulesSource: null,
     frontmatter: {
       template: fm.template,
       status: fm.status,
@@ -241,7 +230,7 @@ async function validateDocument(filepath, options = {}) {
  * Bundle-mismatch detector state.
  *
  * When a `<id>/README.md` sits at a path that some content template's
- * `path_regex` accepts as a bundle root, but the doc's own `template:`
+ * `$path.pattern` accepts as a bundle root, but the doc's own `template:`
  * field is missing or set to `folder-readme-template`, the doc would
  * otherwise silently escape schema validation (folder-readme-template's
  * regex is permissive — matches any `/README.md`).
@@ -258,21 +247,29 @@ async function loadContentTemplateBundlePatterns(projectRoot = process.cwd()) {
   const patterns = [];
   const tmplFiles = glob.sync('templates/*-template.md', { cwd: projectRoot });
   for (const tf of tmplFiles) {
-    // folder-readme-template's `path_regex` is permissive by design —
+    // folder-readme-template's path pattern is permissive by design —
     // exclude it so it never serves as the "expected" bundle template.
     if (tf.endsWith('folder-readme-template.md')) continue;
     const rules = await loadTemplateRules(tf, projectRoot);
-    if (!rules?.path_regex) continue;
+    // Extract the path pattern from the composable $path field.
+    // The `pattern` primitive can be shorthand (string) or expanded ({ value }).
+    const rawPattern = rules?.fields?.$path?.pattern;
+    const pathRegex = typeof rawPattern === 'string'
+      ? rawPattern
+      : typeof rawPattern === 'object' && rawPattern !== null
+        ? rawPattern.value
+        : null;
+    if (!pathRegex) continue;
     // Only collect templates whose regex actually advertises bundle support
     // (has a `/README\.md` alternative). Flat-only templates are skipped.
-    if (!rules.path_regex.includes('/README\\.md')) continue;
+    if (!pathRegex.includes('/README\\.md')) continue;
     try {
       patterns.push({
         template: `templates/${tf.split('/').pop()}`,
-        regex: new RegExp(rules.path_regex),
+        regex: new RegExp(pathRegex),
       });
     } catch {
-      // Invalid regex — validatePathRegex surfaces this elsewhere.
+      // Invalid regex — applyFieldSchema surfaces this elsewhere.
     }
   }
   _bundleTemplatePatternsCache = patterns;
@@ -290,7 +287,7 @@ async function loadContentTemplateBundlePatterns(projectRoot = process.cwd()) {
  *
  * Generic: no hardcoded paths or discipline names. The document's own
  * `template:` field decides whether it's bundle canonical content. Any
- * template whose `path_regex` permits a `/README.md$` suffix automatically
+ * template whose `$path.pattern` permits a `/README.md$` suffix automatically
  * opts into this mechanism.
  *
  * Pass 4 (bundle enforcement): when a README's path matches some
@@ -705,7 +702,6 @@ export {
   suggestSlug,
   validatePaths,
   validateSectionRulesLeak,
-  applyRules,
   // FS-touching validators
   validateLinkExistence,
   // Helpers

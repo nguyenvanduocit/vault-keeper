@@ -371,7 +371,7 @@ connection.onHover(async (params) => {
 });
 
 async function hoverFrontmatterKey(text, ctx) {
-  // Parse the doc's template to get field_rules
+  // Parse the doc's template to get schema fields
   let templatePath = null;
   const tplMatch = text.match(/^template:\s*['"]?([^\s'"]+)/m);
   if (tplMatch) templatePath = tplMatch[1];
@@ -385,27 +385,58 @@ async function hoverFrontmatterKey(text, ctx) {
     return { contents: { kind: "markdown", value: `**${ctx.key}**` } };
   }
 
-  // Find matching field_rule
+  // Look up the field spec from the composable `fields` schema.
+  // `fields` is Record<string, object> where each value has primitive keys
+  // like type, enum, pattern, min, max, required, description, exists.
   const fieldKey = ctx.dotPath || ctx.key;
-  const rule = (rules.field_rules || []).find(
-    (r) => r.field === fieldKey || r.field === ctx.key,
-  );
+  const spec = (rules.fields || {})[fieldKey] || (rules.fields || {})[ctx.key];
 
   const parts = [`**${fieldKey}**`];
-  if (rule) {
-    if (rule.description) parts.push("", rule.description);
-    if (rule.regex) parts.push("", `Regex: \`${rule.regex}\``);
-    if (rule.values) parts.push("", `Allowed: \`${rule.values.join("`, `")}\``);
-    if (rule.type) parts.push("", `Type: \`${rule.type}\``);
-    if (rule.min !== undefined) parts.push("", `Min: \`${rule.min}\``);
+  if (spec && typeof spec === "object") {
+    // Description primitive (metadata-only, never emits validation issues).
+    const desc = extractPrimitiveValue(spec, "description");
+    if (desc) parts.push("", desc);
+
+    const type = extractPrimitiveValue(spec, "type");
+    if (type) parts.push("", `Type: \`${type}\``);
+
+    const pattern = extractPrimitiveValue(spec, "pattern");
+    if (pattern) parts.push("", `Pattern: \`${pattern}\``);
+
+    const enumVal = extractPrimitiveValue(spec, "enum");
+    if (Array.isArray(enumVal)) parts.push("", `Allowed: \`${enumVal.join("`, `")}\``);
+
+    const min = extractPrimitiveValue(spec, "min");
+    if (min !== undefined && min !== null) parts.push("", `Min: \`${min}\``);
+
+    const max = extractPrimitiveValue(spec, "max");
+    if (max !== undefined && max !== null) parts.push("", `Max: \`${max}\``);
+
+    // Required — may be boolean shorthand or expanded { value, when }.
+    const req = extractPrimitiveValue(spec, "required");
+    if (req === true) parts.push("", "_Required field_");
   }
 
-  // Check if field is required
-  const isRequired = (rules.required_fields || []).includes(fieldKey)
-    || (rules.required_fields || []).includes(ctx.key);
-  if (isRequired) parts.push("", "_Required field_");
-
   return { contents: { kind: "markdown", value: parts.join("\n") } };
+}
+
+/**
+ * Extract the effective value of a primitive from a field spec.
+ *
+ * Handles both shorthand (`type: "string"`) and expanded form
+ * (`type: { value: "string", severity: "warning" }`).
+ *
+ * @param {object} fieldSpec - the field constraint object
+ * @param {string} primitiveName - the primitive key to extract
+ * @returns {*} the value, or undefined if absent
+ */
+function extractPrimitiveValue(fieldSpec, primitiveName) {
+  if (!(primitiveName in fieldSpec)) return undefined;
+  const raw = fieldSpec[primitiveName];
+  if (raw !== null && typeof raw === "object" && !Array.isArray(raw) && "value" in raw) {
+    return raw.value;
+  }
+  return raw;
 }
 
 async function hoverMarkdownLink(docUri, ctx) {

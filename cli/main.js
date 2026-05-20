@@ -105,7 +105,7 @@ manual install steps instead of silently failing.
 
 Scaffold a fresh vault skeleton:
   <dir>/.claude/vault-keeper.json   — minimal config (vaultRoot=notes)
-  <dir>/templates/note-template.md  — minimal template with validation_rules
+  <dir>/templates/note-template.md  — minimal template with fields schema
   <dir>/notes/note-001-hello.md     — sample conforming document
 
 Refuses to overwrite an existing non-empty <dir>. Pass --force to override.
@@ -349,23 +349,33 @@ const SCAFFOLD_VAULT_CONFIG = JSON.stringify(
 const SCAFFOLD_TEMPLATE = `---
 template_path: templates/note-template.md
 document_type: note
-validation_rules:
-  required_fields: [template, document_type, title, owner]
-  optional_fields: [tags]
-  field_rules:
-    - field: status
-      values: [draft, review, approved]
-  path_regex: "^notes/"
+fields:
+  template:
+    required: true
+  document_type:
+    required: true
+  title:
+    required: true
+    type: string
+  owner:
+    required: true
+    type: string
+  status:
+    type: string
+    enum: [draft, review, approved]
+  tags:
+    type: array
+  $path:
+    pattern: "^notes/"
 ---
 
 # Note template
 
-A minimal template for free-form notes. Edit \`validation_rules\` above to
-match your vault's authoring contract.
+A minimal template for free-form notes. Edit \`fields:\` above to match your
+vault's authoring contract.
 
 \`\`\`yaml section-rules
-relationships:
-  required: false
+required: false
 \`\`\`
 
 ## Relationships

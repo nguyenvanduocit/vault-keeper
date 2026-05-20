@@ -8,33 +8,31 @@
  * every keystroke. Cross-doc + on-save full-vault rules remain in the CLI
  * (`bun run validate`) — source of truth for CI gating.
  *
- * Issue shape: `{ level, field, message, fix }`. The line-mapper attaches a
- * 0-indexed `line` separately.
+ * Issue shape: `{ level, field, message, fix, error_type? }`. The
+ * line-mapper attaches a 0-indexed `line` separately.
  */
 
 import matter from "gray-matter";
-import { parseBody } from "../lib/body-parser.js";
 import { loadTemplateRules } from "../lib/template-rules.js";
+import { applyFieldSchema, applyBodySchema } from "../lib/schema-engine.js";
 import {
   validateTemplateField,
   validateTemplateMetaLeak,
   validateSlug,
   validatePaths,
   validateSectionRulesLeak,
-  applyRules,
   isTemplateFile,
 } from "../lib/validators.js";
 import { buildFrontmatterLineMap } from "./frontmatter-lines.js";
-import { loadTemplateSectionRules } from "../lib/template-section-rules.js";
 
 /**
  * Validate a single document buffer. Pure-ish: reads template file from disk
- * to load validation_rules (cached by `loadTemplateRules` internally), but
- * does NOT scan the vault.
+ * to load the schema (cached by `loadTemplateRules` internally), but does
+ * NOT scan the vault.
  *
  * @param {object} args
  * @param {string} args.text          - full raw markdown source (frontmatter + body)
- * @param {string} args.filepath      - repo-relative path (e.g. "product-knowledge/02-product/prds/foo.md")
+ * @param {string} args.filepath      - repo-relative path (e.g. "section/sub/foo.md")
  * @param {string} args.projectRoot   - absolute path to the vault repo root
  * @returns {Promise<{issues: Issue[], lineMap: LineMap, skipped: boolean}>}
  *
@@ -42,11 +40,11 @@ import { loadTemplateSectionRules } from "../lib/template-section-rules.js";
  *   - `line` is 0-indexed when known; missing means "frontmatter-wide" → line 0.
  *   - `level` is "error" | "warning".
  *   - `field` is the dot-path of the offending frontmatter key, or a synthetic
- *     tag (`filename`, `folder`, `body`, `relationships`) for non-FM issues.
+ *     tag (`filename`, `folder`, `body`) for non-FM issues.
  */
 export async function validateBuffer({ text, filepath, projectRoot }) {
-  // Templates themselves carry validation_rules and placeholder text — they
-  // are scaffold, not authored content. Skip cleanly so we don't surface
+  // Templates carry schema declarations and placeholder text — they are
+  // scaffold, not authored content. Skip cleanly so we don't surface
   // diagnostics inside templates/*.md (matches CLI behavior).
   if (isTemplateFile(filepath)) {
     return { issues: [], lineMap: buildFrontmatterLineMap(text), skipped: true };
@@ -89,61 +87,56 @@ export async function validateBuffer({ text, filepath, projectRoot }) {
   // Built-in `section-rules` fence leak. validateSectionRulesLeak returns a
   // body-relative `bodyLine` per offending block — translate it to a
   // document-absolute 0-indexed `line` so the editor squiggles the exact
-  // fence (mirrors the body-parser warning line mapping below).
+  // fence.
   for (const iss of validateSectionRulesLeak(body)) {
     issues.push({ ...iss, line: bodyLineToDocLine(text, iss.bodyLine) });
   }
 
-  // ── Template-driven rules ──────────────────────────────────────────────────
-  // loadTemplateRules touches disk (reads the template file) but it's a single
-  // small read, cached by the OS, ~1ms after first hit. Returns null when the
-  // template can't be resolved — file missing, malformed, or no rules block.
+  // ── Template-driven schema validation ─────────────────────────────────────
+  // loadTemplateRules touches disk (reads the template file) but it's a
+  // single small read, cached by the OS, ~1ms after first hit. Returns null
+  // when the template can't be resolved — file missing, malformed YAML.
   // Missing-template case is already covered by validateTemplateField above,
   // so we only synthesize an error here when fm.template IS set but loading
-  // failed. Rule-dependent validators are gated by `if (rules)` below.
+  // failed. Schema-dependent validators are gated by `if (rules)` below.
   let rules = null;
-  let sectionRules = {};
   if (fm.template) {
     rules = await loadTemplateRules(fm.template, projectRoot);
-    sectionRules = await loadTemplateSectionRules(fm.template, projectRoot);
   }
   if (!rules && fm.template) {
     issues.push({
       level: "error",
       field: "template",
-      message: `Cannot load validation_rules from template '${fm.template}' — file not found, malformed YAML, or missing validation_rules block`,
-      fix: `Verify '${fm.template}' exists (relative to repo root) and contains a 'validation_rules:' block in its frontmatter. See templates/README.md for the template registry.`,
+      message: `Cannot load schema from template '${fm.template}' — file not found or malformed YAML`,
+      fix: `Verify '${fm.template}' exists (relative to repo root) and contains valid frontmatter. See templates/README.md for the template registry.`,
     });
   }
-  const hasSectionRules = Object.keys(sectionRules).length > 0;
-  if (rules) {
-    issues.push(...applyRules(rules, fm, body, filepath));
-  }
 
-  // ── Body-format warnings ────────────────────────────────────────────────
-  // parseBody returns its own `warnings[]` with line numbers — we surface
-  // each as a diagnostic with field="body" and line attached.
-  try {
-    const parsed = await parseBody(body, { formatHints: hasSectionRules ? sectionRules : rules?.body_section_formats });
-    if (parsed && Array.isArray(parsed.warnings)) {
-      for (const w of parsed.warnings) {
+  if (rules) {
+    // Surface template meta-validation errors (spec §8) so malformed
+    // templates become visible at LSP time, not only in the CLI.
+    for (const te of rules.templateErrors || []) {
+      issues.push(te);
+    }
+
+    // Frontmatter field schema validation.
+    if (rules.fields) {
+      const docMeta = { repoRelativePath: filepath };
+      issues.push(...applyFieldSchema({ fields: rules.fields, strict: rules.strict }, fm, docMeta));
+    }
+
+    // Body schema validation.
+    if (Array.isArray(rules.bodySchema) && rules.bodySchema.length > 0) {
+      const bodyIssues = applyBodySchema(rules.bodySchema, body);
+      // Body issues carry 1-indexed body-relative `bodyLine` — translate
+      // each to a document-absolute 0-indexed `line`.
+      for (const bi of bodyIssues) {
         issues.push({
-          level: "warning",
-          field: "body",
-          message: w.message,
-          fix: w.fix || "Fix the format to match the expected pattern shown in the message",
-          // `parseBody` line numbers are relative to the body (1-indexed).
-          // Translate to document-absolute 0-indexed: bodyOffset + (w.line - 1).
-          line: bodyLineToDocLine(text, w.line),
-          // Preserve original metadata for callers that want to render `raw`.
-          _raw: w.raw,
-          _type: w.type,
+          ...bi,
+          line: bodyLineToDocLine(text, bi.bodyLine),
         });
       }
     }
-  } catch {
-    // Body parse failure already covered by frontmatter try/catch above for
-    // syntactically broken docs. Don't surface an extra warning.
   }
 
   return { issues, lineMap, skipped: false };

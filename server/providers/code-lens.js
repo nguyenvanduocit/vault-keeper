@@ -1,20 +1,22 @@
 /**
  * code-lens.js — LSP codeLensProvider for vault documents.
  *
- * Displays clickable action lines above specific heading/frontmatter positions:
- *   1. Above frontmatter `template:` line → backlink count, AC count, last-updated age
- *   2. Above `## Acceptance Criteria`     → "▶ Run test cases for all ACs"
- *   3. Above `## Ship Timeline`           → lock/unlock target date toggle
- *   4. Above `## Decision Log`            → "+ Add decision entry"
+ * Displays clickable action lines above specific frontmatter positions:
+ *   1. Above frontmatter `template:` line → backlink count + last-updated age
  *
  * Commands are client-side stubs — LSP surfaces them for discoverability;
  * the editor extension may handle or silently no-op them.
+ *
+ * NOTE: Domain-specific body lenses (Acceptance Criteria, Ship Timeline,
+ * Decision Log) were removed — they depended on the deleted domain-aware
+ * body parser. Generic body-schema validation is handled by the composable
+ * schema engine; lenses for template-declared body sections may be
+ * reintroduced in a future iteration via body-shapes.js.
  */
 
 import { fileURLToPath } from "node:url";
 import { relative, sep } from "node:path";
 import matter from "gray-matter";
-import { parseBody } from "../../lib/body-parser.js";
 import { loadVaultConfig } from "../../lib/vault-config.js";
 
 export const capability = { codeLensProvider: { resolveProvider: false } };
@@ -59,15 +61,13 @@ export function register({ connection, docs, vaultIndex, projectRoot }) {
       const text = doc.getText();
       const lines = text.split("\n");
 
-      // Strip frontmatter to get body for body-parser
-      let body = text;
+      // Find frontmatter bounds for gating the template lens
       let fmEndLine = -1;
       let fm = {};
       if (lines[0] === "---") {
         const closeIdx = lines.findIndex((l, i) => i > 0 && l === "---");
         if (closeIdx > 0) {
           fmEndLine = closeIdx;
-          body = lines.slice(closeIdx + 1).join("\n");
           try {
             const parsed = matter(text);
             fm = parsed.data || {};
@@ -76,8 +76,6 @@ export function register({ connection, docs, vaultIndex, projectRoot }) {
           }
         }
       }
-
-      const parsedBody = await parseBody(body);
 
       let absPath = null;
       if (vaultIndex && params.textDocument.uri.startsWith("file://")) {
@@ -89,12 +87,11 @@ export function register({ connection, docs, vaultIndex, projectRoot }) {
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 
-        // ── 1. Above `template:` frontmatter line ────────────────────────────
+        // ── Above `template:` frontmatter line ──────────────────────────────
         if (i > 0 && i <= fmEndLine && /^template:\s*/.test(line)) {
           const backlinkCount = (absPath && vaultIndex)
             ? vaultIndex.getBacklinks(absPath).length
             : 0;
-          const acCount = parsedBody.acceptanceCriteria.length;
 
           // Days since last-updated (from fm.updated_at or fm.updated)
           let daysAgo = null;
@@ -109,7 +106,6 @@ export function register({ connection, docs, vaultIndex, projectRoot }) {
           const agePart = daysAgo !== null ? `⏱ updated ${daysAgo}d ago` : null;
           const titleParts = [
             `↗ ${backlinkCount} backlinks`,
-            `⬆ ${acCount} acceptance criteria`,
             agePart,
           ].filter(Boolean);
 
@@ -121,47 +117,6 @@ export function register({ connection, docs, vaultIndex, projectRoot }) {
               arguments: [params.textDocument.uri],
             },
           });
-          continue;
-        }
-
-        // ── 2. Above `## Acceptance Criteria` ───────────────────────────────
-        if (/^## Acceptance Criteria\s*$/.test(line)) {
-          lenses.push({
-            range: zeroRange(i),
-            command: {
-              title: "▶ Run test cases for all ACs",
-              command: "vault-keeper.runTestsForDoc",
-              arguments: [params.textDocument.uri],
-            },
-          });
-          continue;
-        }
-
-        // ── 3. Above `## Ship Timeline` ──────────────────────────────────────
-        if (/^## Ship Timeline\s*$/.test(line)) {
-          const locked = Boolean(parsedBody.shipTimeline?.locked_at);
-          lenses.push({
-            range: zeroRange(i),
-            command: {
-              title: locked ? "🔓 Unlock target" : "🔒 Lock target date",
-              command: "vault-keeper.toggleShipTimelineLock",
-              arguments: [params.textDocument.uri],
-            },
-          });
-          continue;
-        }
-
-        // ── 4. Above `## Decision Log` ───────────────────────────────────────
-        if (/^## Decision Log\s*$/.test(line)) {
-          lenses.push({
-            range: zeroRange(i),
-            command: {
-              title: "+ Add decision entry",
-              command: "vault-keeper.addDecision",
-              arguments: [params.textDocument.uri],
-            },
-          });
-          continue;
         }
       }
 

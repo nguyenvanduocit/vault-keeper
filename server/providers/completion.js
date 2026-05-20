@@ -2,13 +2,10 @@
  * completion.js — LSP completionProvider for the vault.
  *
  * Provides context-aware completions for:
- *   1. Predicate names  — after `**` in body bullet lines (typed edges)
- *   2. Markdown link paths — after `](` in body
- *   3. AC anchor IDs — after `#` inside `](path#`
- *   4. Status enums — after `status:` in frontmatter
- *   5. Phase enums — after `phase:` in frontmatter
- *   6. Person @handles — after `@` in body
- *   7. Template paths — after `template:` in frontmatter
+ *   1. Markdown link paths — after `](` in body
+ *   2. Heading anchor IDs — after `#` inside `](path#`
+ *   3. Enum values — after any frontmatter key whose template schema declares `enum`
+ *   4. Template paths — after `template:` in frontmatter
  *
  * NOTE: `getPositionContext` from position-context.js is designed for hover/
  * definition (complete closed tokens). For completion triggers the token is
@@ -28,7 +25,7 @@ import { loadVaultConfig } from "../../lib/vault-config.js";
 
 export const capability = {
   completionProvider: {
-    triggerCharacters: ["*", "@", "#", "(", "/", ":"],
+    triggerCharacters: ["*", "#", "(", "/", ":"],
     resolveProvider: false,
   },
 };
@@ -81,31 +78,23 @@ async function computeCompletions(params, { docs, vaultIndex, projectRoot }) {
     return completionsForLinkPath(typed, params.textDocument.uri, vaultIndex, projectRoot);
   }
 
-  // Person handle: `@` (may have partial handle after it)
-  const handleM = prefix.match(/(?:^|\s)@([a-zA-Z0-9_-]*)$/);
-  if (handleM) {
-    const typed = handleM[1];
-    return completionsForHandle(typed, projectRoot);
-  }
-
   // Frontmatter key-value: use getPositionContext for reliable frontmatter detection
   const ctx = getPositionContext(text, position);
   if (ctx.type === "frontmatter-key") {
     const key = ctx.key;
-    if (key === "status") return completionsForEnum("status", text, projectRoot);
-    if (key === "phase") return completionsForEnum("phase", text, projectRoot);
     if (key === "template") return completionsForTemplate(projectRoot);
-    return [];
+    // Generic enum completion — any field with an `enum` constraint gets completions.
+    return completionsForEnum(key, text, projectRoot);
   }
 
-  // Also detect value side of frontmatter key: `status: ` (cursor on value part)
-  const fmValueM = prefix.match(/^(status|phase|template):\s*['"]?([^'"]*)?$/);
+  // Also detect value side of frontmatter key (cursor on value part).
+  // Match any key, not just hardcoded names — the template schema declares
+  // which fields have enum constraints.
+  const fmValueM = prefix.match(/^([a-zA-Z_][a-zA-Z0-9_]*):\s*['"]?([^'"]*)?$/);
   if (fmValueM && isInFrontmatter(lines, lineIdx)) {
     const key = fmValueM[1];
-    if (key === "status") return completionsForEnum("status", text, projectRoot);
-    if (key === "phase") return completionsForEnum("phase", text, projectRoot);
     if (key === "template") return completionsForTemplate(projectRoot);
-    return [];
+    return completionsForEnum(key, text, projectRoot);
   }
 
   return [];
@@ -217,52 +206,32 @@ async function completionsForAnchor(targetRawPath, docUri, vaultIndex, projectRo
 }
 
 /**
- * Status or phase enum completions from template's field_rules.
+ * Enum completions for any frontmatter field whose template schema declares
+ * an `enum` constraint. Handles both shorthand (`enum: [a, b]`) and
+ * expanded form (`enum: { value: [a, b], severity: "warning" }`).
  */
 async function completionsForEnum(fieldName, docText, projectRoot) {
   if (!projectRoot) return [];
 
   const rules = await getDocTemplateRules(docText, projectRoot);
-  if (!rules) return [];
+  if (!rules || !rules.fields) return [];
 
-  const fieldRule = (rules.field_rules || []).find((r) => r.field === fieldName);
-  if (!fieldRule || !Array.isArray(fieldRule.values)) return [];
+  const spec = rules.fields[fieldName];
+  if (!spec || typeof spec !== "object") return [];
 
-  return fieldRule.values.map((val) => ({
-    label: val,
+  // Extract enum values — handle shorthand and expanded form.
+  let values = spec.enum;
+  if (values && typeof values === "object" && !Array.isArray(values) && "value" in values) {
+    values = values.value;
+  }
+  if (!Array.isArray(values)) return [];
+
+  return values.map((val) => ({
+    label: String(val),
     kind: CompletionItemKind.EnumMember,
     detail: fieldName,
-    insertText: val,
+    insertText: String(val),
   }));
-}
-
-/**
- * Person @handle completions — filenames in product-data/people/*.md.
- */
-async function completionsForHandle(typed, projectRoot) {
-  if (!projectRoot) return [];
-
-  let files;
-  try {
-    files = await glob("product-data/people/*.md", { cwd: projectRoot });
-  } catch {
-    return [];
-  }
-
-  const typedLower = typed.toLowerCase();
-  const items = [];
-  for (const f of files) {
-    const handle = basename(f, ".md");
-    if (typedLower && !handle.toLowerCase().startsWith(typedLower)) continue;
-    items.push({
-      label: `@${handle}`,
-      kind: CompletionItemKind.Variable, // CompletionItemKind.User is not in vscode-languageserver v9
-      detail: "person",
-      insertText: `@${handle}`,
-    });
-  }
-
-  return items;
 }
 
 /**

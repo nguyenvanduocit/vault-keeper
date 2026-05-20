@@ -1075,8 +1075,8 @@ var require_semaphore = __commonJS({
         this._waiting = [];
       }
       lock(thunk) {
-        return new Promise((resolve7, reject) => {
-          this._waiting.push({ thunk, resolve: resolve7, reject });
+        return new Promise((resolve6, reject) => {
+          this._waiting.push({ thunk, resolve: resolve6, reject });
           this.runNext();
         });
       }
@@ -2566,9 +2566,9 @@ ${JSON.stringify(message, null, 4)}`);
           if (typeof cancellationStrategy.sender.enableCancellation === "function") {
             cancellationStrategy.sender.enableCancellation(requestMessage);
           }
-          return new Promise(async (resolve7, reject) => {
+          return new Promise(async (resolve6, reject) => {
             const resolveWithCleanup = (r) => {
-              resolve7(r);
+              resolve6(r);
               cancellationStrategy.sender.cleanup(id);
               disposable?.dispose();
             };
@@ -2979,10 +2979,10 @@ var require_ril = __commonJS({
         return api_1.Disposable.create(() => this.stream.off("end", listener));
       }
       write(data, encoding) {
-        return new Promise((resolve7, reject) => {
+        return new Promise((resolve6, reject) => {
           const callback = (error) => {
             if (error === void 0 || error === null) {
-              resolve7();
+              resolve6();
             } else {
               reject(error);
             }
@@ -3234,10 +3234,10 @@ var require_main = __commonJS({
     exports2.generateRandomPipeName = generateRandomPipeName;
     function createClientPipeTransport(pipeName, encoding = "utf-8") {
       let connectResolve;
-      const connected = new Promise((resolve7, _reject) => {
-        connectResolve = resolve7;
+      const connected = new Promise((resolve6, _reject) => {
+        connectResolve = resolve6;
       });
-      return new Promise((resolve7, reject) => {
+      return new Promise((resolve6, reject) => {
         let server = (0, net_1.createServer)((socket) => {
           server.close();
           connectResolve([
@@ -3248,7 +3248,7 @@ var require_main = __commonJS({
         server.on("error", reject);
         server.listen(pipeName, () => {
           server.removeListener("error", reject);
-          resolve7({
+          resolve6({
             onConnected: () => {
               return connected;
             }
@@ -3267,10 +3267,10 @@ var require_main = __commonJS({
     exports2.createServerPipeTransport = createServerPipeTransport;
     function createClientSocketTransport(port, encoding = "utf-8") {
       let connectResolve;
-      const connected = new Promise((resolve7, _reject) => {
-        connectResolve = resolve7;
+      const connected = new Promise((resolve6, _reject) => {
+        connectResolve = resolve6;
       });
-      return new Promise((resolve7, reject) => {
+      return new Promise((resolve6, reject) => {
         const server = (0, net_1.createServer)((socket) => {
           server.close();
           connectResolve([
@@ -3281,7 +3281,7 @@ var require_main = __commonJS({
         server.on("error", reject);
         server.listen(port, "127.0.0.1", () => {
           server.removeListener("error", reject);
-          resolve7({
+          resolve6({
             onConnected: () => {
               return connected;
             }
@@ -6433,13 +6433,13 @@ var require_uuid = __commonJS({
       return _UUIDPattern.test(value);
     }
     exports2.isUUID = isUUID;
-    function parse3(value) {
+    function parse4(value) {
       if (!isUUID(value)) {
         throw new Error("invalid uuid");
       }
       return new ValueUUID(value);
     }
-    exports2.parse = parse3;
+    exports2.parse = parse4;
     function generateUuid() {
       return v4().asHex();
     }
@@ -8067,8 +8067,8 @@ var require_server = __commonJS({
         if (value instanceof Promise) {
           return value;
         } else if (Is.thenable(value)) {
-          return new Promise((resolve7, reject) => {
-            value.then((resolved) => resolve7(resolved), (error) => reject(error));
+          return new Promise((resolve6, reject) => {
+            value.then((resolved) => resolve6(resolved), (error) => reject(error));
           });
         } else {
           return Promise.resolve(value);
@@ -8338,7 +8338,7 @@ var require_files = __commonJS({
     function isWindows() {
       return process.platform === "win32";
     }
-    function resolve7(moduleName, nodePath, cwd, tracer) {
+    function resolve6(moduleName, nodePath, cwd, tracer) {
       const nodePathKey = "NODE_PATH";
       const app = [
         "var p = process;",
@@ -8357,7 +8357,7 @@ var require_files = __commonJS({
         "}",
         "});"
       ].join("");
-      return new Promise((resolve8, reject) => {
+      return new Promise((resolve7, reject) => {
         let env = process.env;
         let newEnv = /* @__PURE__ */ Object.create(null);
         Object.keys(env).forEach((key) => newEnv[key] = env[key]);
@@ -8389,7 +8389,7 @@ var require_files = __commonJS({
             if (message2.c === "r") {
               cp.send({ c: "e" });
               if (message2.s) {
-                resolve8(message2.r);
+                resolve7(message2.r);
               } else {
                 reject(new Error(`Failed to resolve module: ${moduleName}`));
               }
@@ -8405,7 +8405,7 @@ var require_files = __commonJS({
         }
       });
     }
-    exports2.resolve = resolve7;
+    exports2.resolve = resolve6;
     function resolveGlobalNodePath(tracer) {
       let npmCommand = "npm";
       const env = /* @__PURE__ */ Object.create(null);
@@ -8520,17 +8520,17 @@ var require_files = __commonJS({
         if (!path3.isAbsolute(nodePath)) {
           nodePath = path3.join(workspaceRoot, nodePath);
         }
-        return resolve7(moduleName, nodePath, nodePath, tracer).then((value) => {
+        return resolve6(moduleName, nodePath, nodePath, tracer).then((value) => {
           if (FileSystem.isParent(nodePath, value)) {
             return value;
           } else {
             return Promise.reject(new Error(`Failed to load ${moduleName} from node path location.`));
           }
         }).then(void 0, (_error) => {
-          return resolve7(moduleName, resolveGlobalNodePath(tracer), workspaceRoot, tracer);
+          return resolve6(moduleName, resolveGlobalNodePath(tracer), workspaceRoot, tracer);
         });
       } else {
-        return resolve7(moduleName, resolveGlobalNodePath(tracer), workspaceRoot, tracer);
+        return resolve6(moduleName, resolveGlobalNodePath(tracer), workspaceRoot, tracer);
       }
     }
     exports2.resolveModulePath = resolveModulePath;
@@ -12150,10 +12150,10 @@ var require_stringify = __commonJS({
       data = Object.assign({}, file.data, data);
       const open = opts.delimiters[0];
       const close = opts.delimiters[1];
-      const matter8 = engine.stringify(data, options2).trim();
+      const matter7 = engine.stringify(data, options2).trim();
       let buf = "";
-      if (matter8 !== "{}") {
-        buf = newline(open) + newline(matter8) + newline(close);
+      if (matter7 !== "{}") {
+        buf = newline(open) + newline(matter7) + newline(close);
       }
       if (typeof file.excerpt === "string" && file.excerpt !== "") {
         if (str3.indexOf(file.excerpt.trim()) === -1) {
@@ -12257,21 +12257,21 @@ var require_gray_matter = __commonJS({
     var excerpt = require_excerpt();
     var engines2 = require_engines();
     var toFile = require_to_file();
-    var parse3 = require_parse();
+    var parse4 = require_parse();
     var utils = require_utils();
-    function matter8(input, options2) {
+    function matter7(input, options2) {
       if (input === "") {
         return { data: {}, content: input, excerpt: "", orig: input };
       }
       let file = toFile(input);
-      const cached = matter8.cache[file.content];
+      const cached = matter7.cache[file.content];
       if (!options2) {
         if (cached) {
           file = Object.assign({}, cached);
           file.orig = cached.orig;
           return file;
         }
-        matter8.cache[file.content] = file;
+        matter7.cache[file.content] = file;
       }
       return parseMatter(file, options2);
     }
@@ -12293,7 +12293,7 @@ var require_gray_matter = __commonJS({
       }
       str3 = str3.slice(openLen);
       const len = str3.length;
-      const language = matter8.language(str3, opts);
+      const language = matter7.language(str3, opts);
       if (language.name) {
         file.language = language.name;
         str3 = str3.slice(language.raw.length);
@@ -12309,7 +12309,7 @@ var require_gray_matter = __commonJS({
         file.empty = file.content;
         file.data = {};
       } else {
-        file.data = parse3(file.language, file.matter, opts);
+        file.data = parse4(file.language, file.matter, opts);
       }
       if (closeIndex === len) {
         file.content = "";
@@ -12328,24 +12328,24 @@ var require_gray_matter = __commonJS({
       }
       return file;
     }
-    matter8.engines = engines2;
-    matter8.stringify = function(file, data, options2) {
-      if (typeof file === "string") file = matter8(file, options2);
+    matter7.engines = engines2;
+    matter7.stringify = function(file, data, options2) {
+      if (typeof file === "string") file = matter7(file, options2);
       return stringify(file, data, options2);
     };
-    matter8.read = function(filepath, options2) {
+    matter7.read = function(filepath, options2) {
       const str3 = fs.readFileSync(filepath, "utf8");
-      const file = matter8(str3, options2);
+      const file = matter7(str3, options2);
       file.path = filepath;
       return file;
     };
-    matter8.test = function(str3, options2) {
+    matter7.test = function(str3, options2) {
       return utils.startsWith(str3, defaults2(options2).delimiters[0]);
     };
-    matter8.language = function(str3, options2) {
+    matter7.language = function(str3, options2) {
       const opts = defaults2(options2);
       const open = opts.delimiters[0];
-      if (matter8.test(str3)) {
+      if (matter7.test(str3)) {
         str3 = str3.slice(open.length);
       }
       const language = str3.slice(0, str3.search(/\r?\n/));
@@ -12354,11 +12354,11 @@ var require_gray_matter = __commonJS({
         name: language ? language.trim() : ""
       };
     };
-    matter8.cache = {};
-    matter8.clearCache = function() {
-      matter8.cache = {};
+    matter7.cache = {};
+    matter7.clearCache = function() {
+      matter7.cache = {};
     };
-    module2.exports = matter8;
+    module2.exports = matter7;
   }
 });
 
@@ -18854,7 +18854,7 @@ var require_parser = __commonJS({
         }
       }
     }
-    var Parser2 = class {
+    var Parser3 = class {
       /**
        * @param onNewLine - If defined, called separately with the start position of
        *   each new line (in `parse()`, including the start of input).
@@ -19627,7 +19627,7 @@ var require_parser = __commonJS({
         }
       }
     };
-    exports2.Parser = Parser2;
+    exports2.Parser = Parser3;
   }
 });
 
@@ -19641,7 +19641,7 @@ var require_public_api = __commonJS({
     var log = require_log();
     var identity = require_identity();
     var lineCounter = require_line_counter();
-    var parser = require_parser();
+    var parser2 = require_parser();
     function parseOptions(options2) {
       const prettyErrors = options2.prettyErrors !== false;
       const lineCounter$1 = options2.lineCounter || prettyErrors && new lineCounter.LineCounter() || null;
@@ -19649,7 +19649,7 @@ var require_public_api = __commonJS({
     }
     function parseAllDocuments(source, options2 = {}) {
       const { lineCounter: lineCounter2, prettyErrors } = parseOptions(options2);
-      const parser$1 = new parser.Parser(lineCounter2?.addNewLine);
+      const parser$1 = new parser2.Parser(lineCounter2?.addNewLine);
       const composer$1 = new composer.Composer(options2);
       const docs2 = Array.from(composer$1.compose(parser$1.parse(source)));
       if (prettyErrors && lineCounter2)
@@ -19663,7 +19663,7 @@ var require_public_api = __commonJS({
     }
     function parseDocument2(source, options2 = {}) {
       const { lineCounter: lineCounter2, prettyErrors } = parseOptions(options2);
-      const parser$1 = new parser.Parser(lineCounter2?.addNewLine);
+      const parser$1 = new parser2.Parser(lineCounter2?.addNewLine);
       const composer$1 = new composer.Composer(options2);
       let doc = null;
       for (const _doc of composer$1.compose(parser$1.parse(source), true, source.length)) {
@@ -19680,7 +19680,7 @@ var require_public_api = __commonJS({
       }
       return doc;
     }
-    function parse3(src, reviver, options2) {
+    function parse4(src, reviver, options2) {
       let _reviver = void 0;
       if (typeof reviver === "function") {
         _reviver = reviver;
@@ -19721,7 +19721,7 @@ var require_public_api = __commonJS({
         return value.toString(options2);
       return new Document.Document(value, _replacer, options2).toString(options2);
     }
-    exports2.parse = parse3;
+    exports2.parse = parse4;
     exports2.parseAllDocuments = parseAllDocuments;
     exports2.parseDocument = parseDocument2;
     exports2.stringify = stringify;
@@ -19745,7 +19745,7 @@ var require_dist = __commonJS({
     var cst = require_cst();
     var lexer = require_lexer();
     var lineCounter = require_line_counter();
-    var parser = require_parser();
+    var parser2 = require_parser();
     var publicApi = require_public_api();
     var visit2 = require_visit();
     exports2.Composer = composer.Composer;
@@ -19770,7 +19770,7 @@ var require_dist = __commonJS({
     exports2.CST = cst;
     exports2.Lexer = lexer.Lexer;
     exports2.LineCounter = lineCounter.LineCounter;
-    exports2.Parser = parser.Parser;
+    exports2.Parser = parser2.Parser;
     exports2.parse = publicApi.parse;
     exports2.parseAllDocuments = publicApi.parseAllDocuments;
     exports2.parseDocument = publicApi.parseDocument;
@@ -20225,6 +20225,11 @@ var import_node_fs3 = require("node:fs");
 // server/validator.js
 var import_gray_matter3 = __toESM(require_gray_matter(), 1);
 
+// lib/template-rules.js
+var import_promises = require("fs/promises");
+var import_path = require("path");
+var import_gray_matter2 = __toESM(require_gray_matter(), 1);
+
 // node_modules/bail/index.js
 function bail(error) {
   if (error) {
@@ -20624,9 +20629,9 @@ var VFile = class {
    * @returns {undefined}
    *   Nothing.
    */
-  set dirname(dirname8) {
+  set dirname(dirname7) {
     assertPath(this.basename, "dirname");
-    this.path = import_node_path.default.join(dirname8 || "", this.basename);
+    this.path = import_node_path.default.join(dirname7 || "", this.basename);
   }
   /**
    * Get the extname (including dot) (example: `'.js'`).
@@ -21173,9 +21178,9 @@ var Processor = class _Processor extends CallableInstance {
   parse(file) {
     this.freeze();
     const realFile = vfile(file);
-    const parser = this.parser || this.Parser;
-    assertParser("parse", parser);
-    return parser(String(realFile), realFile);
+    const parser2 = this.parser || this.Parser;
+    assertParser("parse", parser2);
+    return parser2(String(realFile), realFile);
   }
   /**
    * Process the given file as configured on the processor.
@@ -21225,7 +21230,7 @@ var Processor = class _Processor extends CallableInstance {
     assertParser("process", this.parser || this.Parser);
     assertCompiler("process", this.compiler || this.Compiler);
     return done ? executor(void 0, done) : new Promise(executor);
-    function executor(resolve7, reject) {
+    function executor(resolve6, reject) {
       const realFile = vfile(file);
       const parseTree = (
         /** @type {HeadTree extends undefined ? Node : HeadTree} */
@@ -21256,8 +21261,8 @@ var Processor = class _Processor extends CallableInstance {
       function realDone(error, file2) {
         if (error || !file2) {
           reject(error);
-        } else if (resolve7) {
-          resolve7(file2);
+        } else if (resolve6) {
+          resolve6(file2);
         } else {
           ok(done, "`done` is defined if `resolve` is not");
           done(void 0, file2);
@@ -21359,7 +21364,7 @@ var Processor = class _Processor extends CallableInstance {
       file = void 0;
     }
     return done ? executor(void 0, done) : new Promise(executor);
-    function executor(resolve7, reject) {
+    function executor(resolve6, reject) {
       ok(
         typeof file !== "function",
         "`file` can\u2019t be a `done` anymore, we checked"
@@ -21373,8 +21378,8 @@ var Processor = class _Processor extends CallableInstance {
         );
         if (error) {
           reject(error);
-        } else if (resolve7) {
-          resolve7(resultingTree);
+        } else if (resolve6) {
+          resolve6(resultingTree);
         } else {
           ok(done, "`done` is defined if `resolve` is not");
           done(void 0, resultingTree, file2);
@@ -24202,10 +24207,10 @@ function resolveAll(constructs2, events, context) {
   const called = [];
   let index2 = -1;
   while (++index2 < constructs2.length) {
-    const resolve7 = constructs2[index2].resolveAll;
-    if (resolve7 && !called.includes(resolve7)) {
-      events = resolve7(events, context);
-      called.push(resolve7);
+    const resolve6 = constructs2[index2].resolveAll;
+    if (resolve6 && !called.includes(resolve6)) {
+      events = resolve6(events, context);
+      called.push(resolve6);
     }
   }
   return events;
@@ -27378,7 +27383,7 @@ var disable = {
 };
 
 // node_modules/micromark/lib/create-tokenizer.js
-function createTokenizer(parser, initialize, from) {
+function createTokenizer(parser2, initialize, from) {
   let point3 = {
     _bufferIndex: -1,
     _index: 0,
@@ -27407,7 +27412,7 @@ function createTokenizer(parser, initialize, from) {
     defineSkip,
     events: [],
     now,
-    parser,
+    parser: parser2,
     previous: null,
     sliceSerialize,
     sliceStream,
@@ -27707,7 +27712,7 @@ function parse2(options2) {
     /** @type {FullNormalizedExtension} */
     combineExtensions([constructs_exports, ...settings.extensions || []])
   );
-  const parser = {
+  const parser2 = {
     constructs: constructs2,
     content: create(content),
     defined: [],
@@ -27717,11 +27722,11 @@ function parse2(options2) {
     string: create(string),
     text: create(text)
   };
-  return parser;
+  return parser2;
   function create(initial) {
     return creator;
     function creator(from) {
-      return createTokenizer(parser, initial, from);
+      return createTokenizer(parser2, initial, from);
     }
   }
 }
@@ -28542,8 +28547,8 @@ function defaultOnError(left, right) {
 // node_modules/remark-parse/lib/index.js
 function remarkParse(options2) {
   const self = this;
-  self.parser = parser;
-  function parser(doc) {
+  self.parser = parser2;
+  function parser2(doc) {
     return fromMarkdown(doc, {
       ...self.data("settings"),
       ...options2,
@@ -31809,880 +31814,92 @@ function remarkGfm(options2) {
   toMarkdownExtensions.push(gfmToMarkdown(settings));
 }
 
-// lib/body-parser.js
-function _normalize(text5) {
-  return text5.replace(/\s+/g, " ").replace(/[–—]/g, "\u2014").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').trim();
-}
-var RELATIONSHIP_RE = /^- \[(?<title>[^\]]+)\]\((?<path>[^)]+)\)(?:\s*—\s*\*(?<reason>[^*]+)\*)?\s*$/;
-var AC_HEADING_RE = /^### (?<id>AC\d+(?:\.\d+)?) — (?<text>.+?) — `(?<priority>[a-z]+)` · `(?<status>[a-z]+)`(?:\s*\((?<flag>[^)]+)\))?\s*$/;
-var AC_SIGNOFF_RE = /^> \*\*Sign-off\*\*:\s*(?<signoff>[^·]+?)\s*·\s*\*\*Measurable\*\*:\s*(?<measurable>yes|no)\s*$/;
-var AC_IMPL_RE = /^\[(?<title>[^\]]+)\]\((?<path>[^)]+)\)\s*—\s*coverage:\s*(?<coverage>full|partial)\s*$/;
-var AC_VERIFY_RE = /^\[(?<title>[^\]]+)\]\((?<path>[^)]+)\)(?:\s*—\s*verified\s+(?<verifiedAt>\d{4}-\d{2}-\d{2})\s+by\s+\[(?<verifiedBy>@[\w-]+)\]\([^)]+\))?(?:\s*—\s*method:\s*(?<method>automated|manual|sign-off))?\s*$/;
-var USER_STORY_RE = /^- \[(?<title>[^\]]+)\]\((?<path>[^)]+)\)(?:\s*—\s*\*(?<reason>[^*]+)\*)?\s*$/;
-var CONTRIBUTION_LOG_RE = /^- (?<at>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?Z?)\s*—\s*\[(?<personHandle>@[\w-]+)\]\([^)]+\)\s+\*\*(?<role>\w+)\*\*(?:\s*\((?<extra>[^)]+)\))?\s*$/;
-var CONTRIBUTION_LINE_RE = /^\*\*(?<role>[a-z_-]+)\*\* · (?<person>@[a-z0-9-]+) · (?<at>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z) · sections: `(?<sections>[^`]+)` · effort: `(?<effort>[a-z-]+)`(?:\s*·\s*decision:\s*`(?<decision>[a-z_-]+)`)?(?:\s*·\s*artifact:\s*\[(?<artifact_label>[^\]]+)\]\((?<artifact_url>[^)]+)\))?(?:\s*·\s*note:\s*(?<note>.+))?$/;
-var SHIP_HEADER_RE = /^\*\*Target ship date\*\*:\s*(?<date>\d{4}-\d{2}-\d{2})\s*·\s*Locked at:\s*(?<locked_at>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)\s*·\s*Locked by:\s*(?<locked_by>@[\w-]+)\s*$/;
-var SHIP_BETTING_RE = /^\*\*Betting window\*\*:\s*(?<window_days>\d+)\s*days\s*\(auto\)\s*·\s*Ends at:\s*(?<ends_at>\d{4}-\d{2}-\d{2})\s*$/;
-var SECTION_HANDLERS = {
-  relationships: "_parseRelationshipsSection",
-  "acceptance criteria": "_parseAcceptanceCriteriaSection",
-  "user stories": "_parseUserStoriesSection",
-  "contribution log": "_parseContributionLogSection",
-  "status history": "_parseStatusHistory",
-  "phase history": "_parsePhaseHistory",
-  "blocked history": "_parseBlockedHistory",
-  "rice score": "_parseRiceScore",
-  "ship timeline": "_parseShipTimeline",
-  contributions: "_parseContributions",
-  "success metric verdict": "_parseSuccessMetricVerdict",
-  "data sources": "_parseDataSources"
-};
-var STATUS_HISTORY_HEADER = ["at", "from", "to", "by", "note"];
-var PHASE_HISTORY_HEADER = ["at", "from phase", "to phase", "by", "note"];
-var BLOCKED_HISTORY_HEADER = ["from", "to", "reason", "by"];
-var STATUS_HISTORY_HEADER_LEGACY = ["at (utc)", "from", "to", "by", "note"];
-var PHASE_HISTORY_HEADER_LEGACY = ["at (utc)", "from phase", "to phase", "by", "note"];
-var BLOCKED_HISTORY_HEADER_LEGACY = ["from (utc)", "to (utc)", "reason", "by"];
-var RICE_DIMS_ORDER = ["reach", "impact", "confidence", "effort", "score"];
-async function parseBody(markdownContent, options2 = {}) {
-  const result = {
-    relationships: [],
-    acceptanceCriteria: [],
-    userStories: [],
-    contributionLog: [],
-    statusHistory: [],
-    phaseHistory: [],
-    blockedHistory: [],
-    riceScore: null,
-    shipTimeline: null,
-    contributions: [],
-    successMetricVerdict: null,
-    dataSources: null,
-    derived: {
-      approved_at: null,
-      in_progress_at: null,
-      shipped_at: null,
-      started_at: null,
-      completed_at: null,
-      done_at: null
-    },
-    warnings: []
-  };
-  if (typeof markdownContent !== "string" || markdownContent.length === 0) {
-    return result;
-  }
-  const hints = options2.formatHints || {};
-  let tree;
-  try {
-    tree = unified().use(remarkParse).use(remarkGfm).parse(markdownContent);
-  } catch (err) {
-    result.warnings.push({
-      line: 1,
-      type: "ast-parse-error",
-      message: `failed to parse markdown AST: ${err?.message || String(err)}`,
-      fix: "Fix markdown syntax errors in the document body"
-    });
-    return result;
-  }
-  const lines = markdownContent.split("\n");
-  const seenSections = /* @__PURE__ */ new Set();
-  const children = Array.isArray(tree?.children) ? tree.children : [];
-  for (let i = 0; i < children.length; i++) {
-    const node2 = children[i];
-    if (node2.type !== "heading" || node2.depth !== 2) continue;
-    const headingText = _textContent(node2).trim().toLowerCase();
-    const handlerName = SECTION_HANDLERS[headingText];
-    if (!handlerName) continue;
-    if (seenSections.has(headingText)) {
-      result.warnings.push({
-        line: node2.position?.start?.line ?? 0,
-        type: "duplicate-section",
-        message: `Multiple ## ${_textContent(node2).trim()} sections \u2014 edges appended; consider consolidating.`,
-        fix: "Merge the duplicate sections into one"
-      });
-    }
-    seenSections.add(headingText);
-    const subtree = [];
-    for (let j = i + 1; j < children.length; j++) {
-      const next = children[j];
-      if (next.type === "heading" && next.depth === 2) break;
-      subtree.push(next);
-    }
-    try {
-      const handlers = {
-        _parseRelationshipsSection,
-        _parseAcceptanceCriteriaSection,
-        _parseUserStoriesSection,
-        _parseContributionLogSection,
-        _parseStatusHistory,
-        _parsePhaseHistory,
-        _parseBlockedHistory,
-        _parseRiceScore,
-        _parseShipTimeline,
-        _parseContributions,
-        _parseSuccessMetricVerdict,
-        _parseDataSources
-      };
-      handlers[handlerName](subtree, lines, result, hints);
-    } catch (err) {
-      result.warnings.push({
-        line: node2.position?.start?.line ?? 0,
-        type: "section-parse-error",
-        message: `unexpected error parsing ## ${headingText}: ${err?.message || String(err)}`,
-        fix: "Fix the section content so it can be parsed"
-      });
-    }
-  }
-  _computeDerived(result);
-  return result;
-}
-function _parseRelationshipsSection(subtree, lines, result, hints = {}) {
-  const rh = hints.relationships || {};
-  const fmt = rh.format || "- [<title>](<path>) [\u2014 *<reason>*]";
-  const ex = rh.example || "- [Title](./path.md) \u2014 *reason*";
-  for (const node2 of subtree) {
-    if (node2.type !== "list") continue;
-    const items = Array.isArray(node2.children) ? node2.children : [];
-    for (const item of items) {
-      const startLine = item.position?.start?.line;
-      if (!startLine) continue;
-      const raw = lines[startLine - 1] ?? "";
-      const normalized = _normalize(raw);
-      const m = normalized.match(RELATIONSHIP_RE);
-      if (!m) {
-        result.warnings.push({
-          line: startLine,
-          type: "unparseable-relationship-line",
-          message: `Relationship bullet does not match expected format: \`${fmt}\``,
-          fix: `Rewrite as: \`${ex}\``,
-          raw
-        });
-        continue;
-      }
-      const rawPath = m.groups.path;
-      const hashIdx = rawPath.indexOf("#");
-      const anchor = hashIdx >= 0 ? rawPath.slice(hashIdx + 1) : null;
-      const path3 = hashIdx >= 0 ? rawPath.slice(0, hashIdx) : rawPath;
-      result.relationships.push({
-        title: m.groups.title,
-        path: path3,
-        anchor,
-        reason: m.groups.reason ?? null,
-        line: startLine
-      });
-    }
-  }
-}
-function _parseAcceptanceCriteriaSection(subtree, lines, result, hints = {}) {
-  const groups = [];
-  let current = null;
-  for (const node2 of subtree) {
-    if (node2.type === "heading" && node2.depth === 3) {
-      if (current) groups.push(current);
-      current = { heading: node2, body: [] };
-    } else if (current) {
-      current.body.push(node2);
-    }
-  }
-  if (current) groups.push(current);
-  for (const group of groups) {
-    _parseSingleAC(group, lines, result, hints);
-  }
-}
-function _parseSingleAC(group, lines, result, hints = {}) {
-  const ah = hints.acceptance_criteria || {};
-  const headingFmt = ah.heading_format || "### AC<n>[.<m>] \u2014 <text> \u2014 `<priority>` \xB7 `<status>` [(flag)]";
-  const headingEx = ah.heading_example || "### AC1 \u2014 Description \u2014 `must` \xB7 `draft`";
-  const validPriorities = ah.valid_priorities || ["must", "should", "nice"];
-  const validStatuses = ah.valid_statuses || ["draft", "implementing", "verified", "descoped"];
-  const startLine = group.heading.position?.start?.line ?? 0;
-  let headingLine = lines[startLine - 1] ?? "";
-  headingLine = headingLine.replace(/~~/g, "");
-  headingLine = _normalize(headingLine);
-  const m = headingLine.match(AC_HEADING_RE);
-  if (!m) {
-    result.warnings.push({
-      line: startLine,
-      type: "ac-heading-malformed",
-      message: `AC heading does not match expected format: \`${headingFmt}\``,
-      fix: `Rewrite as: \`${headingEx}\``,
-      raw: lines[startLine - 1] ?? ""
-    });
-    return;
-  }
-  const priority = m.groups.priority;
-  const status = m.groups.status;
-  if (!validPriorities.includes(priority)) {
-    result.warnings.push({
-      line: startLine,
-      type: "ac-unknown-priority",
-      message: `AC priority "${priority}" is not in {${validPriorities.join(", ")}}`,
-      fix: `Use one of: ${validPriorities.map((p) => "`" + p + "`").join(", ")}`,
-      raw: lines[startLine - 1] ?? ""
-    });
-  }
-  if (!validStatuses.includes(status)) {
-    result.warnings.push({
-      line: startLine,
-      type: "ac-unknown-status",
-      message: `AC status "${status}" is not in {${validStatuses.join(", ")}}`,
-      fix: `Use one of: ${validStatuses.map((s) => "`" + s + "`").join(", ")}`,
-      raw: lines[startLine - 1] ?? ""
-    });
-  }
-  const ac = {
-    id: m.groups.id,
-    text: m.groups.text,
-    priority,
-    status,
-    signoff: [],
-    measurable: false,
-    body: "",
-    implementedBy: [],
-    verifiedBy: [],
-    line: startLine
-  };
-  if (m.groups.flag) ac.flag = m.groups.flag;
-  let bodyStartLine = null;
-  let bodyEndLine = null;
-  let pendingSubsection = null;
-  for (const node2 of group.body) {
-    if (node2.type === "thematicBreak") break;
-    if (node2.type === "blockquote") {
-      const bqLine = node2.position?.start?.line;
-      const rawBq = bqLine ? lines[bqLine - 1] ?? "" : "";
-      const normalizedBq = _normalize(rawBq);
-      const sm = normalizedBq.match(AC_SIGNOFF_RE);
-      if (sm) {
-        ac.signoff = sm.groups.signoff.split(",").map((s) => s.trim()).filter(Boolean);
-        ac.measurable = sm.groups.measurable === "yes";
-      }
-      continue;
-    }
-    if (node2.type === "paragraph") {
-      const para = _textContent(node2).trim();
-      if (/^Implemented by:?$/i.test(para) || _isLabelParagraph(node2, "Implemented by")) {
-        pendingSubsection = "implemented";
-        continue;
-      }
-      if (/^Verified by:?$/i.test(para) || _isLabelParagraph(node2, "Verified by")) {
-        pendingSubsection = "verified";
-        continue;
-      }
-      pendingSubsection = null;
-      const pStart = node2.position?.start?.line;
-      const pEnd = node2.position?.end?.line;
-      if (pStart && pEnd) {
-        if (bodyStartLine === null) bodyStartLine = pStart;
-        bodyEndLine = pEnd;
-      }
-      continue;
-    }
-    if (node2.type === "code" && node2.lang === "gherkin" && !ac.gherkin) {
-      ac.gherkin = {
-        raw: node2.value,
-        hasScenario: /^\s*Scenario:\s+\S/m.test(node2.value),
-        hasGiven: /^\s*Given\s+\S/m.test(node2.value),
-        hasWhen: /^\s*When\s+\S/m.test(node2.value),
-        hasThen: /^\s*Then\s+\S/m.test(node2.value),
-        line: node2.position?.start?.line
-      };
-      continue;
-    }
-    if (node2.type === "list" && pendingSubsection) {
-      const items = Array.isArray(node2.children) ? node2.children : [];
-      for (const item of items) {
-        const ln = item.position?.start?.line;
-        if (!ln) continue;
-        const raw = (lines[ln - 1] ?? "").replace(/^\s*-\s+/, "").trim();
-        const normalizedItem = _normalize(raw);
-        if (pendingSubsection === "implemented") {
-          const im = normalizedItem.match(AC_IMPL_RE);
-          if (!im) {
-            const implFmt = ah.impl_format || "[<title>](<path>) \u2014 coverage: <full|partial>";
-            const implEx = ah.impl_example || "[Feature](./feature.md) \u2014 coverage: full";
-            result.warnings.push({
-              line: ln,
-              type: "ac-impl-unparseable",
-              message: `Implemented-by item does not match \`${implFmt}\``,
-              fix: `Rewrite as: \`${implEx}\``,
-              raw
-            });
-            continue;
-          }
-          ac.implementedBy.push({
-            title: im.groups.title,
-            path: im.groups.path,
-            coverage: im.groups.coverage
-          });
-        } else if (pendingSubsection === "verified") {
-          const vm = normalizedItem.match(AC_VERIFY_RE);
-          if (!vm) {
-            const verFmt = ah.verify_format || "[<title>](<path>) [\u2014 verified <date> by [<@handle>](<path>)] [\u2014 method: <method>]";
-            const verEx = ah.verify_example || "[Test](./test.md) \u2014 verified 2026-01-01 by [@tester](path) \u2014 method: manual";
-            result.warnings.push({
-              line: ln,
-              type: "ac-verify-unparseable",
-              message: `Verified-by item does not match \`${verFmt}\``,
-              fix: `Rewrite as: \`${verEx}\``,
-              raw
-            });
-            continue;
-          }
-          ac.verifiedBy.push({
-            title: vm.groups.title,
-            path: vm.groups.path,
-            verifiedAt: vm.groups.verifiedAt ?? null,
-            verifiedBy: vm.groups.verifiedBy ?? null,
-            method: vm.groups.method ?? null
-          });
-        }
-      }
-      pendingSubsection = null;
-      continue;
-    }
-  }
-  if (bodyStartLine !== null && bodyEndLine !== null) {
-    ac.body = lines.slice(bodyStartLine - 1, bodyEndLine).join("\n").trim();
-  }
-  result.acceptanceCriteria.push(ac);
-}
-function _parseUserStoriesSection(subtree, lines, result, hints = {}) {
-  const ush = hints.user_stories || {};
-  const fmt = ush.format || "- [<title>](<path>) [\u2014 *<reason>*]";
-  const ex = ush.example || "- [User Login](./stories/login.md)";
-  for (const node2 of subtree) {
-    if (node2.type !== "list") continue;
-    const items = Array.isArray(node2.children) ? node2.children : [];
-    for (const item of items) {
-      const startLine = item.position?.start?.line;
-      if (!startLine) continue;
-      const raw = lines[startLine - 1] ?? "";
-      const normalized = _normalize(raw);
-      const m = normalized.match(USER_STORY_RE);
-      if (!m) {
-        result.warnings.push({
-          line: startLine,
-          type: "unparseable-user-story-line",
-          message: `User story bullet does not match \`${fmt}\``,
-          fix: `Rewrite as: \`${ex}\``,
-          raw
-        });
-        continue;
-      }
-      result.userStories.push({
-        title: m.groups.title,
-        path: m.groups.path,
-        reason: m.groups.reason ?? null,
-        line: startLine
-      });
-    }
-  }
-}
-function _parseContributionLogSection(subtree, lines, result, hints = {}) {
-  const clh = hints.contribution_log || {};
-  const fmt = clh.format || "- <ISO-timestamp> \u2014 [@handle](path) **role** [(extra)]";
-  const ex = clh.example || "- 2026-01-01T00:00:00Z \u2014 [@alice](../../product-data/people/alice.md) **author**";
-  for (const node2 of subtree) {
-    if (node2.type !== "list") continue;
-    const items = Array.isArray(node2.children) ? node2.children : [];
-    for (const item of items) {
-      const startLine = item.position?.start?.line;
-      if (!startLine) continue;
-      const raw = lines[startLine - 1] ?? "";
-      const normalized = _normalize(raw);
-      const m = normalized.match(CONTRIBUTION_LOG_RE);
-      if (!m) {
-        result.warnings.push({
-          line: startLine,
-          type: "unparseable-contribution-line",
-          message: `Contribution log entry does not match expected format: \`${fmt}\``,
-          fix: `Rewrite as: \`${ex}\``,
-          raw
-        });
-        continue;
-      }
-      const { extra } = m.groups;
-      const entry = {
-        at: m.groups.at,
-        person: m.groups.personHandle,
-        role: m.groups.role,
-        decision: null,
-        sections: null,
-        line: startLine
-      };
-      if (extra) {
-        const colonIdx = extra.indexOf(":");
-        if (colonIdx > 0) {
-          const key = extra.slice(0, colonIdx).trim();
-          const value = extra.slice(colonIdx + 1).trim();
-          if (key === "sections") {
-            entry.sections = value.split(",").map((s) => s.trim()).filter(Boolean);
-          } else if (key === "decision") {
-            entry.decision = value;
-          }
-        }
-      }
-      result.contributionLog.push(entry);
-    }
-  }
-}
-function _parseStatusHistory(subtree, lines, result, hints = {}) {
-  const table = _findTable(subtree);
-  if (!table) return;
-  const sh = hints.status_history || {};
-  const canonical = sh.headers || STATUS_HISTORY_HEADER;
-  const rows = _parseTableRows(
-    table,
-    [canonical, STATUS_HISTORY_HEADER_LEGACY],
-    "status-history",
-    result
-  );
-  for (const { cells, line } of rows) {
-    const [at, from, to, by, note] = cells;
-    result.statusHistory.push({
-      at: _validateISO(at, line, "status-history", result) || at,
-      from: from || null,
-      to: to || null,
-      by: by || null,
-      note: note || null,
-      line
-    });
-  }
-}
-function _parsePhaseHistory(subtree, lines, result, hints = {}) {
-  const table = _findTable(subtree);
-  if (!table) return;
-  const ph = hints.phase_history || {};
-  const canonical = ph.headers || PHASE_HISTORY_HEADER;
-  const rows = _parseTableRows(
-    table,
-    [canonical, PHASE_HISTORY_HEADER_LEGACY],
-    "phase-history",
-    result
-  );
-  for (const { cells, line } of rows) {
-    const [at, from, to, by, note] = cells;
-    result.phaseHistory.push({
-      at: _validateISO(at, line, "phase-history", result) || at,
-      from: from || null,
-      to: to || null,
-      by: by || null,
-      note: note || null,
-      line
-    });
-  }
-}
-function _parseBlockedHistory(subtree, lines, result, hints = {}) {
-  const table = _findTable(subtree);
-  if (!table) return;
-  const bh = hints.blocked_history || {};
-  const canonical = bh.headers || BLOCKED_HISTORY_HEADER;
-  const rows = _parseTableRows(
-    table,
-    [canonical, BLOCKED_HISTORY_HEADER_LEGACY],
-    "blocked-history",
-    result
-  );
-  for (const { cells, line } of rows) {
-    const [from, to, reason, by] = cells;
-    const rawLine = lines[(line ?? 1) - 1] ?? "";
-    const isOpen = rawLine.includes("_open_");
-    result.blockedHistory.push({
-      from: _validateISO(from, line, "blocked-history", result) || from,
-      to: isOpen ? null : to || null,
-      reason: reason || null,
-      by: by || null,
-      line
-    });
-  }
-}
-function _parseRiceScore(subtree, lines, result, hints = {}) {
-  const table = _findTable(subtree);
-  if (!table) return;
-  const rh = hints.rice_score || {};
-  const expectedHeaders = rh.headers || ["dimension", "value", "note"];
-  const requiredDims = rh.required_dimensions || RICE_DIMS_ORDER;
-  const [headerRow, ...bodyRows] = table.children;
-  if (!headerRow) return;
-  const headers = headerRow.children.map((c) => _normalize(toString(c)).toLowerCase());
-  if (!_headersMatch(headers, expectedHeaders)) {
-    result.warnings.push({
-      line: headerRow.position?.start?.line ?? 0,
-      type: "rice-header-mismatch",
-      message: `RICE Score table headers [${headers.join(", ")}] do not match expected [${expectedHeaders.join(", ")}]`
-    });
-    return;
-  }
-  const rice = {};
-  for (const row of bodyRows) {
-    const cells = row.children.map((c) => _normalize(toString(c)));
-    const dim = cells[0]?.toLowerCase().replace(/\*\*/g, "");
-    const rawValue = cells[1]?.replace(/\*\*/g, "");
-    const note = cells[2] || null;
-    const value = parseFloat(rawValue);
-    if (requiredDims.includes(dim)) {
-      rice[dim] = { value, note };
-    }
-  }
-  if (!rice.reach || !rice.impact || !rice.confidence || !rice.effort || !rice.score) {
-    result.warnings.push({
-      line: table.position?.start?.line ?? 0,
-      type: "rice-incomplete",
-      message: `RICE Score table missing one or more dimensions (${requiredDims.join(", ")})`
-    });
-    return;
-  }
-  const computed = rice.reach.value * rice.impact.value * rice.confidence.value / rice.effort.value;
-  const match2 = Math.abs(rice.score.value - computed) <= 1;
-  result.riceScore = {
-    reach: rice.reach.value,
-    impact: rice.impact.value,
-    confidence: rice.confidence.value,
-    effort: rice.effort.value,
-    score: rice.score.value,
-    score_computed_match: match2
-  };
-}
-function _parseShipTimeline(subtree, lines, result, hints = {}) {
-  const timeline = {
-    target_ship_date: null,
-    locked_at: null,
-    locked_by: null,
-    history: [],
-    betting: {
-      window_days: null,
-      ends_at: null,
-      extensions: []
-    }
-  };
-  const tables = [];
-  for (const node2 of subtree) {
-    if (node2.type === "paragraph") {
-      const startLine = node2.position?.start?.line;
-      if (!startLine) continue;
-      const raw = lines[startLine - 1] ?? "";
-      const normalized = _normalize(raw);
-      const hm = normalized.match(SHIP_HEADER_RE);
-      if (hm) {
-        timeline.target_ship_date = hm.groups.date;
-        timeline.locked_at = hm.groups.locked_at;
-        timeline.locked_by = hm.groups.locked_by;
-        continue;
-      }
-      const bm = normalized.match(SHIP_BETTING_RE);
-      if (bm) {
-        timeline.betting.window_days = parseInt(bm.groups.window_days, 10);
-        timeline.betting.ends_at = bm.groups.ends_at;
-        continue;
-      }
-    }
-    if (node2.type === "table") {
-      tables.push(node2);
-    }
-  }
-  const sth = hints.ship_timeline || {};
-  if (tables.length >= 1) {
-    const historyHeaders = sth.change_headers || ["at (utc)", "field", "old", "new", "reason", "approved by"];
-    const rows = _parseTableRows(tables[0], historyHeaders, "ship-timeline-history", result);
-    for (const { cells, line } of rows) {
-      const [at, field, oldVal, newVal, reason, approvedBy] = cells;
-      timeline.history.push({
-        at: at || null,
-        field: field || null,
-        old: oldVal || null,
-        new: newVal || null,
-        reason: reason || null,
-        approved_by: approvedBy || null,
-        line
-      });
-    }
-  }
-  if (tables.length >= 2) {
-    const extHeaders = sth.extension_headers || ["at (utc)", "extension type", "new ends at", "reason", "extended by"];
-    const rows = _parseTableRows(tables[1], extHeaders, "ship-timeline-extensions", result);
-    for (const { cells, line } of rows) {
-      const [at, extensionType, newEndsAt, reason, extendedBy] = cells;
-      timeline.betting.extensions.push({
-        at: at || null,
-        extension_type: extensionType || null,
-        new_ends_at: newEndsAt || null,
-        reason: reason || null,
-        extended_by: extendedBy || null,
-        line
-      });
-    }
-  }
-  result.shipTimeline = timeline;
-}
-function _parseContributions(subtree, lines, result, hints = {}) {
-  const ch = hints.contributions || {};
-  const fmt = ch.format || "**<role>** \xB7 @<handle> \xB7 <ISO-ts> \xB7 sections: `<list>` \xB7 effort: `<level>`";
-  const ex = ch.example || "**author** \xB7 @alice \xB7 2026-01-01T00:00:00Z \xB7 sections: `*` \xB7 effort: `medium`";
-  for (const node2 of subtree) {
-    if (node2.type !== "list") continue;
-    const items = Array.isArray(node2.children) ? node2.children : [];
-    for (const item of items) {
-      const startLine = item.position?.start?.line;
-      if (!startLine) continue;
-      const raw = lines[startLine - 1] ?? "";
-      const stripped = raw.replace(/^\s*-\s+/, "");
-      const normalized = _normalize(stripped);
-      const m = normalized.match(CONTRIBUTION_LINE_RE);
-      if (!m) {
-        result.warnings.push({
-          line: startLine,
-          type: "unparseable-contribution-line",
-          message: `Contribution line does not match expected format: \`${fmt}\``,
-          fix: `Rewrite as: \`${ex}\``,
-          raw
-        });
-        continue;
-      }
-      const entry = {
-        role: m.groups.role,
-        person: m.groups.person,
-        at: m.groups.at,
-        sections: m.groups.sections,
-        effort: m.groups.effort,
-        line: startLine
-      };
-      if (m.groups.decision) entry.decision = m.groups.decision;
-      if (m.groups.artifact_label) {
-        entry.artifact = { label: m.groups.artifact_label, url: m.groups.artifact_url };
-      }
-      if (m.groups.note) entry.note = m.groups.note;
-      result.contributions.push(entry);
-    }
-  }
-}
-function _parseSuccessMetricVerdict(subtree, lines, result, hints = {}) {
-  const verdict = { primary: null, supporting: null };
-  let currentGroup = null;
-  let currentName = null;
-  const groups = {};
-  for (const node2 of subtree) {
-    if (node2.type === "heading" && node2.depth === 3) {
-      currentName = _textContent(node2).trim().toLowerCase();
-      currentGroup = [];
-      groups[currentName] = currentGroup;
-    } else if (currentGroup) {
-      currentGroup.push(node2);
-    }
-  }
-  if (groups["primary"]) {
-    verdict.primary = _parseMetricBulletList(groups["primary"], lines, result);
-  }
-  if (groups["supporting"]) {
-    verdict.supporting = _parseMetricBulletList(groups["supporting"], lines, result);
-  }
-  result.successMetricVerdict = verdict;
-}
-function _parseMetricBulletList(subtreeNodes, lines, result) {
-  const fields = {};
-  for (const node2 of subtreeNodes) {
-    if (node2.type === "paragraph") {
-      const text5 = _textContent(node2).trim();
-      if (/^\(none\)$/i.test(text5)) return null;
-    }
-    if (node2.type !== "list") continue;
-    const items = Array.isArray(node2.children) ? node2.children : [];
-    for (const item of items) {
-      const startLine = item.position?.start?.line;
-      if (!startLine) continue;
-      const raw = lines[startLine - 1] ?? "";
-      const stripped = raw.replace(/^\s*-\s+/, "");
-      const fieldMatch = stripped.match(/^\*\*(?<field>[^*]+)\*\*:\s*(?<value>.+)$/);
-      if (!fieldMatch) continue;
-      const fieldName = fieldMatch.groups.field.trim().toLowerCase().replace(/\s+/g, "_");
-      let value = fieldMatch.groups.value.trim();
-      value = value.replace(/<!--.*?-->/g, "").trim();
-      if (value === "_pending_") {
-        value = null;
-      }
-      if (value === "") value = null;
-      fields[fieldName] = value;
-    }
-  }
-  return Object.keys(fields).length > 0 ? fields : null;
-}
-function _parseDataSources(subtree, lines, result, hints = {}) {
-  const sources = {
-    intercom: [],
-    amplitude: [],
-    bigquery: [],
-    external: []
-  };
-  let currentCategory = null;
-  for (const node2 of subtree) {
-    if (node2.type === "heading" && node2.depth === 3) {
-      const name = _textContent(node2).trim().toLowerCase();
-      if (name in sources) {
-        currentCategory = name;
-      } else {
-        currentCategory = null;
-      }
-      continue;
-    }
-    if (node2.type === "paragraph" && currentCategory) {
-      const text5 = _textContent(node2).trim();
-      if (/^\(none\)$/i.test(text5)) continue;
-    }
-    if (node2.type === "list" && currentCategory) {
-      const items = Array.isArray(node2.children) ? node2.children : [];
-      for (const item of items) {
-        const startLine = item.position?.start?.line;
-        if (!startLine) continue;
-        const raw = lines[startLine - 1] ?? "";
-        const stripped = raw.replace(/^\s*-\s+/, "").trim();
-        sources[currentCategory].push({
-          raw: stripped,
-          line: startLine
-        });
-      }
-    }
-  }
-  result.dataSources = sources;
-}
-function _computeDerived(result) {
-  const d = result.derived;
-  for (const entry of result.statusHistory) {
-    if (entry.to === "approved" && !d.approved_at) d.approved_at = entry.at;
-    if (entry.to === "in_progress" && !d.in_progress_at) d.in_progress_at = entry.at;
-    if (entry.to === "shipped" && !d.shipped_at) d.shipped_at = entry.at;
-  }
-  const STARTED_PHASES = /* @__PURE__ */ new Set(["coding", "in_progress", "doing"]);
-  for (const entry of result.phaseHistory) {
-    if (STARTED_PHASES.has(entry.to) && !d.started_at) d.started_at = entry.at;
-    if (entry.to === "completed" && !d.completed_at) d.completed_at = entry.at;
-    if (entry.to === "done" && !d.done_at) d.done_at = entry.at;
-  }
-}
-function _findTable(subtree) {
-  for (const node2 of subtree) {
-    if (node2.type === "table") return node2;
-  }
-  return null;
-}
-function _parseTableRows(tableNode, expectedHeaders, sectionType, result) {
-  const [headerRow, ...bodyRows] = tableNode.children;
-  if (!headerRow) return [];
-  const headers = headerRow.children.map((c) => _normalize(toString(c)).toLowerCase());
-  const alternatives = Array.isArray(expectedHeaders[0]) ? expectedHeaders : [expectedHeaders];
-  const matched = alternatives.some((alt) => _headersMatch(headers, alt));
-  if (!matched) {
-    const expectedDescription = alternatives.map((alt) => `[${alt.join(", ")}]`).join(" or ");
-    result.warnings.push({
-      line: headerRow.position?.start?.line ?? 0,
-      type: `${sectionType}-header-mismatch`,
-      message: `Table headers [${headers.join(", ")}] do not match expected ${expectedDescription}`
-    });
-    return [];
-  }
-  const rows = [];
-  for (const row of bodyRows) {
-    const cells = row.children.map((c) => _normalize(toString(c)));
-    const line = row.position?.start?.line ?? 0;
-    rows.push({ cells, line });
-  }
-  return rows;
-}
-function _headersMatch(actual, expected) {
-  if (actual.length < expected.length) return false;
-  for (let i = 0; i < expected.length; i++) {
-    if (actual[i] !== expected[i]) return false;
-  }
-  return true;
-}
-function _validateISO(value, line, sectionType, result) {
-  if (!value) return null;
-  const re = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?(Z|\+07:00))?$/;
-  if (re.test(value)) {
-    return value;
-  }
-  result.warnings.push({
-    line,
-    type: `${sectionType}-invalid-timestamp`,
-    message: `Timestamp "${value}" does not match ISO 8601 (expected YYYY-MM-DDTHH:MM:SS+07:00)`
-  });
-  return value;
-}
-function _textContent(node2) {
-  if (!node2) return "";
-  if (typeof node2.value === "string") return node2.value;
-  if (!Array.isArray(node2.children)) return "";
-  return node2.children.map(_textContent).join("");
-}
-function _isLabelParagraph(node2, label) {
-  if (!node2 || node2.type !== "paragraph") return false;
-  const first = node2.children?.[0];
-  if (!first || first.type !== "strong") return false;
-  const inner = _textContent(first).trim();
-  return inner === label;
-}
+// lib/template-section-rules.js
+var import_gray_matter = __toESM(require_gray_matter(), 1);
 
-// lib/template-rules.js
-var import_promises2 = require("fs/promises");
-var import_path2 = require("path");
-var import_gray_matter2 = __toESM(require_gray_matter(), 1);
+// lib/body-shapes.js
+var parser = unified().use(remarkParse).use(remarkGfm);
+function parseAst(markdown) {
+  return parser.parse(markdown);
+}
+function parseHeadingTree(markdownBody) {
+  if (typeof markdownBody !== "string" || markdownBody.length === 0) {
+    return { depth: 0, text: "", line: 1, contentNodes: [], children: [] };
+  }
+  const tree = parseAst(markdownBody);
+  const children = Array.isArray(tree?.children) ? tree.children : [];
+  const root2 = { depth: 0, text: "", line: 1, contentNodes: [], children: [] };
+  const stack = [root2];
+  for (const node2 of children) {
+    if (node2.type === "heading") {
+      const depth = node2.depth;
+      const text5 = toString(node2);
+      const line = node2.position?.start?.line ?? 1;
+      const headingNode = { depth, text: text5, line, contentNodes: [], children: [] };
+      while (stack.length > 1 && stack[stack.length - 1].depth >= depth) {
+        stack.pop();
+      }
+      stack[stack.length - 1].children.push(headingNode);
+      stack.push(headingNode);
+    } else {
+      stack[stack.length - 1].contentNodes.push(node2);
+    }
+  }
+  return root2;
+}
+function parseTable(node2) {
+  if (!node2 || node2.type !== "table") return null;
+  const tableRows = Array.isArray(node2.children) ? node2.children : [];
+  if (tableRows.length === 0) return null;
+  const headerRow = tableRows[0];
+  const headerCells = Array.isArray(headerRow.children) ? headerRow.children : [];
+  const headers = headerCells.map((c) => toString(c).trim().toLowerCase());
+  const rows = [];
+  for (let i = 1; i < tableRows.length; i++) {
+    const row = tableRows[i];
+    const cells = Array.isArray(row.children) ? row.children : [];
+    rows.push(cells.map((c) => toString(c).trim()));
+  }
+  return {
+    headers,
+    rows,
+    line: node2.position?.start?.line ?? 1
+  };
+}
+function parseList(node2) {
+  if (!node2 || node2.type !== "list") return null;
+  const listItems = Array.isArray(node2.children) ? node2.children : [];
+  const items = [];
+  for (const item of listItems) {
+    items.push({
+      text: toString(item).trim(),
+      line: item.position?.start?.line ?? 1
+    });
+  }
+  return { items };
+}
+function findCodeFences(contentNodes) {
+  if (!Array.isArray(contentNodes)) return [];
+  const fences = [];
+  for (const node2 of contentNodes) {
+    if (node2.type === "code") {
+      fences.push({
+        lang: node2.lang || null,
+        value: node2.value || "",
+        line: node2.position?.start?.line ?? 1
+      });
+    }
+  }
+  return fences;
+}
 
 // lib/template-section-rules.js
-var import_promises = require("fs/promises");
-var import_path = require("path");
-var import_gray_matter = __toESM(require_gray_matter(), 1);
-async function loadTemplateSectionRules(templatePath, projectRoot2 = process.cwd()) {
-  if (!templatePath) return {};
-  const absPath = (0, import_path.isAbsolute)(templatePath) ? templatePath : (0, import_path.join)(projectRoot2, templatePath);
-  let content3;
-  try {
-    content3 = await (0, import_promises.readFile)(absPath, "utf-8");
-  } catch {
-    return {};
+function parseBodySchema(templateBodyMarkdown) {
+  if (typeof templateBodyMarkdown !== "string" || templateBodyMarkdown.length === 0) {
+    return [];
   }
-  let body;
-  try {
-    body = (0, import_gray_matter.default)(content3).content || "";
-  } catch {
-    return {};
-  }
-  return parseSectionRules(body);
-}
-function parseSectionRules(markdownBody) {
-  if (!markdownBody) return {};
-  let tree;
-  try {
-    tree = unified().use(remarkParse).use(remarkGfm).parse(markdownBody);
-  } catch {
-    return {};
-  }
-  const children = Array.isArray(tree?.children) ? tree.children : [];
-  const result = {};
-  for (let i = 0; i < children.length; i++) {
-    const node2 = children[i];
-    if (node2.type !== "heading" || node2.depth !== 2) continue;
-    const headingText = toString(node2).trim();
-    const key = _toSnakeCase(headingText);
-    const subtree = [];
-    for (let j = i + 1; j < children.length; j++) {
-      if (children[j].type === "heading" && children[j].depth === 2) break;
-      subtree.push(children[j]);
-    }
-    for (const child of subtree) {
-      if (child.type === "code" && child.lang === "yaml" && child.meta === "section-rules") {
-        try {
-          const parsed = (0, import_gray_matter.default)(`---
-${child.value}
----`);
-          if (parsed.data && typeof parsed.data === "object") {
-            result[key] = parsed.data;
-          }
-        } catch {
-        }
-        break;
-      }
-    }
-  }
-  return result;
+  const headingRoot = parseHeadingTree(templateBodyMarkdown);
+  return _convertChildren(headingRoot.children);
 }
 function findSectionRuleBlocks(markdownBody) {
   if (!markdownBody) return [];
@@ -32696,8 +31913,42 @@ function findSectionRuleBlocks(markdownBody) {
   _collectSectionRuleBlocks(tree, blocks);
   return blocks;
 }
-function getRequiredSections(sectionRules) {
-  return Object.entries(sectionRules).filter(([, rules]) => rules.required === true).map(([key]) => `## ${_toHeadingCase(key)}`);
+function _convertChildren(headingNodes) {
+  if (!Array.isArray(headingNodes)) return [];
+  const result = [];
+  for (const hNode of headingNodes) {
+    const sectionRules = _extractSectionRules(hNode.contentNodes);
+    result.push({
+      depth: hNode.depth,
+      text: hNode.text,
+      sectionRules,
+      children: _convertChildren(hNode.children)
+    });
+  }
+  return result;
+}
+function _extractSectionRules(contentNodes) {
+  if (!Array.isArray(contentNodes)) return null;
+  for (const node2 of contentNodes) {
+    if (node2.type === "code" && node2.lang === "yaml" && node2.meta === "section-rules") {
+      return _parseYamlSectionRules(node2.value);
+    }
+  }
+  return null;
+}
+function _parseYamlSectionRules(yamlString) {
+  if (!yamlString || typeof yamlString !== "string") return null;
+  try {
+    const parsed = (0, import_gray_matter.default)(`---
+${yamlString}
+---`);
+    if (parsed.data && typeof parsed.data === "object" && Object.keys(parsed.data).length > 0) {
+      return parsed.data;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 function _collectSectionRuleBlocks(node2, out) {
   if (!node2 || typeof node2 !== "object") return;
@@ -32708,99 +31959,15 @@ function _collectSectionRuleBlocks(node2, out) {
     for (const child of node2.children) _collectSectionRuleBlocks(child, out);
   }
 }
-function _toSnakeCase(text5) {
-  return text5.toLowerCase().replace(/\s+/g, "_");
-}
-function _toHeadingCase(snakeCase) {
-  return snakeCase.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-}
-
-// lib/template-rules.js
-async function loadTemplateRules(templatePath, projectRoot2 = process.cwd()) {
-  if (!templatePath) return null;
-  const absPath = (0, import_path2.isAbsolute)(templatePath) ? templatePath : (0, import_path2.join)(projectRoot2, templatePath);
-  let content3;
-  try {
-    content3 = await (0, import_promises2.readFile)(absPath, "utf-8");
-  } catch {
-    return null;
-  }
-  let frontmatter, body;
-  try {
-    const parsed = (0, import_gray_matter2.default)(content3);
-    frontmatter = parsed.data;
-    body = parsed.content || "";
-  } catch {
-    return null;
-  }
-  if (!frontmatter || !frontmatter.validation_rules) return null;
-  const rules = normalizeRules(frontmatter.validation_rules, templatePath);
-  const sectionRules = parseSectionRules(body);
-  if (Object.keys(sectionRules).length > 0) {
-    const bodyRequired = getRequiredSections(sectionRules);
-    const fmRequired = Array.isArray(rules.required_body_sections) ? rules.required_body_sections : [];
-    rules.required_body_sections = [.../* @__PURE__ */ new Set([...fmRequired, ...bodyRequired])];
-    if (!rules.required_gherkin_section) {
-      for (const [key, srules] of Object.entries(sectionRules)) {
-        if (srules?.gherkin === true) {
-          rules.required_gherkin_section = "## " + key.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-          break;
-        }
-      }
-    }
-    const bodyRoles = sectionRules?.contributions?.allowed_roles;
-    if (Array.isArray(bodyRoles) && bodyRoles.length > 0) {
-      rules.allowed_roles = bodyRoles.map((p) => ({ ...p }));
-    }
-  }
-  return rules;
-}
-function normalizeRules(rules, source = "inline") {
-  const r = rules || {};
-  return {
-    // Single regex string declared by the template; matched against the
-    // document's repo-relative POSIX path. Null when the template opts out
-    // (validator then skips the path check).
-    path_regex: typeof r.path_regex === "string" ? r.path_regex : null,
-    // Body section format hints: format strings, examples, valid enums, table
-    // headers. Consumed by body-parser to generate actionable warning messages.
-    // Deep-copied so callers cannot mutate the template's canonical hints.
-    body_section_formats: r.body_section_formats ? structuredClone(r.body_section_formats) : {},
-    // Template-driven Vocab (Commit 2). The template inlines its own tier,
-    // role registry, and body sections vocabulary. No central vocab/.
-    tier: typeof r.tier === "string" ? r.tier : null,
-    allowed_roles: Array.isArray(r.allowed_roles) ? r.allowed_roles.map((p) => ({ ...p })) : [],
-    sections: Array.isArray(r.sections) ? [...r.sections] : [],
-    required_fields: Array.isArray(r.required_fields) ? [...r.required_fields] : [],
-    conditional_required_fields: Array.isArray(r.conditional_required_fields) ? r.conditional_required_fields.map((entry) => ({ ...entry })) : [],
-    optional_fields: Array.isArray(r.optional_fields) ? [...r.optional_fields] : [],
-    field_rules: Array.isArray(r.field_rules) ? r.field_rules.map((entry) => ({ ...entry })) : [],
-    state_machine: r.state_machine ? Object.fromEntries(
-      Object.entries(r.state_machine).map(([k, v]) => [
-        k,
-        Array.isArray(v) ? [...v] : []
-      ])
-    ) : null,
-    // Legacy frontmatter fields. Migrated to body section-rules; carried
-    // through normalizeRules untouched so loadTemplateRules can union them
-    // with body-derived values during the transition window.
-    required_body_sections: Array.isArray(r.required_body_sections) ? [...r.required_body_sections] : [],
-    required_gherkin_section: typeof r.required_gherkin_section === "string" ? r.required_gherkin_section : null,
-    __source: source
-  };
-}
-
-// lib/validators.js
-var import_path3 = require("path");
 
 // lib/conditional-eval.js
 function evaluate(expression, context) {
   const tokens = tokenize(expression);
-  const parser = new Parser(tokens);
-  const ast = parser.parseOr();
-  if (!parser.atEnd()) {
+  const parser2 = new Parser(tokens);
+  const ast = parser2.parseOr();
+  if (!parser2.atEnd()) {
     throw new Error(
-      `Unexpected token at end of expression: ${JSON.stringify(parser.peek())}`
+      `Unexpected token at end of expression: ${JSON.stringify(parser2.peek())}`
     );
   }
   return evalAst(ast, context);
@@ -32934,6 +32101,1055 @@ function evalAst(ast, context) {
   }
 }
 
+// lib/expression-eval.js
+var EPSILON = 1e-9;
+function evaluate2(expression, values) {
+  const tokens = tokenize2(expression);
+  const parser2 = new Parser2(tokens);
+  const ast = parser2.parseExpression();
+  if (!parser2.atEnd()) {
+    throw new Error(
+      `Unexpected token at end of expression: ${JSON.stringify(parser2.peek())}`
+    );
+  }
+  return evalAst2(ast, values);
+}
+function parse3(expression) {
+  const tokens = tokenize2(expression);
+  const parser2 = new Parser2(tokens);
+  const ast = parser2.parseExpression();
+  if (!parser2.atEnd()) {
+    throw new Error(
+      `Unexpected token at end of expression: ${JSON.stringify(parser2.peek())}`
+    );
+  }
+  return ast;
+}
+function tokenize2(input) {
+  const tokens = [];
+  let i = 0;
+  while (i < input.length) {
+    const c = input[i];
+    if (/\s/.test(c)) {
+      i++;
+      continue;
+    }
+    if (i + 1 < input.length) {
+      const two = input[i] + input[i + 1];
+      if (two === "==" || two === "!=" || two === "<=" || two === ">=") {
+        tokens.push({ type: two });
+        i += 2;
+        continue;
+      }
+    }
+    if (c === "+" || c === "-" || c === "*" || c === "/" || c === "<" || c === ">" || c === "(" || c === ")") {
+      tokens.push({ type: c });
+      i++;
+      continue;
+    }
+    if (/[0-9]/.test(c) || c === "." && i + 1 < input.length && /[0-9]/.test(input[i + 1])) {
+      let j = i;
+      while (j < input.length && /[0-9]/.test(input[j])) j++;
+      if (j < input.length && input[j] === ".") {
+        j++;
+        while (j < input.length && /[0-9]/.test(input[j])) j++;
+      }
+      tokens.push({ type: "NUMBER", value: parseFloat(input.slice(i, j)) });
+      i = j;
+      continue;
+    }
+    if (/[A-Za-z_]/.test(c)) {
+      let j = i;
+      while (j < input.length && /[A-Za-z0-9_]/.test(input[j])) j++;
+      tokens.push({ type: "IDENT", value: input.slice(i, j) });
+      i = j;
+      continue;
+    }
+    throw new Error(`Unexpected character '${c}' at index ${i}`);
+  }
+  return tokens;
+}
+var Parser2 = class {
+  constructor(tokens) {
+    this.tokens = tokens;
+    this.pos = 0;
+  }
+  peek() {
+    return this.tokens[this.pos];
+  }
+  advance() {
+    return this.tokens[this.pos++];
+  }
+  atEnd() {
+    return this.pos >= this.tokens.length;
+  }
+  expect(type2) {
+    if (this.peek()?.type !== type2) {
+      throw new Error(
+        `Expected token '${type2}', got ${JSON.stringify(this.peek())}`
+      );
+    }
+    return this.advance();
+  }
+  match(...types3) {
+    if (this.peek() && types3.includes(this.peek().type)) {
+      return this.advance();
+    }
+    return null;
+  }
+  // expr := comparison
+  parseExpression() {
+    return this.parseComparison();
+  }
+  // comparison := add_expr ( ('==' | '!=' | '<=' | '>=' | '<' | '>') add_expr )?
+  parseComparison() {
+    let left = this.parseAdditive();
+    const op = this.match("==", "!=", "<=", ">=", "<", ">");
+    if (op) {
+      const right = this.parseAdditive();
+      return { type: "compare", op: op.type, left, right };
+    }
+    return left;
+  }
+  // add_expr := mul_expr ( ('+' | '-') mul_expr )*
+  parseAdditive() {
+    let left = this.parseMultiplicative();
+    let op;
+    while (op = this.match("+", "-")) {
+      const right = this.parseMultiplicative();
+      left = { type: "binary", op: op.type, left, right };
+    }
+    return left;
+  }
+  // mul_expr := unary ( ('*' | '/') unary )*
+  parseMultiplicative() {
+    let left = this.parseUnary();
+    let op;
+    while (op = this.match("*", "/")) {
+      const right = this.parseUnary();
+      left = { type: "binary", op: op.type, left, right };
+    }
+    return left;
+  }
+  // unary := '-'? primary
+  parseUnary() {
+    if (this.match("-")) {
+      const operand = this.parsePrimary();
+      return { type: "unary", op: "-", operand };
+    }
+    return this.parsePrimary();
+  }
+  // primary := NUMBER | IDENT | '(' expr ')'
+  parsePrimary() {
+    const tok = this.peek();
+    if (!tok) {
+      throw new Error("Unexpected end of expression");
+    }
+    if (tok.type === "NUMBER") {
+      this.advance();
+      return { type: "number", value: tok.value };
+    }
+    if (tok.type === "IDENT") {
+      this.advance();
+      return { type: "ident", name: tok.value };
+    }
+    if (tok.type === "(") {
+      this.advance();
+      const expr = this.parseExpression();
+      this.expect(")");
+      return expr;
+    }
+    throw new Error(`Unexpected token: ${JSON.stringify(tok)}`);
+  }
+};
+function evalAst2(ast, values) {
+  switch (ast.type) {
+    case "number":
+      return ast.value;
+    case "ident": {
+      const val = values[ast.name];
+      if (val === void 0) {
+        throw new Error(`Unknown identifier '${ast.name}'`);
+      }
+      return val;
+    }
+    case "unary": {
+      const operand = evalAst2(ast.operand, values);
+      return -operand;
+    }
+    case "binary": {
+      const left = evalAst2(ast.left, values);
+      const right = evalAst2(ast.right, values);
+      switch (ast.op) {
+        case "+":
+          return left + right;
+        case "-":
+          return left - right;
+        case "*":
+          return left * right;
+        case "/":
+          return left / right;
+        default:
+          throw new Error(`Unknown binary operator: ${ast.op}`);
+      }
+    }
+    case "compare": {
+      const left = evalAst2(ast.left, values);
+      const right = evalAst2(ast.right, values);
+      switch (ast.op) {
+        case "==":
+          return Math.abs(left - right) < EPSILON;
+        case "!=":
+          return Math.abs(left - right) >= EPSILON;
+        case "<":
+          return left < right;
+        case ">":
+          return left > right;
+        case "<=":
+          return left <= right;
+        case ">=":
+          return left >= right;
+        default:
+          throw new Error(`Unknown comparison operator: ${ast.op}`);
+      }
+    }
+    default:
+      throw new Error(`Unknown AST node type: ${ast.type}`);
+  }
+}
+
+// lib/schema-engine.js
+function issue(level, field, message, errorType, fix) {
+  const i = { level, field, message, error_type: errorType };
+  if (fix) i.fix = fix;
+  return i;
+}
+var VALID_TYPES = /* @__PURE__ */ new Set(["string", "integer", "number", "boolean", "date", "array"]);
+var PRIMITIVES = {
+  type(value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    switch (param) {
+      case "string":
+        if (typeof value !== "string") {
+          return [issue(level, field, ctx.message || `Expected type 'string', got '${typeof value}'`, "type-mismatch")];
+        }
+        break;
+      case "integer":
+        if (typeof value !== "number" || !Number.isInteger(value)) {
+          return [issue(level, field, ctx.message || `Expected type 'integer', got '${typeof value === "number" ? "non-integer number" : typeof value}'`, "type-mismatch")];
+        }
+        break;
+      case "number":
+        if (typeof value !== "number" || Number.isNaN(value)) {
+          return [issue(level, field, ctx.message || `Expected type 'number', got '${typeof value}'`, "type-mismatch")];
+        }
+        break;
+      case "boolean":
+        if (typeof value !== "boolean") {
+          return [issue(level, field, ctx.message || `Expected type 'boolean', got '${typeof value}'`, "type-mismatch")];
+        }
+        break;
+      case "date":
+        if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+          return [issue(level, field, ctx.message || `Expected type 'date', got '${typeof value}'`, "type-mismatch")];
+        }
+        break;
+      case "array":
+        if (!Array.isArray(value)) {
+          return [issue(level, field, ctx.message || `Expected type 'array', got '${typeof value}'`, "type-mismatch")];
+        }
+        break;
+    }
+    return [];
+  },
+  required(_value, _param, _ctx) {
+    return [];
+  },
+  enum(value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    if (!param.includes(value)) {
+      return [issue(level, field, ctx.message || `Value '${value}' is not in allowed values: [${param.join(", ")}]`, "enum-violation", `Use one of: ${param.join(", ")}`)];
+    }
+    return [];
+  },
+  pattern(value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    const str3 = String(value);
+    const re = new RegExp(param);
+    if (!re.test(str3)) {
+      return [issue(level, field, ctx.message || `Value '${str3}' does not match pattern '${param}'`, "pattern-mismatch", `Must match: ${param}`)];
+    }
+    return [];
+  },
+  min(value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    const actual = resolveMinMaxTarget(value, ctx.type);
+    if (actual === void 0) return [];
+    if (actual < param) {
+      const label = minMaxLabel(ctx.type);
+      return [issue(level, field, ctx.message || `${label} ${actual} is less than minimum ${param}`, "min-violation")];
+    }
+    return [];
+  },
+  max(value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    const actual = resolveMinMaxTarget(value, ctx.type);
+    if (actual === void 0) return [];
+    if (actual > param) {
+      const label = minMaxLabel(ctx.type);
+      return [issue(level, field, ctx.message || `${label} ${actual} exceeds maximum ${param}`, "max-violation")];
+    }
+    return [];
+  },
+  uniqueItems(value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    if (!param || !Array.isArray(value)) return [];
+    const seen = /* @__PURE__ */ new Set();
+    const dupes = [];
+    for (const item of value) {
+      const key = typeof item === "object" ? JSON.stringify(item) : String(item);
+      if (seen.has(key)) dupes.push(item);
+      seen.add(key);
+    }
+    if (dupes.length > 0) {
+      return [issue(level, field, ctx.message || `Array contains duplicate items: ${dupes.join(", ")}`, "unique-violation")];
+    }
+    return [];
+  },
+  exists(value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    if (!param || typeof value !== "string") return [];
+    const resolver2 = ctx.fileExists || (() => true);
+    if (!resolver2(value)) {
+      return [issue(level, field, ctx.message || `Referenced file '${value}' does not exist`, "exists-missing", `Create or fix the path: ${value}`)];
+    }
+    return [];
+  },
+  description(_value, _param, _ctx) {
+    return [];
+  },
+  // ── Structural primitives (body only, spec §4.2) ──────────────────────
+  heading(_value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    const text5 = String(_value);
+    if (param.pattern) {
+      const re = new RegExp(param.pattern);
+      if (!re.test(text5)) {
+        return [issue(level, field, ctx.message || `Heading '${text5}' does not match pattern '${param.pattern}'`, "heading-mismatch")];
+      }
+    }
+    if (param.enum) {
+      const normalized = text5.toLowerCase().trim();
+      const allowed = param.enum.map((v) => String(v).toLowerCase().trim());
+      if (!allowed.includes(normalized)) {
+        return [issue(level, field, ctx.message || `Heading '${text5}' is not in allowed values: [${param.enum.join(", ")}]`, "heading-mismatch")];
+      }
+    }
+    return [];
+  },
+  table(_value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    if (!_value) {
+      return [issue(level, field, ctx.message || "Expected a table but none found", "table-shape")];
+    }
+    const issues = [];
+    if (param.columns) {
+      const expected = param.columns.map((c) => c.toLowerCase().trim());
+      for (const col of expected) {
+        if (!_value.headers.includes(col)) {
+          issues.push(issue(level, field, ctx.message || `Table missing required column '${col}'`, "table-shape"));
+        }
+      }
+    }
+    return issues;
+  },
+  list(_value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    if (!_value) {
+      return [issue(level, field, ctx.message || "Expected a list but none found", "list-item")];
+    }
+    const issues = [];
+    if (param.item && param.item.pattern) {
+      const re = new RegExp(param.item.pattern);
+      for (const item of _value.items) {
+        if (!re.test(item.text)) {
+          issues.push(issue(level, field, ctx.message || `List item '${item.text}' does not match pattern '${param.item.pattern}'`, "list-item"));
+        }
+      }
+    }
+    return issues;
+  },
+  code(_value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    const fences = Array.isArray(_value) ? _value : [];
+    if (param.lang) {
+      const target = param.lang.toLowerCase();
+      const found = fences.some((f) => f.lang && f.lang.toLowerCase() === target);
+      if (!found) {
+        return [issue(level, field, ctx.message || `Expected a '${param.lang}' code fence but none found`, "code-missing")];
+      }
+    } else {
+      if (fences.length === 0) {
+        return [issue(level, field, ctx.message || "Expected a code fence but none found", "code-missing")];
+      }
+    }
+    return [];
+  },
+  repeatable(_value, _param, _ctx) {
+    return [];
+  },
+  formula(_value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    const values = _value && typeof _value === "object" ? _value : {};
+    try {
+      const result = evaluate2(param, values);
+      if (result === false) {
+        return [issue(level, field, ctx.message || `Formula '${param}' evaluated to false`, "formula-violation")];
+      }
+      return [];
+    } catch (e) {
+      return [issue(level, field, ctx.message || `Formula '${param}' failed: ${e.message}`, "formula-violation")];
+    }
+  }
+};
+function resolveMinMaxTarget(value, type2) {
+  if (type2 === "string" && typeof value === "string") return value.length;
+  if ((type2 === "number" || type2 === "integer") && typeof value === "number") return value;
+  if (type2 === "array" && Array.isArray(value)) return value.length;
+  if (type2 === void 0 && typeof value === "number") return value;
+  return void 0;
+}
+function minMaxLabel(type2) {
+  if (type2 === "string") return "Length";
+  if (type2 === "array") return "Count";
+  return "Value";
+}
+var SYNTHETIC_RESOLVERS = {
+  $path: (docMeta) => docMeta.repoRelativePath
+};
+var MODIFIER_KEYS = /* @__PURE__ */ new Set(["value", "when", "severity", "message"]);
+function normalizeConstraint(primitiveName, raw) {
+  if (raw !== null && typeof raw === "object" && !Array.isArray(raw)) {
+    if ("value" in raw) {
+      return raw;
+    }
+    if (primitiveName === "required") {
+      return { value: true, ...raw };
+    }
+  }
+  return { value: raw };
+}
+function applyFieldSchema({ fields, strict }, frontmatter, docMeta) {
+  const issues = [];
+  if (!fields || typeof fields !== "object") return issues;
+  const declaredFields = new Set(Object.keys(fields));
+  for (const [fieldName, fieldSpec] of Object.entries(fields)) {
+    if (!fieldSpec || typeof fieldSpec !== "object") continue;
+    const value = fieldName.startsWith("$") ? SYNTHETIC_RESOLVERS[fieldName]?.(docMeta) : getField(frontmatter, fieldName);
+    const declaredType = extractPrimitiveValue(fieldSpec, "type");
+    if ("required" in fieldSpec) {
+      const norm = normalizeConstraint("required", fieldSpec.required);
+      const isRequired = norm.value === true || norm.value === void 0;
+      if (isRequired) {
+        let gatePass = true;
+        if (norm.when) {
+          try {
+            gatePass = evaluate(norm.when, frontmatter);
+          } catch {
+            gatePass = false;
+          }
+        }
+        if (gatePass && (value === void 0 || value === null || value === "")) {
+          const level = norm.severity || "error";
+          issues.push(issue(
+            level,
+            fieldName,
+            norm.message || `Required field '${fieldName}' is missing`,
+            "required-missing",
+            `Add '${fieldName}' to frontmatter`
+          ));
+          continue;
+        }
+      }
+    }
+    if (value === void 0 || value === null) continue;
+    for (const [key, rawConstraint] of Object.entries(fieldSpec)) {
+      if (key === "required") continue;
+      if (!(key in PRIMITIVES)) continue;
+      const norm = normalizeConstraint(key, rawConstraint);
+      if (norm.when) {
+        try {
+          if (!evaluate(norm.when, frontmatter)) continue;
+        } catch {
+          continue;
+        }
+      }
+      const ctx = {
+        field: fieldName,
+        type: declaredType,
+        severity: norm.severity,
+        message: norm.message,
+        fileExists: docMeta?.fileExists
+      };
+      const primitiveIssues = PRIMITIVES[key](value, norm.value, ctx);
+      issues.push(...primitiveIssues);
+    }
+  }
+  if (strict && frontmatter && typeof frontmatter === "object") {
+    for (const key of Object.keys(frontmatter)) {
+      if (!declaredFields.has(key)) {
+        issues.push(issue(
+          "error",
+          key,
+          `Undeclared field '${key}' is not in the schema`,
+          "undeclared-field",
+          `Remove '${key}' or declare it in the template fields`
+        ));
+      }
+    }
+  }
+  return issues;
+}
+function extractPrimitiveValue(fieldSpec, primitiveName) {
+  const raw = fieldSpec[primitiveName];
+  if (raw === void 0) return void 0;
+  const norm = normalizeConstraint(primitiveName, raw);
+  return norm.value;
+}
+var KNOWN_FIELD_KEYS = /* @__PURE__ */ new Set([
+  ...Object.keys(PRIMITIVES)
+  // Modifiers that can appear at the field level when using expanded form
+  // are inside the constraint object, not at the field level — but
+  // `description` is a recognized primitive (metadata-only).
+]);
+var SYNTHETIC_ALLOWED_PRIMITIVES = /* @__PURE__ */ new Set(["pattern", "enum"]);
+function validateTemplateSchema(fieldsSchema) {
+  const issues = [];
+  if (!fieldsSchema || typeof fieldsSchema !== "object") return issues;
+  for (const [fieldName, fieldSpec] of Object.entries(fieldsSchema)) {
+    if (!fieldSpec || typeof fieldSpec !== "object") {
+      issues.push(issue(
+        "error",
+        fieldName,
+        `Field '${fieldName}' must be an object with constraint declarations`,
+        "template-schema-invalid"
+      ));
+      continue;
+    }
+    const isSynthetic = fieldName.startsWith("$");
+    const declaredType = extractPrimitiveValue(fieldSpec, "type");
+    for (const [key, rawConstraint] of Object.entries(fieldSpec)) {
+      if (!(key in PRIMITIVES)) {
+        issues.push(issue(
+          "error",
+          fieldName,
+          `Unknown primitive '${key}' on field '${fieldName}'`,
+          "template-schema-invalid",
+          `Known primitives: ${Object.keys(PRIMITIVES).join(", ")}`
+        ));
+        continue;
+      }
+      if (isSynthetic && !SYNTHETIC_ALLOWED_PRIMITIVES.has(key) && key !== "description") {
+        issues.push(issue(
+          "error",
+          fieldName,
+          `Synthetic field '${fieldName}' may only use 'pattern' or 'enum', not '${key}'`,
+          "template-schema-invalid"
+        ));
+        continue;
+      }
+      const norm = normalizeConstraint(key, rawConstraint);
+      if (rawConstraint !== null && typeof rawConstraint === "object" && !Array.isArray(rawConstraint)) {
+        for (const modKey of Object.keys(rawConstraint)) {
+          if (!MODIFIER_KEYS.has(modKey) && modKey !== key) {
+            if (!(modKey in PRIMITIVES)) {
+              issues.push(issue(
+                "error",
+                fieldName,
+                `Unknown modifier '${modKey}' in expanded constraint '${key}' on field '${fieldName}'`,
+                "template-schema-invalid",
+                `Allowed modifiers: value, when, severity, message`
+              ));
+            }
+          }
+        }
+      }
+      switch (key) {
+        case "type": {
+          if (!VALID_TYPES.has(norm.value)) {
+            issues.push(issue(
+              "error",
+              fieldName,
+              `Invalid type '${norm.value}' on field '${fieldName}'. Allowed: ${[...VALID_TYPES].join(", ")}`,
+              "template-schema-invalid"
+            ));
+          }
+          break;
+        }
+        case "pattern": {
+          try {
+            new RegExp(norm.value);
+          } catch {
+            issues.push(issue(
+              "error",
+              fieldName,
+              `Invalid regex pattern on field '${fieldName}': ${norm.value}`,
+              "template-schema-invalid"
+            ));
+          }
+          break;
+        }
+        case "enum": {
+          if (!Array.isArray(norm.value) || norm.value.length === 0) {
+            issues.push(issue(
+              "error",
+              fieldName,
+              `'enum' on field '${fieldName}' must be a non-empty array`,
+              "template-schema-invalid"
+            ));
+          }
+          break;
+        }
+        case "min":
+        case "max": {
+          if (typeof norm.value !== "number" || Number.isNaN(norm.value)) {
+            issues.push(issue(
+              "error",
+              fieldName,
+              `'${key}' on field '${fieldName}' must be a number`,
+              "template-schema-invalid"
+            ));
+          }
+          if (!declaredType) {
+            issues.push(issue(
+              "error",
+              fieldName,
+              `'${key}' on field '${fieldName}' requires a declared 'type'`,
+              "template-schema-invalid"
+            ));
+          }
+          break;
+        }
+        case "required": {
+          if (norm.when) {
+            try {
+              evaluate(norm.when, {});
+            } catch (e) {
+              if (isSyntaxError(e)) {
+                issues.push(issue(
+                  "error",
+                  fieldName,
+                  `Invalid 'when' condition on field '${fieldName}': ${e.message}`,
+                  "template-schema-invalid"
+                ));
+              }
+            }
+          }
+          break;
+        }
+        // description, exists, uniqueItems — no template-level validation needed
+        default:
+          break;
+      }
+      if (key !== "required" && norm.when) {
+        try {
+          evaluate(norm.when, {});
+        } catch (e) {
+          if (isSyntaxError(e)) {
+            issues.push(issue(
+              "error",
+              fieldName,
+              `Invalid 'when' condition on '${key}' constraint of field '${fieldName}': ${e.message}`,
+              "template-schema-invalid"
+            ));
+          }
+        }
+      }
+    }
+  }
+  return issues;
+}
+function isSyntaxError(e) {
+  const msg = e.message || "";
+  return msg.includes("Unexpected") || msg.includes("Expected") || msg.includes("Unterminated") || msg.includes("Unknown") || msg.includes("at index");
+}
+function headingPath(ancestors, current) {
+  return [...ancestors, current].join(" \u203A ");
+}
+function headingLabel(depth, text5) {
+  return `${"#".repeat(depth)} ${text5}`;
+}
+function normalizeHeading(s) {
+  return (s || "").toLowerCase().trim();
+}
+function normalizeTableKey(s) {
+  return (s || "").toLowerCase().trim().replace(/\s+/g, "_");
+}
+function extractTableMap(table, keyCol, valCol) {
+  const keyIdx = table.headers.indexOf(keyCol.toLowerCase().trim());
+  const valIdx = table.headers.indexOf(valCol.toLowerCase().trim());
+  const map4 = {};
+  const nonNumeric = [];
+  if (keyIdx === -1 || valIdx === -1) return { map: map4, nonNumeric };
+  for (const row of table.rows) {
+    const rawKey = row[keyIdx] || "";
+    const rawVal = row[valIdx] || "";
+    const key = normalizeTableKey(rawKey);
+    if (!key) continue;
+    const num = Number(rawVal);
+    if (Number.isNaN(num)) {
+      nonNumeric.push(rawKey);
+    }
+    map4[key] = num;
+  }
+  return { map: map4, nonNumeric };
+}
+function applyBodySchema(templateBodySchema, docMarkdownBody, docMeta) {
+  if (!Array.isArray(templateBodySchema) || templateBodySchema.length === 0) {
+    return [];
+  }
+  const docTree = parseHeadingTree(docMarkdownBody || "");
+  const issues = [];
+  validateChildren(templateBodySchema, docTree.children, docTree.contentNodes, [], issues);
+  return issues;
+}
+function validateChildren(schemaNodes, docNodes, parentContentNodes, ancestorPath, issues) {
+  const repeatableSchemas = schemaNodes.filter((s) => s.sectionRules?.repeatable);
+  const nonRepeatableSchemas = schemaNodes.filter((s) => !s.sectionRules?.repeatable);
+  const claimedDocIndices = /* @__PURE__ */ new Set();
+  for (const schema2 of nonRepeatableSchemas) {
+    const normalizedSchemaText = normalizeHeading(schema2.text);
+    const label = headingLabel(schema2.depth, schema2.text);
+    const path3 = headingPath(ancestorPath, label);
+    const matchIdx = docNodes.findIndex(
+      (d, idx) => !claimedDocIndices.has(idx) && d.depth === schema2.depth && normalizeHeading(d.text) === normalizedSchemaText
+    );
+    if (matchIdx === -1) {
+      if (schema2.sectionRules?.required) {
+        const severity = schema2.sectionRules.severity || "error";
+        issues.push({
+          level: severity,
+          field: path3,
+          message: schema2.sectionRules.message || `Required section '${label}' is missing`,
+          error_type: "required-missing"
+        });
+      }
+      continue;
+    }
+    claimedDocIndices.add(matchIdx);
+    const docNode = docNodes[matchIdx];
+    validateSection(schema2, docNode, ancestorPath, issues);
+  }
+  for (const schema2 of repeatableSchemas) {
+    const label = headingLabel(schema2.depth, schema2.text);
+    const path3 = headingPath(ancestorPath, label);
+    const rules = schema2.sectionRules || {};
+    const matchingDocNodes = [];
+    for (let i = 0; i < docNodes.length; i++) {
+      if (!claimedDocIndices.has(i) && docNodes[i].depth === schema2.depth) {
+        claimedDocIndices.add(i);
+        matchingDocNodes.push(docNodes[i]);
+      }
+    }
+    const minCount = rules.min ?? (rules.required ? 1 : 0);
+    const maxCount = rules.max ?? Infinity;
+    const severity = rules.severity || "error";
+    if (matchingDocNodes.length < minCount) {
+      issues.push({
+        level: severity,
+        field: path3,
+        message: rules.message || `Expected at least ${minCount} '${label}' section(s), found ${matchingDocNodes.length}`,
+        error_type: "cardinality"
+      });
+    }
+    if (matchingDocNodes.length > maxCount) {
+      issues.push({
+        level: severity,
+        field: path3,
+        message: rules.message || `Expected at most ${maxCount} '${label}' section(s), found ${matchingDocNodes.length}`,
+        error_type: "cardinality"
+      });
+    }
+    for (const docNode of matchingDocNodes) {
+      const itemLabel = headingLabel(docNode.depth, docNode.text);
+      const itemPath = headingPath(ancestorPath, itemLabel);
+      if (rules.heading) {
+        const ctx = { field: itemPath, severity: rules.severity, message: rules.message };
+        const headingIssues = PRIMITIVES.heading(docNode.text, rules.heading, ctx);
+        for (const hi of headingIssues) {
+          hi.bodyLine = docNode.line;
+          issues.push(hi);
+        }
+      }
+      if (schema2.children && schema2.children.length > 0) {
+        validateChildren(schema2.children, docNode.children, docNode.contentNodes, [...ancestorPath, itemLabel], issues);
+      }
+      validateSectionContent(rules, docNode, itemPath, issues);
+    }
+  }
+}
+function validateSection(schema2, docNode, ancestorPath, issues) {
+  const label = headingLabel(schema2.depth, schema2.text);
+  const path3 = headingPath(ancestorPath, label);
+  const rules = schema2.sectionRules || {};
+  validateSectionContent(rules, docNode, path3, issues);
+  if (schema2.children && schema2.children.length > 0) {
+    validateChildren(schema2.children, docNode.children, docNode.contentNodes, [...ancestorPath, label], issues);
+  }
+}
+function validateSectionContent(rules, docNode, path3, issues) {
+  const severity = rules.severity || "error";
+  if (rules.table) {
+    const tableNode = docNode.contentNodes.find((n) => n.type === "table");
+    const parsedTable = tableNode ? parseTable(tableNode) : null;
+    const ctx = { field: path3, severity, message: rules.message };
+    const tableIssues = PRIMITIVES.table(parsedTable, rules.table, ctx);
+    for (const ti of tableIssues) {
+      if (tableNode) ti.bodyLine = tableNode.position?.start?.line ?? void 0;
+      issues.push(ti);
+    }
+    if (rules.formula && parsedTable && rules.table.key_column && rules.table.value_column) {
+      const { map: map4, nonNumeric } = extractTableMap(
+        parsedTable,
+        rules.table.key_column,
+        rules.table.value_column
+      );
+      for (const key of nonNumeric) {
+        issues.push({
+          level: severity,
+          field: path3,
+          message: `Table key '${key}' has a non-numeric value \u2014 cannot evaluate formula`,
+          error_type: "formula-violation",
+          bodyLine: tableNode?.position?.start?.line ?? void 0
+        });
+      }
+      if (nonNumeric.length === 0) {
+        const ctx2 = { field: path3, severity, message: rules.message };
+        const formulaIssues = PRIMITIVES.formula(map4, rules.formula, ctx2);
+        for (const fi of formulaIssues) {
+          fi.bodyLine = tableNode?.position?.start?.line ?? void 0;
+          issues.push(fi);
+        }
+      }
+    }
+  }
+  if (rules.list) {
+    const listNode = docNode.contentNodes.find((n) => n.type === "list");
+    const parsedList = listNode ? parseList(listNode) : null;
+    const ctx = { field: path3, severity, message: rules.message };
+    const listIssues = PRIMITIVES.list(parsedList, rules.list, ctx);
+    for (const li of listIssues) {
+      if (listNode) li.bodyLine = listNode.position?.start?.line ?? void 0;
+      issues.push(li);
+    }
+  }
+  if (rules.code) {
+    const fences = findCodeFences(docNode.contentNodes);
+    const ctx = { field: path3, severity, message: rules.message };
+    const codeIssues = PRIMITIVES.code(fences, rules.code, ctx);
+    for (const ci of codeIssues) {
+      issues.push(ci);
+    }
+  }
+  if (rules.formula && !rules.table) {
+    const ctx = { field: path3, severity, message: rules.message };
+    const formulaIssues = PRIMITIVES.formula({}, rules.formula, ctx);
+    for (const fi of formulaIssues) {
+      issues.push(fi);
+    }
+  }
+}
+var SECTION_RULES_KEYS = /* @__PURE__ */ new Set([
+  "required",
+  "repeatable",
+  "heading",
+  "table",
+  "list",
+  "code",
+  "formula",
+  "min",
+  "max",
+  "severity",
+  "message"
+]);
+function validateBodyTemplateSchema(bodySchema) {
+  const issues = [];
+  if (!Array.isArray(bodySchema)) return issues;
+  function walk(nodes, ancestors) {
+    for (const node2 of nodes) {
+      const label = headingLabel(node2.depth, node2.text);
+      const path3 = headingPath(ancestors, label);
+      const rules = node2.sectionRules;
+      if (rules && typeof rules === "object") {
+        for (const key of Object.keys(rules)) {
+          if (!SECTION_RULES_KEYS.has(key)) {
+            issues.push(issue(
+              "error",
+              path3,
+              `Unknown section-rules key '${key}' in '${path3}'`,
+              "template-schema-invalid",
+              `Allowed keys: ${[...SECTION_RULES_KEYS].join(", ")}`
+            ));
+          }
+        }
+        if (rules.heading && rules.heading.pattern) {
+          try {
+            new RegExp(rules.heading.pattern);
+          } catch {
+            issues.push(issue(
+              "error",
+              path3,
+              `Invalid regex in heading.pattern of '${path3}': ${rules.heading.pattern}`,
+              "template-schema-invalid"
+            ));
+          }
+        }
+        if (rules.heading && rules.heading.enum) {
+          if (!Array.isArray(rules.heading.enum) || rules.heading.enum.length === 0) {
+            issues.push(issue(
+              "error",
+              path3,
+              `heading.enum in '${path3}' must be a non-empty array`,
+              "template-schema-invalid"
+            ));
+          }
+        }
+        if (rules.table && typeof rules.table !== "object") {
+          issues.push(issue(
+            "error",
+            path3,
+            `'table' in '${path3}' must be an object`,
+            "template-schema-invalid"
+          ));
+        }
+        if (rules.list) {
+          if (typeof rules.list !== "object") {
+            issues.push(issue(
+              "error",
+              path3,
+              `'list' in '${path3}' must be an object`,
+              "template-schema-invalid"
+            ));
+          } else if (rules.list.item && rules.list.item.pattern) {
+            try {
+              new RegExp(rules.list.item.pattern);
+            } catch {
+              issues.push(issue(
+                "error",
+                path3,
+                `Invalid regex in list.item.pattern of '${path3}': ${rules.list.item.pattern}`,
+                "template-schema-invalid"
+              ));
+            }
+          }
+        }
+        if (rules.code && typeof rules.code !== "object") {
+          issues.push(issue(
+            "error",
+            path3,
+            `'code' in '${path3}' must be an object`,
+            "template-schema-invalid"
+          ));
+        }
+        if (rules.formula) {
+          if (typeof rules.formula !== "string") {
+            issues.push(issue(
+              "error",
+              path3,
+              `'formula' in '${path3}' must be a string expression`,
+              "template-schema-invalid"
+            ));
+          } else {
+            try {
+              parse3(rules.formula);
+            } catch (e) {
+              issues.push(issue(
+                "error",
+                path3,
+                `Invalid formula expression in '${path3}': ${e.message}`,
+                "template-schema-invalid"
+              ));
+            }
+          }
+        }
+        if (rules.min !== void 0 && (typeof rules.min !== "number" || Number.isNaN(rules.min))) {
+          issues.push(issue(
+            "error",
+            path3,
+            `'min' in '${path3}' must be a number`,
+            "template-schema-invalid"
+          ));
+        }
+        if (rules.max !== void 0 && (typeof rules.max !== "number" || Number.isNaN(rules.max))) {
+          issues.push(issue(
+            "error",
+            path3,
+            `'max' in '${path3}' must be a number`,
+            "template-schema-invalid"
+          ));
+        }
+      }
+      if (Array.isArray(node2.children)) {
+        walk(node2.children, [...ancestors, label]);
+      }
+    }
+  }
+  walk(bodySchema, []);
+  return issues;
+}
+
+// lib/template-rules.js
+async function loadTemplateRules(templatePath, projectRoot2 = process.cwd()) {
+  if (!templatePath) return null;
+  const absPath = (0, import_path.isAbsolute)(templatePath) ? templatePath : (0, import_path.join)(projectRoot2, templatePath);
+  let content3;
+  try {
+    content3 = await (0, import_promises.readFile)(absPath, "utf-8");
+  } catch {
+    return null;
+  }
+  let frontmatter, body;
+  try {
+    const parsed = (0, import_gray_matter2.default)(content3);
+    frontmatter = parsed.data;
+    body = parsed.content || "";
+  } catch {
+    return null;
+  }
+  if (!frontmatter || typeof frontmatter !== "object") return null;
+  const fields = frontmatter.fields != null && typeof frontmatter.fields === "object" ? frontmatter.fields : void 0;
+  const strict = frontmatter.strict === true;
+  const sections = Array.isArray(frontmatter.sections) ? [...frontmatter.sections] : [];
+  const tier = typeof frontmatter.tier === "string" ? frontmatter.tier : null;
+  const bodySchema = parseBodySchema(body);
+  const fieldErrors = validateTemplateSchema(fields);
+  const bodyErrors = validateBodyTemplateSchema(bodySchema);
+  const templateErrors = [...fieldErrors, ...bodyErrors];
+  return {
+    fields,
+    strict,
+    sections,
+    tier,
+    bodySchema,
+    templateErrors
+  };
+}
+
+// lib/validators.js
+var import_path2 = require("path");
+
 // lib/vault-config.js
 var import_node_fs = require("node:fs");
 var import_node_path2 = require("node:path");
@@ -33021,6 +33237,7 @@ var CONFIG = {
   //   - `template_path`: overloaded — folder-readme docs use it legitimately
   //     to document which template files in the folder belong to.
   templateOnlyFields: [
+    "fields",
     "validation_rules",
     "template_version",
     "template_id"
@@ -33112,135 +33329,6 @@ function validateTemplateField(frontmatter, filepath) {
   }
   return issues;
 }
-function applyRules(rules, frontmatter, body, filepath) {
-  const issues = [];
-  for (const fieldPath of rules.required_fields || []) {
-    const value = getField(frontmatter, fieldPath);
-    if (value === void 0 || value === null || value === "") {
-      issues.push({
-        level: "error",
-        field: fieldPath,
-        message: `Missing required field: ${fieldPath}`,
-        fix: `Add ${fieldPath} to frontmatter`
-      });
-    }
-  }
-  for (const rule of rules.field_rules || []) {
-    const value = getField(frontmatter, rule.field);
-    if (value === void 0 || value === null || value === "") continue;
-    if (rule.regex !== void 0) {
-      if (value instanceof Date) {
-        if (Number.isNaN(value.getTime())) {
-          issues.push({
-            level: "error",
-            field: rule.field,
-            message: `Invalid date value for ${rule.field}: ${value}`,
-            fix: "Use YYYY-MM-DD format"
-          });
-        }
-      } else if (typeof value !== "string" || !new RegExp(rule.regex).test(value)) {
-        issues.push({
-          level: "error",
-          field: rule.field,
-          message: `Value '${value}' fails regex ${rule.regex}`,
-          fix: `Field ${rule.field} must match ${rule.regex}`
-        });
-      }
-    }
-    if (rule.values !== void 0) {
-      if (!rule.values.includes(value)) {
-        issues.push({
-          level: "error",
-          field: rule.field,
-          message: `Invalid ${rule.field}: '${value}'`,
-          fix: `Use one of: ${rule.values.join(", ")}`
-        });
-      }
-    }
-    if (rule.type === "integer" && !Number.isInteger(value)) {
-      issues.push({
-        level: "error",
-        field: rule.field,
-        message: `Expected integer for ${rule.field}, got ${typeof value}: ${value}`,
-        fix: `Set ${rule.field} to an integer`
-      });
-    }
-    if (typeof rule.min === "number" && typeof value === "number" && value < rule.min) {
-      issues.push({
-        level: "error",
-        field: rule.field,
-        message: `Value ${value} below minimum ${rule.min} for ${rule.field}`,
-        fix: `Set ${rule.field} \u2265 ${rule.min}`
-      });
-    }
-  }
-  for (const cond of rules.conditional_required_fields || []) {
-    let conditionResult;
-    try {
-      conditionResult = evaluate(cond.condition, frontmatter);
-    } catch (err) {
-      issues.push({
-        level: "error",
-        field: "validation_rules",
-        message: `Cannot evaluate condition '${cond.condition}': ${err.message}`,
-        fix: "Fix the DSL syntax in the template validation_rules block"
-      });
-      continue;
-    }
-    if (!conditionResult) continue;
-    const severity = cond.severity === "warning" ? "warning" : "error";
-    if (typeof cond.field === "string" && cond.field.startsWith("body_section:")) {
-      const section = cond.field.slice("body_section:".length);
-      if (cond.required && typeof body === "string") {
-        const headingText = section.replace(/^#+\s*/, "");
-        const headingLevel = (section.match(/^(#+)/) || ["##"])[0];
-        const escapedText = headingText.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const re = new RegExp(`^${headingLevel}\\s+${escapedText}\\s*$`, "im");
-        const strippedBody = body.replace(/```[\s\S]*?```/g, "").replace(/~~~[\s\S]*?~~~/g, "");
-        if (!re.test(strippedBody)) {
-          issues.push({
-            level: severity,
-            field: cond.field,
-            message: `Required body section '${section}' missing when ${cond.condition}`,
-            fix: `Add '${section}' to the document body.`
-          });
-        }
-      }
-      continue;
-    }
-    const value = getField(frontmatter, cond.field);
-    if (cond.required) {
-      if (value === void 0 || value === null || value === "") {
-        issues.push({
-          level: severity,
-          field: cond.field,
-          message: `Required when ${cond.condition}`,
-          fix: `Add ${cond.field} to frontmatter`
-        });
-      }
-    }
-    if (typeof cond.min_count === "number") {
-      const arr = Array.isArray(value) ? value : [];
-      if (arr.length < cond.min_count) {
-        issues.push({
-          level: severity,
-          field: cond.field,
-          message: `Need at least ${cond.min_count} entries when ${cond.condition} (got ${arr.length})`,
-          fix: `Add entries to ${cond.field}`
-        });
-      }
-    }
-  }
-  if (rules.state_machine && frontmatter.status && !(frontmatter.status in rules.state_machine)) {
-    issues.push({
-      level: "warning",
-      field: "status",
-      message: `Status '${frontmatter.status}' is not declared in template state_machine`,
-      fix: `Use one of: ${Object.keys(rules.state_machine).join(", ")}`
-    });
-  }
-  return issues;
-}
 function validateTemplateMetaLeak(frontmatter, filepath) {
   const leaks = findTemplateMetaLeaks(filepath, frontmatter);
   return leaks.map((field) => ({
@@ -33257,7 +33345,7 @@ function suggestSlug(name) {
 function validateSlug(filepath) {
   const issues = [];
   if (!filepath || typeof filepath !== "string") return issues;
-  let rel = filepath.startsWith("/") ? (0, import_path3.relative)(process.cwd(), filepath) : filepath;
+  let rel = filepath.startsWith("/") ? (0, import_path2.relative)(process.cwd(), filepath) : filepath;
   rel = rel.replace(/^\.\//, "");
   if (!rel || rel.startsWith("..")) return issues;
   const segments = rel.split("/").filter(Boolean);
@@ -33482,42 +33570,34 @@ async function validateBuffer({ text: text5, filepath, projectRoot: projectRoot2
     issues.push({ ...iss, line: bodyLineToDocLine(text5, iss.bodyLine) });
   }
   let rules = null;
-  let sectionRules = {};
   if (fm.template) {
     rules = await loadTemplateRules(fm.template, projectRoot2);
-    sectionRules = await loadTemplateSectionRules(fm.template, projectRoot2);
   }
   if (!rules && fm.template) {
     issues.push({
       level: "error",
       field: "template",
-      message: `Cannot load validation_rules from template '${fm.template}' \u2014 file not found, malformed YAML, or missing validation_rules block`,
-      fix: `Verify '${fm.template}' exists (relative to repo root) and contains a 'validation_rules:' block in its frontmatter. See templates/README.md for the template registry.`
+      message: `Cannot load schema from template '${fm.template}' \u2014 file not found or malformed YAML`,
+      fix: `Verify '${fm.template}' exists (relative to repo root) and contains valid frontmatter. See templates/README.md for the template registry.`
     });
   }
-  const hasSectionRules = Object.keys(sectionRules).length > 0;
   if (rules) {
-    issues.push(...applyRules(rules, fm, body, filepath));
-  }
-  try {
-    const parsed = await parseBody(body, { formatHints: hasSectionRules ? sectionRules : rules?.body_section_formats });
-    if (parsed && Array.isArray(parsed.warnings)) {
-      for (const w of parsed.warnings) {
+    for (const te of rules.templateErrors || []) {
+      issues.push(te);
+    }
+    if (rules.fields) {
+      const docMeta = { repoRelativePath: filepath };
+      issues.push(...applyFieldSchema({ fields: rules.fields, strict: rules.strict }, fm, docMeta));
+    }
+    if (Array.isArray(rules.bodySchema) && rules.bodySchema.length > 0) {
+      const bodyIssues = applyBodySchema(rules.bodySchema, body);
+      for (const bi of bodyIssues) {
         issues.push({
-          level: "warning",
-          field: "body",
-          message: w.message,
-          fix: w.fix || "Fix the format to match the expected pattern shown in the message",
-          // `parseBody` line numbers are relative to the body (1-indexed).
-          // Translate to document-absolute 0-indexed: bodyOffset + (w.line - 1).
-          line: bodyLineToDocLine(text5, w.line),
-          // Preserve original metadata for callers that want to render `raw`.
-          _raw: w.raw,
-          _type: w.type
+          ...bi,
+          line: bodyLineToDocLine(text5, bi.bodyLine)
         });
       }
     }
-  } catch {
   }
   return { issues, lineMap, skipped: false };
 }
@@ -33544,29 +33624,29 @@ function issuesToDiagnostics(issues, lineMap, text5) {
   const lines = text5.split("\n");
   return issues.map((iss) => issueToDiagnostic(iss, lineMap, lines));
 }
-function issueToDiagnostic(issue, lineMap, lines) {
-  const lineNum = resolveLine(issue, lineMap);
+function issueToDiagnostic(issue2, lineMap, lines) {
+  const lineNum = resolveLine(issue2, lineMap);
   const lineText = lines[lineNum] ?? "";
-  const range = narrowRange(issue.field, lineNum, lineText);
-  const messageParts = [issue.message];
-  if (issue.fix) messageParts.push(`fix: ${issue.fix}`);
+  const range = narrowRange(issue2.field, lineNum, lineText);
+  const messageParts = [issue2.message];
+  if (issue2.fix) messageParts.push(`fix: ${issue2.fix}`);
   return {
-    severity: SEVERITY[issue.level] ?? import_node.DiagnosticSeverity.Warning,
+    severity: SEVERITY[issue2.level] ?? import_node.DiagnosticSeverity.Warning,
     range,
     message: messageParts.join("\n"),
     source: "vault-keeper",
     // The `code` surfaces in tooltips and can be hovered. Use the field path
     // so authors searching for a specific field find the right issue fast.
-    code: issue.field || "vault-keeper"
+    code: issue2.field || "vault-keeper"
   };
 }
-function resolveLine(issue, lineMap) {
-  if (typeof issue.line === "number" && issue.line >= 0) return issue.line;
-  if (issue.field && lineMap?.lineFor) {
-    const mapped = lineMap.lineFor(issue.field);
+function resolveLine(issue2, lineMap) {
+  if (typeof issue2.line === "number" && issue2.line >= 0) return issue2.line;
+  if (issue2.field && lineMap?.lineFor) {
+    const mapped = lineMap.lineFor(issue2.field);
     if (typeof mapped === "number") return mapped;
   }
-  if (issue.field === "filename" || issue.field === "folder") return 0;
+  if (issue2.field === "filename" || issue2.field === "folder") return 0;
   return 0;
 }
 function narrowRange(field, lineNum, lineText) {
@@ -33591,7 +33671,7 @@ function escapeRegex(s) {
 }
 
 // server/vault-index.js
-var import_promises3 = require("node:fs/promises");
+var import_promises2 = require("node:fs/promises");
 var import_node_path3 = require("node:path");
 var import_node_url2 = require("node:url");
 var import_gray_matter4 = __toESM(require_gray_matter(), 1);
@@ -33722,7 +33802,7 @@ var VaultIndex = class {
       const d = stack.pop();
       let entries;
       try {
-        entries = await (0, import_promises3.readdir)(d, { withFileTypes: true });
+        entries = await (0, import_promises2.readdir)(d, { withFileTypes: true });
       } catch {
         continue;
       }
@@ -33742,7 +33822,7 @@ var VaultIndex = class {
   async _parseFile(absPath) {
     let content3;
     try {
-      content3 = await (0, import_promises3.readFile)(absPath, "utf-8");
+      content3 = await (0, import_promises2.readFile)(absPath, "utf-8");
     } catch {
       return null;
     }
@@ -36818,7 +36898,7 @@ var import_node_path4 = require("node:path");
 var import_node_url3 = require("node:url");
 var import_fs = require("fs");
 var actualFS = __toESM(require("node:fs"), 1);
-var import_promises4 = require("node:fs/promises");
+var import_promises3 = require("node:fs/promises");
 
 // node_modules/minipass/dist/esm/index.js
 var import_node_events = require("node:events");
@@ -37549,10 +37629,10 @@ var Minipass = class extends import_node_events.EventEmitter {
    * Return a void Promise that resolves once the stream ends.
    */
   async promise() {
-    return new Promise((resolve7, reject) => {
+    return new Promise((resolve6, reject) => {
       this.on(DESTROYED, () => reject(new Error("stream destroyed")));
       this.on("error", (er) => reject(er));
-      this.on("end", () => resolve7());
+      this.on("end", () => resolve6());
     });
   }
   /**
@@ -37576,7 +37656,7 @@ var Minipass = class extends import_node_events.EventEmitter {
         return Promise.resolve({ done: false, value: res });
       if (this[EOF])
         return stop();
-      let resolve7;
+      let resolve6;
       let reject;
       const onerr = (er) => {
         this.off("data", ondata);
@@ -37590,19 +37670,19 @@ var Minipass = class extends import_node_events.EventEmitter {
         this.off("end", onend);
         this.off(DESTROYED, ondestroy);
         this.pause();
-        resolve7({ value, done: !!this[EOF] });
+        resolve6({ value, done: !!this[EOF] });
       };
       const onend = () => {
         this.off("error", onerr);
         this.off("data", ondata);
         this.off(DESTROYED, ondestroy);
         stop();
-        resolve7({ done: true, value: void 0 });
+        resolve6({ done: true, value: void 0 });
       };
       const ondestroy = () => onerr(new Error("stream destroyed"));
       return new Promise((res2, rej) => {
         reject = rej;
-        resolve7 = res2;
+        resolve6 = res2;
         this.once(DESTROYED, ondestroy);
         this.once("error", onerr);
         this.once("end", onend);
@@ -37711,10 +37791,10 @@ var defaultFS = {
   readlinkSync: import_fs.readlinkSync,
   realpathSync,
   promises: {
-    lstat: import_promises4.lstat,
-    readdir: import_promises4.readdir,
-    readlink: import_promises4.readlink,
-    realpath: import_promises4.realpath
+    lstat: import_promises3.lstat,
+    readdir: import_promises3.readdir,
+    readlink: import_promises3.readlink,
+    realpath: import_promises3.realpath
   }
 };
 var fsFromOption = (fsOption) => !fsOption || fsOption === defaultFS || fsOption === actualFS ? defaultFS : {
@@ -38574,9 +38654,9 @@ var PathBase = class {
     if (this.#asyncReaddirInFlight) {
       await this.#asyncReaddirInFlight;
     } else {
-      let resolve7 = () => {
+      let resolve6 = () => {
       };
-      this.#asyncReaddirInFlight = new Promise((res) => resolve7 = res);
+      this.#asyncReaddirInFlight = new Promise((res) => resolve6 = res);
       try {
         for (const e of await this.#fs.promises.readdir(fullpath, {
           withFileTypes: true
@@ -38589,7 +38669,7 @@ var PathBase = class {
         children.provisional = 0;
       }
       this.#asyncReaddirInFlight = void 0;
-      resolve7();
+      resolve6();
     }
     return children.slice(0, children.provisional);
   }
@@ -40489,7 +40569,7 @@ glob.glob = glob;
 // server/providers/completion.js
 var capability = {
   completionProvider: {
-    triggerCharacters: ["*", "@", "#", "(", "/", ":"],
+    triggerCharacters: ["*", "#", "(", "/", ":"],
     resolveProvider: false
   }
 };
@@ -40523,26 +40603,17 @@ async function computeCompletions(params, { docs: docs2, vaultIndex: vaultIndex2
     const typed = linkM[1];
     return completionsForLinkPath(typed, params.textDocument.uri, vaultIndex2, projectRoot2);
   }
-  const handleM = prefix.match(/(?:^|\s)@([a-zA-Z0-9_-]*)$/);
-  if (handleM) {
-    const typed = handleM[1];
-    return completionsForHandle(typed, projectRoot2);
-  }
   const ctx = getPositionContext(text5, position2);
   if (ctx.type === "frontmatter-key") {
     const key = ctx.key;
-    if (key === "status") return completionsForEnum("status", text5, projectRoot2);
-    if (key === "phase") return completionsForEnum("phase", text5, projectRoot2);
     if (key === "template") return completionsForTemplate(projectRoot2);
-    return [];
+    return completionsForEnum(key, text5, projectRoot2);
   }
-  const fmValueM = prefix.match(/^(status|phase|template):\s*['"]?([^'"]*)?$/);
+  const fmValueM = prefix.match(/^([a-zA-Z_][a-zA-Z0-9_]*):\s*['"]?([^'"]*)?$/);
   if (fmValueM && isInFrontmatter(lines, lineIdx)) {
     const key = fmValueM[1];
-    if (key === "status") return completionsForEnum("status", text5, projectRoot2);
-    if (key === "phase") return completionsForEnum("phase", text5, projectRoot2);
     if (key === "template") return completionsForTemplate(projectRoot2);
-    return [];
+    return completionsForEnum(key, text5, projectRoot2);
   }
   return [];
 }
@@ -40614,38 +40685,20 @@ async function completionsForAnchor(targetRawPath, docUri, vaultIndex2, projectR
 async function completionsForEnum(fieldName, docText, projectRoot2) {
   if (!projectRoot2) return [];
   const rules = await getDocTemplateRules(docText, projectRoot2);
-  if (!rules) return [];
-  const fieldRule = (rules.field_rules || []).find((r) => r.field === fieldName);
-  if (!fieldRule || !Array.isArray(fieldRule.values)) return [];
-  return fieldRule.values.map((val) => ({
-    label: val,
+  if (!rules || !rules.fields) return [];
+  const spec = rules.fields[fieldName];
+  if (!spec || typeof spec !== "object") return [];
+  let values = spec.enum;
+  if (values && typeof values === "object" && !Array.isArray(values) && "value" in values) {
+    values = values.value;
+  }
+  if (!Array.isArray(values)) return [];
+  return values.map((val) => ({
+    label: String(val),
     kind: import_node2.CompletionItemKind.EnumMember,
     detail: fieldName,
-    insertText: val
+    insertText: String(val)
   }));
-}
-async function completionsForHandle(typed, projectRoot2) {
-  if (!projectRoot2) return [];
-  let files;
-  try {
-    files = await glob("product-data/people/*.md", { cwd: projectRoot2 });
-  } catch {
-    return [];
-  }
-  const typedLower = typed.toLowerCase();
-  const items = [];
-  for (const f of files) {
-    const handle2 = (0, import_node_path5.basename)(f, ".md");
-    if (typedLower && !handle2.toLowerCase().startsWith(typedLower)) continue;
-    items.push({
-      label: `@${handle2}`,
-      kind: import_node2.CompletionItemKind.Variable,
-      // CompletionItemKind.User is not in vscode-languageserver v9
-      detail: "person",
-      insertText: `@${handle2}`
-    });
-  }
-  return items;
 }
 async function completionsForTemplate(projectRoot2) {
   if (!projectRoot2) return [];
@@ -40740,10 +40793,6 @@ async function fixersForDiagnostic(diag, uri, text5, { vaultIndex: vaultIndex2, 
   const code3 = typeof diag.code === "string" ? diag.code : String(diag.code ?? "");
   const msg = diag.message ?? "";
   const actions = [];
-  if (code3.startsWith("relationships.") && /^V14:/.test(msg)) {
-    const act = fixV14LegacyRelationships(diag, uri, text5);
-    if (act) actions.push(act);
-  }
   if (TEMPLATE_ONLY_FIELDS.has(code3) && /leaked/i.test(msg)) {
     const act = fixTemplateMetaLeak(diag, uri, text5, code3);
     if (act) actions.push(act);
@@ -40752,104 +40801,25 @@ async function fixersForDiagnostic(diag, uri, text5, { vaultIndex: vaultIndex2, 
     const act = fixNamingViolation(diag, uri, text5, msg);
     if (act) actions.push(act);
   }
-  if (/^Missing required field:/.test(msg)) {
+  if (/^Missing required field:/.test(msg) || /^Required field '.+' is missing/.test(msg)) {
     const act = fixMissingRequiredField(diag, uri, text5, code3);
     if (act) actions.push(act);
   }
-  if (code3.startsWith("relationships.") && /^Relative path found:/.test(msg)) {
+  if (/^Relative path found:/.test(msg)) {
     const act = fixRelativePath(diag, uri, text5, msg, projectRoot2);
     if (act) actions.push(act);
   }
   return actions;
 }
-var TEMPLATE_ONLY_FIELDS = /* @__PURE__ */ new Set(["validation_rules", "template_version", "template_id"]);
-function fixV14LegacyRelationships(diag, uri, text5) {
-  const lines = text5.split("\n");
-  const fmBounds = findFmBounds(lines);
-  if (!fmBounds) return null;
-  let relKeyLine = -1;
-  for (let i = fmBounds.openLine + 1; i < fmBounds.closeLine; i++) {
-    if (/^relationships\s*:/.test(lines[i])) {
-      relKeyLine = i;
-      break;
-    }
-  }
-  if (relKeyLine === -1) return null;
-  let blockEnd = relKeyLine;
-  for (let i = relKeyLine + 1; i < fmBounds.closeLine; i++) {
-    if (/^\s+/.test(lines[i]) || lines[i].trim() === "") {
-      blockEnd = i;
-    } else {
-      break;
-    }
-  }
-  const edgeLines = extractRelationshipEdges(lines, relKeyLine, blockEnd);
-  const textEdits = [];
-  textEdits.push({
-    range: {
-      start: { line: relKeyLine, character: 0 },
-      end: { line: blockEnd + 1, character: 0 }
-    },
-    newText: ""
-  });
-  const bodyInsert = buildRelationshipsSection(edgeLines, lines, fmBounds.closeLine);
-  textEdits.push(bodyInsert);
-  return {
-    title: "Move `relationships:` frontmatter to body ## Relationships section (V14)",
-    kind: "quickfix",
-    diagnostics: [diag],
-    edit: {
-      changes: { [uri]: textEdits }
-    }
-  };
-}
-function extractRelationshipEdges(lines, keyLine, blockEnd) {
-  const edges = [];
-  let currentPredicate = null;
-  for (let i = keyLine + 1; i <= blockEnd; i++) {
-    const line = lines[i];
-    const predMatch = line.match(/^  ([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*$/);
-    if (predMatch) {
-      currentPredicate = predMatch[1];
-      continue;
-    }
-    const pathMatch = line.match(/^\s+- path:\s*(.+)$/);
-    if (pathMatch && currentPredicate) {
-      edges.push({ predicate: currentPredicate, path: pathMatch[1].trim() });
-    }
-  }
-  return edges;
-}
-function buildRelationshipsSection(edges, lines, fmCloseLine) {
-  const existingIdx = lines.findIndex(
-    (l, i) => i > fmCloseLine && /^##\s+Relationships\s*$/.test(l)
-  );
-  if (existingIdx >= 0) {
-    let insertLine2 = existingIdx + 1;
-    while (insertLine2 < lines.length && !/^#{1,6}\s/.test(lines[insertLine2]) && !/^<!--/.test(lines[insertLine2])) {
-      insertLine2++;
-    }
-    const newText = edges.map((e) => `- ${e.predicate}: [[${e.path}]]
-`).join("");
-    return {
-      range: {
-        start: { line: insertLine2, character: 0 },
-        end: { line: insertLine2, character: 0 }
-      },
-      newText: newText ? newText + "\n" : ""
-    };
-  }
-  const autoGenIdx = lines.findIndex((l) => /^<!--\s*Auto-generated/i.test(l));
-  const insertLine = autoGenIdx >= 0 ? autoGenIdx : lines.length;
-  const section = "\n## Relationships\n\n" + edges.map((e) => `- ${e.predicate}: [[${e.path}]]`).join("\n") + "\n";
-  return {
-    range: {
-      start: { line: insertLine, character: 0 },
-      end: { line: insertLine, character: 0 }
-    },
-    newText: section
-  };
-}
+var TEMPLATE_ONLY_FIELDS = /* @__PURE__ */ new Set([
+  "validation_rules",
+  "template_version",
+  "template_id",
+  "fields",
+  "strict",
+  "sections",
+  "tier"
+]);
 function fixTemplateMetaLeak(diag, uri, text5, fieldKey) {
   const lines = text5.split("\n");
   const fmBounds = findFmBounds(lines);
@@ -40999,7 +40969,6 @@ __export(inlay_hint_exports, {
 });
 var import_node_url7 = require("node:url");
 var import_node_path7 = require("node:path");
-var import_gray_matter5 = __toESM(require_gray_matter(), 1);
 var capability3 = { inlayHintProvider: { resolveProvider: false } };
 function isVaultUri(uri, projectRoot2, vaultFolders) {
   if (!uri || !uri.startsWith("file://")) return false;
@@ -41020,109 +40989,7 @@ function register3({ connection: connection2, docs: docs2, vaultIndex: vaultInde
       if (projectRoot2 && !isVaultUri(params.textDocument.uri, projectRoot2, vaultFolders)) {
         return [];
       }
-      const text5 = doc.getText();
-      const lines = text5.split("\n");
-      let body = text5;
-      let fmEndLine = -1;
-      if (lines[0] === "---") {
-        const closeIdx = lines.findIndex((l, i) => i > 0 && l === "---");
-        if (closeIdx > 0) {
-          fmEndLine = closeIdx;
-          body = lines.slice(closeIdx + 1).join("\n");
-        }
-      }
-      const parsed = await parseBody(body);
-      let absPath = null;
-      if (vaultIndex2 && params.textDocument.uri.startsWith("file://")) {
-        absPath = (0, import_node_url7.fileURLToPath)(params.textDocument.uri);
-      }
-      const bodyLineOffset = fmEndLine + 1;
-      const hints = [];
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (/^## Relationships\s*$/.test(line)) {
-          const outgoing = parsed.relationships.length;
-          const incoming = absPath && vaultIndex2 ? vaultIndex2.getBacklinks(absPath).length : 0;
-          hints.push({
-            position: { line: i, character: line.length },
-            label: ` (${outgoing} outgoing, ${incoming} incoming)`,
-            kind: 1,
-            // Type
-            paddingLeft: false,
-            paddingRight: false
-          });
-          continue;
-        }
-        const acHeadingMatch = line.match(/^### (AC\d+(?:\.\d+)?)\s*—/);
-        if (acHeadingMatch) {
-          const acId = acHeadingMatch[1];
-          const ac = parsed.acceptanceCriteria.find((a) => {
-            return bodyLineOffset + (a.line - 1) === i;
-          });
-          if (ac) {
-            const impl = ac.implementedBy.length;
-            const verified = ac.verifiedBy.length;
-            hints.push({
-              position: { line: i, character: line.length },
-              label: ` (implementing: ${impl}, verified by: ${verified})`,
-              kind: 1,
-              paddingLeft: false,
-              paddingRight: false
-            });
-          }
-          continue;
-        }
-        const relBulletMatch = line.match(/^- \[([^\]]+)\]\(([^)]+)\)/);
-        if (relBulletMatch && vaultIndex2) {
-          const rawPath = relBulletMatch[2].split("#")[0];
-          const docDir = absPath ? (0, import_node_path7.dirname)(absPath) : projectRoot2 || "";
-          const targetAbs = (0, import_node_path7.resolve)(docDir, rawPath);
-          const fm = vaultIndex2.getFrontmatter(targetAbs);
-          if (fm) {
-            const status = fm.status || "?";
-            const phase = fm.phase || "?";
-            hints.push({
-              position: { line: i, character: line.length },
-              label: ` (status: ${status}, phase: ${phase})`,
-              kind: 1,
-              paddingLeft: false,
-              paddingRight: false
-            });
-          }
-          continue;
-        }
-        if (i > 0 && i <= fmEndLine && /^status:\s*/.test(line)) {
-          const { phaseHistory, statusHistory } = parsed;
-          let daysInPhase = null;
-          if (phaseHistory.length > 0) {
-            const lastPhase = phaseHistory[phaseHistory.length - 1];
-            const ts = Date.parse(lastPhase.at);
-            if (!isNaN(ts)) {
-              daysInPhase = Math.floor((Date.now() - ts) / 864e5);
-            }
-          }
-          let daysInStatus = null;
-          if (statusHistory.length > 0) {
-            const lastStatus = statusHistory[statusHistory.length - 1];
-            const ts = Date.parse(lastStatus.at);
-            if (!isNaN(ts)) {
-              daysInStatus = Math.floor((Date.now() - ts) / 864e5);
-            }
-          }
-          if (daysInPhase !== null || daysInStatus !== null) {
-            const phasePart = daysInPhase !== null ? `${daysInPhase}d` : "?";
-            const statusPart = daysInStatus !== null ? `${daysInStatus}d` : "?";
-            hints.push({
-              position: { line: i, character: line.length },
-              label: ` (in this phase: ${phasePart}, total in this status: ${statusPart})`,
-              kind: 1,
-              paddingLeft: false,
-              paddingRight: false
-            });
-          }
-        }
-      }
-      return hints;
+      return [];
     } catch (err) {
       connection2.console?.error?.(`inlayHint error: ${err.stack || err}`);
       return [];
@@ -41138,7 +41005,7 @@ __export(code_lens_exports, {
 });
 var import_node_url8 = require("node:url");
 var import_node_path8 = require("node:path");
-var import_gray_matter6 = __toESM(require_gray_matter(), 1);
+var import_gray_matter5 = __toESM(require_gray_matter(), 1);
 var capability4 = { codeLensProvider: { resolveProvider: false } };
 function isVaultUri2(uri, projectRoot2, vaultFolders) {
   if (!uri || !uri.startsWith("file://")) return false;
@@ -41161,23 +41028,20 @@ function register4({ connection: connection2, docs: docs2, vaultIndex: vaultInde
       }
       const text5 = doc.getText();
       const lines = text5.split("\n");
-      let body = text5;
       let fmEndLine = -1;
       let fm = {};
       if (lines[0] === "---") {
         const closeIdx = lines.findIndex((l, i) => i > 0 && l === "---");
         if (closeIdx > 0) {
           fmEndLine = closeIdx;
-          body = lines.slice(closeIdx + 1).join("\n");
           try {
-            const parsed = (0, import_gray_matter6.default)(text5);
+            const parsed = (0, import_gray_matter5.default)(text5);
             fm = parsed.data || {};
           } catch {
             fm = {};
           }
         }
       }
-      const parsedBody = await parseBody(body);
       let absPath = null;
       if (vaultIndex2 && params.textDocument.uri.startsWith("file://")) {
         absPath = (0, import_node_url8.fileURLToPath)(params.textDocument.uri);
@@ -41187,7 +41051,6 @@ function register4({ connection: connection2, docs: docs2, vaultIndex: vaultInde
         const line = lines[i];
         if (i > 0 && i <= fmEndLine && /^template:\s*/.test(line)) {
           const backlinkCount = absPath && vaultIndex2 ? vaultIndex2.getBacklinks(absPath).length : 0;
-          const acCount = parsedBody.acceptanceCriteria.length;
           let daysAgo = null;
           const updatedRaw = fm.updated_at || fm.updated || null;
           if (updatedRaw) {
@@ -41199,7 +41062,6 @@ function register4({ connection: connection2, docs: docs2, vaultIndex: vaultInde
           const agePart = daysAgo !== null ? `\u23F1 updated ${daysAgo}d ago` : null;
           const titleParts = [
             `\u2197 ${backlinkCount} backlinks`,
-            `\u2B06 ${acCount} acceptance criteria`,
             agePart
           ].filter(Boolean);
           lenses.push({
@@ -41210,41 +41072,6 @@ function register4({ connection: connection2, docs: docs2, vaultIndex: vaultInde
               arguments: [params.textDocument.uri]
             }
           });
-          continue;
-        }
-        if (/^## Acceptance Criteria\s*$/.test(line)) {
-          lenses.push({
-            range: zeroRange(i),
-            command: {
-              title: "\u25B6 Run test cases for all ACs",
-              command: "vault-keeper.runTestsForDoc",
-              arguments: [params.textDocument.uri]
-            }
-          });
-          continue;
-        }
-        if (/^## Ship Timeline\s*$/.test(line)) {
-          const locked = Boolean(parsedBody.shipTimeline?.locked_at);
-          lenses.push({
-            range: zeroRange(i),
-            command: {
-              title: locked ? "\u{1F513} Unlock target" : "\u{1F512} Lock target date",
-              command: "vault-keeper.toggleShipTimelineLock",
-              arguments: [params.textDocument.uri]
-            }
-          });
-          continue;
-        }
-        if (/^## Decision Log\s*$/.test(line)) {
-          lenses.push({
-            range: zeroRange(i),
-            command: {
-              title: "+ Add decision entry",
-              command: "vault-keeper.addDecision",
-              arguments: [params.textDocument.uri]
-            }
-          });
-          continue;
         }
       }
       return lenses;
@@ -41267,7 +41094,7 @@ __export(rename_exports, {
   capability: () => capability5,
   register: () => register5
 });
-var import_promises5 = require("node:fs/promises");
+var import_promises4 = require("node:fs/promises");
 var import_node_path9 = require("node:path");
 var import_node_url9 = require("node:url");
 var import_node3 = __toESM(require_node3(), 1);
@@ -41338,7 +41165,7 @@ function register5({ connection: connection2, docs: docs2, vaultIndex: vaultInde
             if (liveDoc) {
               referrerText = liveDoc.getText();
             } else {
-              referrerText = await (0, import_promises5.readFile)(bl.source, "utf-8");
+              referrerText = await (0, import_promises4.readFile)(bl.source, "utf-8");
             }
             const edits = buildLinkReplacementEdits(referrerText, oldAbsPath, referrerDir, newRelPath);
             if (edits.length > 0) {
@@ -41440,7 +41267,7 @@ async function renameHandle(ctx, newHandle, docAbsPath, vaultIndex2, projectRoot
     try {
       let fileText = entry.body ?? null;
       if (fileText == null) {
-        fileText = await (0, import_promises5.readFile)(absPath, "utf-8");
+        fileText = await (0, import_promises4.readFile)(absPath, "utf-8");
       }
       const edits = buildHandleReplacementEdits(fileText, oldAtHandle, newAtHandle);
       const fm = entry.fm || {};
@@ -41531,7 +41358,7 @@ async function renameId(ctx, newId, vaultIndex2, projectRoot2, connection2) {
     try {
       let fileText = entry.body ?? null;
       if (fileText == null) {
-        fileText = await (0, import_promises5.readFile)(absPath, "utf-8");
+        fileText = await (0, import_promises4.readFile)(absPath, "utf-8");
       }
       const edits = [];
       const lines = fileText.split("\n");
@@ -41605,7 +41432,7 @@ __export(document_formatting_exports, {
 });
 
 // lib/canonical-formatter.js
-var import_gray_matter7 = __toESM(require_gray_matter(), 1);
+var import_gray_matter6 = __toESM(require_gray_matter(), 1);
 
 // node_modules/js-yaml/dist/js-yaml.mjs
 function isNothing(subject) {
@@ -44345,9 +44172,9 @@ function reorderSections(body, sections) {
   }
   return joinSections([preamble, ...ordered]);
 }
-var AC_HEADING_RE2 = /^(#{3,})\s+AC\s*(\d+)\s*[-:—]\s*(.+)$/i;
+var AC_HEADING_RE = /^(#{3,})\s+AC\s*(\d+)\s*[-:—]\s*(.+)$/i;
 function normalizeAcHeading(line) {
-  const m = line.match(AC_HEADING_RE2);
+  const m = line.match(AC_HEADING_RE);
   if (!m) return line;
   const hashes = m[1];
   const num = m[2];
@@ -44401,7 +44228,7 @@ function formatVaultDocument(text5, opts = {}) {
   let out = text5;
   if (out.trimStart().startsWith("---")) {
     try {
-      const parsed = (0, import_gray_matter7.default)(out);
+      const parsed = (0, import_gray_matter6.default)(out);
       const reordered = sortFmKeys(parsed.data);
       const newYaml = serializeFm(reordered);
       const body = parsed.content.replace(/^\n+/, "");
@@ -44439,7 +44266,7 @@ async function formatVaultDocumentAsync(text5, opts = {}) {
   let sections = [];
   if (text5 && text5.trimStart().startsWith("---")) {
     try {
-      const parsed = (0, import_gray_matter7.default)(text5);
+      const parsed = (0, import_gray_matter6.default)(text5);
       const templatePath = parsed.data?.template;
       if (templatePath) {
         const rules = await loadTemplateRules(templatePath, projectRoot2);
@@ -44755,20 +44582,33 @@ async function hoverFrontmatterKey(text5, ctx) {
     return { contents: { kind: "markdown", value: `**${ctx.key}**` } };
   }
   const fieldKey = ctx.dotPath || ctx.key;
-  const rule = (rules.field_rules || []).find(
-    (r) => r.field === fieldKey || r.field === ctx.key
-  );
+  const spec = (rules.fields || {})[fieldKey] || (rules.fields || {})[ctx.key];
   const parts = [`**${fieldKey}**`];
-  if (rule) {
-    if (rule.description) parts.push("", rule.description);
-    if (rule.regex) parts.push("", `Regex: \`${rule.regex}\``);
-    if (rule.values) parts.push("", `Allowed: \`${rule.values.join("`, `")}\``);
-    if (rule.type) parts.push("", `Type: \`${rule.type}\``);
-    if (rule.min !== void 0) parts.push("", `Min: \`${rule.min}\``);
+  if (spec && typeof spec === "object") {
+    const desc = extractPrimitiveValue2(spec, "description");
+    if (desc) parts.push("", desc);
+    const type2 = extractPrimitiveValue2(spec, "type");
+    if (type2) parts.push("", `Type: \`${type2}\``);
+    const pattern = extractPrimitiveValue2(spec, "pattern");
+    if (pattern) parts.push("", `Pattern: \`${pattern}\``);
+    const enumVal = extractPrimitiveValue2(spec, "enum");
+    if (Array.isArray(enumVal)) parts.push("", `Allowed: \`${enumVal.join("`, `")}\``);
+    const min = extractPrimitiveValue2(spec, "min");
+    if (min !== void 0 && min !== null) parts.push("", `Min: \`${min}\``);
+    const max = extractPrimitiveValue2(spec, "max");
+    if (max !== void 0 && max !== null) parts.push("", `Max: \`${max}\``);
+    const req = extractPrimitiveValue2(spec, "required");
+    if (req === true) parts.push("", "_Required field_");
   }
-  const isRequired = (rules.required_fields || []).includes(fieldKey) || (rules.required_fields || []).includes(ctx.key);
-  if (isRequired) parts.push("", "_Required field_");
   return { contents: { kind: "markdown", value: parts.join("\n") } };
+}
+function extractPrimitiveValue2(fieldSpec, primitiveName) {
+  if (!(primitiveName in fieldSpec)) return void 0;
+  const raw = fieldSpec[primitiveName];
+  if (raw !== null && typeof raw === "object" && !Array.isArray(raw) && "value" in raw) {
+    return raw.value;
+  }
+  return raw;
 }
 async function hoverMarkdownLink(docUri, ctx) {
   if (!projectRoot || ctx.path.startsWith("http")) return null;
@@ -44785,8 +44625,8 @@ async function hoverMarkdownLink(docUri, ctx) {
   if (!targetFm) {
     try {
       const content3 = (0, import_node_fs3.readFileSync)(targetAbs, "utf-8");
-      const matter8 = await Promise.resolve().then(() => __toESM(require_gray_matter(), 1));
-      targetFm = matter8.default(content3).data || {};
+      const matter7 = await Promise.resolve().then(() => __toESM(require_gray_matter(), 1));
+      targetFm = matter7.default(content3).data || {};
     } catch {
       targetFm = {};
     }
