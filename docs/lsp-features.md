@@ -59,6 +59,10 @@ What runs:
 - `validatePaths` — relative paths (`./foo.md`, `../bar.md`) in
   frontmatter relationships or body trigger warnings (code blocks are
   stripped first).
+- `validateSectionRulesLeak` — a `` ```yaml section-rules `` code fence
+  is a template-authoring construct; finding one in a document is an
+  error (see [body-rules](templates/body-rules.md)). Templates are
+  exempt.
 - `applyRules(template.validation_rules, ...)` — required fields,
   conditional required fields, field regex/enum/type/min, state machine.
 - Body parser warnings — section-format hints from

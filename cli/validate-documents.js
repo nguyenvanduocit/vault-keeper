@@ -42,6 +42,7 @@ import {
   validateSlug,
   stripCodeRegions,
   validatePaths,
+  validateSectionRulesLeak,
 } from '../lib/validators.js';
 
 /**
@@ -175,6 +176,7 @@ async function validateDocument(filepath, options = {}) {
   allIssues.push(...validateTemplateMetaLeak(fm, filepath));
   allIssues.push(...validateSlug(filepath));
   allIssues.push(...validatePaths(fm, doc.body));
+  allIssues.push(...validateSectionRulesLeak(doc.body));
   allIssues.push(...await validateLinkExistence(fm, filepath));
 
   // Template-driven rules. loadTemplateRules returns null when the template
@@ -702,6 +704,7 @@ export {
   validateSlug,
   suggestSlug,
   validatePaths,
+  validateSectionRulesLeak,
   applyRules,
   // FS-touching validators
   validateLinkExistence,

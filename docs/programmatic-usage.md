@@ -26,7 +26,7 @@ import {
   parseDocument, resolveDocPath,
 
   // Parsing
-  parseBody, parseSectionRules, loadTemplateSectionRules,
+  parseBody, parseSectionRules, loadTemplateSectionRules, findSectionRuleBlocks,
 
   // Template rules
   loadTemplateRules, normalizeRules,
@@ -36,7 +36,7 @@ import {
   applyRules,
   validateTemplateField,
   validateTemplateMetaLeak,
-  validateSlug, validatePaths, suggestSlug,
+  validateSlug, validatePaths, validateSectionRulesLeak, suggestSlug,
   stripCodeRegions,
   inferDocType, isTemplateFile, isTemplateInstance, findTemplateMetaLeaks,
 
@@ -70,8 +70,8 @@ per logical module:
 | `claude-code-vault-keeper/parser` | `parseBody` |
 | `claude-code-vault-keeper/doc-io` | `parseDocument`, `resolveDocPath` |
 | `claude-code-vault-keeper/template-rules` | `loadTemplateRules`, `normalizeRules` |
-| `claude-code-vault-keeper/template-section-rules` | `parseSectionRules`, `loadTemplateSectionRules`, `getRequiredSections` |
-| `claude-code-vault-keeper/validators` | `applyRules`, `validateSlug`, `validatePaths`, … `CONFIG` |
+| `claude-code-vault-keeper/template-section-rules` | `parseSectionRules`, `loadTemplateSectionRules`, `getRequiredSections`, `findSectionRuleBlocks` |
+| `claude-code-vault-keeper/validators` | `applyRules`, `validateSlug`, `validatePaths`, `validateSectionRulesLeak`, … `CONFIG` |
 | `claude-code-vault-keeper/formatter` | `formatVaultDocument`, `formatVaultDocumentAsync` |
 | `claude-code-vault-keeper/conditional-eval` | `evaluate`, `getField` |
 | `claude-code-vault-keeper/vault-config` | `resolveProjectRoot`, `loadVaultConfig` |

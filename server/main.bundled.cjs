@@ -32684,8 +32684,29 @@ ${child.value}
   }
   return result;
 }
+function findSectionRuleBlocks(markdownBody) {
+  if (!markdownBody) return [];
+  let tree;
+  try {
+    tree = unified().use(remarkParse).use(remarkGfm).parse(markdownBody);
+  } catch {
+    return [];
+  }
+  const blocks = [];
+  _collectSectionRuleBlocks(tree, blocks);
+  return blocks;
+}
 function getRequiredSections(sectionRules) {
   return Object.entries(sectionRules).filter(([, rules]) => rules.required === true).map(([key]) => `## ${_toHeadingCase(key)}`);
+}
+function _collectSectionRuleBlocks(node2, out) {
+  if (!node2 || typeof node2 !== "object") return;
+  if (node2.type === "code" && node2.lang === "yaml" && node2.meta === "section-rules") {
+    out.push({ line: node2.position?.start?.line ?? 1 });
+  }
+  if (Array.isArray(node2.children)) {
+    for (const child of node2.children) _collectSectionRuleBlocks(child, out);
+  }
 }
 function _toSnakeCase(text5) {
   return text5.toLowerCase().replace(/\s+/g, "_");
@@ -33335,6 +33356,17 @@ function validatePaths(frontmatter, body) {
   }
   return issues;
 }
+function validateSectionRulesLeak(body) {
+  if (typeof body !== "string" || !body) return [];
+  return findSectionRuleBlocks(body).map(({ line }) => ({
+    level: "error",
+    field: "body",
+    error_type: "section-rules-leak",
+    message: 'A "```yaml section-rules" code block belongs to templates only and must not appear in a document',
+    fix: 'Remove the "```yaml section-rules" block \u2014 per-section rules are declared in templates/, not in authored documents.',
+    bodyLine: line
+  }));
+}
 
 // server/frontmatter-lines.js
 var import_yaml = __toESM(require_dist(), 1);
@@ -33446,6 +33478,9 @@ async function validateBuffer({ text: text5, filepath, projectRoot: projectRoot2
   issues.push(...validateTemplateMetaLeak(fm, filepath));
   issues.push(...validateSlug(filepath));
   issues.push(...validatePaths(fm, body));
+  for (const iss of validateSectionRulesLeak(body)) {
+    issues.push({ ...iss, line: bodyLineToDocLine(text5, iss.bodyLine) });
+  }
   let rules = null;
   let sectionRules = {};
   if (fm.template) {

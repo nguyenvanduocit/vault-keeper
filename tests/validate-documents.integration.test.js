@@ -245,6 +245,67 @@ describe("validateDocument (end-to-end)", () => {
     expect(result.errors).toEqual([]);
   });
 
+  test("template carrying a `yaml section-rules` fence is still skipped (not flagged)", async () => {
+    // Regression guard: the section-rules fence is legitimate inside a
+    // template. isTemplateFile() must short-circuit before the leak rule runs.
+    const path = writeDoc(
+      "templates/prd-template.md",
+      `---
+template_id: prd
+validation_rules:
+  required_fields:
+${yamlList(["template"])}
+---
+## Acceptance Criteria
+
+\`\`\`yaml section-rules
+required: true
+\`\`\`
+`,
+    );
+
+    const result = await validateDocument(path);
+    expect(result.skipped).toBe(true);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
+
+  test("document body carrying a `yaml section-rules` fence → section-rules-leak error", async () => {
+    writeDoc(
+      "templates/note-template.md",
+      `---
+template_id: note
+validation_rules:
+  required_fields:
+${yamlList(["template"])}
+---
+body
+`,
+    );
+
+    const notePath = writeDoc(
+      "product-knowledge/notes/my-note.md",
+      `---
+template: templates/note-template.md
+---
+## Acceptance Criteria
+
+\`\`\`yaml section-rules
+required: true
+\`\`\`
+`,
+    );
+
+    const result = await validateDocument(notePath);
+    expect(result.valid).toBe(false);
+    const leaks = result.errors.filter(
+      (e) => e.error_type === "section-rules-leak",
+    );
+    expect(leaks).toHaveLength(1);
+    expect(leaks[0].level).toBe("error");
+    expect(leaks[0].field).toBe("body");
+  });
+
   test("fully valid PRD against its template's rules → valid: true", async () => {
     // Modern schema: rice_score, relationships.* moved to body
     // sections. Template's required_fields are frontmatter-only identity

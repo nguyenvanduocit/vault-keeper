@@ -20,6 +20,7 @@ import {
   validateTemplateMetaLeak,
   validateSlug,
   validatePaths,
+  validateSectionRulesLeak,
   applyRules,
   isTemplateFile,
 } from "../lib/validators.js";
@@ -84,6 +85,14 @@ export async function validateBuffer({ text, filepath, projectRoot }) {
   issues.push(...validateTemplateMetaLeak(fm, filepath));
   issues.push(...validateSlug(filepath));
   issues.push(...validatePaths(fm, body));
+
+  // Built-in `section-rules` fence leak. validateSectionRulesLeak returns a
+  // body-relative `bodyLine` per offending block — translate it to a
+  // document-absolute 0-indexed `line` so the editor squiggles the exact
+  // fence (mirrors the body-parser warning line mapping below).
+  for (const iss of validateSectionRulesLeak(body)) {
+    issues.push({ ...iss, line: bodyLineToDocLine(text, iss.bodyLine) });
+  }
 
   // ── Template-driven rules ──────────────────────────────────────────────────
   // loadTemplateRules touches disk (reads the template file) but it's a single

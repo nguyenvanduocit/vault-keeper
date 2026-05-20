@@ -19,6 +19,7 @@ import {
   validateSlug,
   suggestSlug,
   validatePaths,
+  validateSectionRulesLeak,
   applyRules,
   isTemplateFile,
   isTemplateInstance,
@@ -1036,5 +1037,68 @@ describe("validatePaths body code-region awareness", () => {
     expect(issues).toHaveLength(1);
     expect(issues[0].level).toBe("warning");
     expect(issues[0].field).toBe("body");
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// validateSectionRulesLeak — `yaml section-rules` fence is template-only
+// ────────────────────────────────────────────────────────────────────────────
+
+describe("validateSectionRulesLeak", () => {
+  test("non-string / empty body → no issues", () => {
+    expect(validateSectionRulesLeak(null)).toEqual([]);
+    expect(validateSectionRulesLeak(undefined)).toEqual([]);
+    expect(validateSectionRulesLeak("")).toEqual([]);
+    expect(validateSectionRulesLeak(42)).toEqual([]);
+  });
+
+  test("document body without the fence → no issues", () => {
+    const body = "## Notes\n\n```yaml\nkey: value\n```\n";
+    expect(validateSectionRulesLeak(body)).toEqual([]);
+  });
+
+  test("document body WITH the fence → one error per block", () => {
+    const body = [
+      "## Acceptance Criteria", // line 1
+      "", // line 2
+      "```yaml section-rules", // line 3
+      "required: true",
+      "```",
+    ].join("\n");
+    const issues = validateSectionRulesLeak(body);
+    expect(issues).toHaveLength(1);
+    expect(issues[0].level).toBe("error");
+    expect(issues[0].field).toBe("body");
+    expect(issues[0].error_type).toBe("section-rules-leak");
+    expect(issues[0].bodyLine).toBe(3);
+    expect(issues[0].message).toContain("section-rules");
+    expect(issues[0].fix).toContain("templates/");
+  });
+
+  test("multiple leaked fences → one error each, body-relative lines", () => {
+    const body = [
+      "```yaml section-rules", // line 1
+      "required: true",
+      "```",
+      "",
+      "```yaml section-rules", // line 5
+      "required: false",
+      "```",
+    ].join("\n");
+    const issues = validateSectionRulesLeak(body);
+    expect(issues).toHaveLength(2);
+    expect(issues.map((i) => i.bodyLine)).toEqual([1, 5]);
+    expect(issues.every((i) => i.level === "error")).toBe(true);
+  });
+
+  test("section-rules wrapped inside an outer fence → not flagged", () => {
+    const body = [
+      "~~~markdown",
+      "```yaml section-rules",
+      "required: true",
+      "```",
+      "~~~",
+    ].join("\n");
+    expect(validateSectionRulesLeak(body)).toEqual([]);
   });
 });

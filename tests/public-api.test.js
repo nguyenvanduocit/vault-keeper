@@ -44,6 +44,7 @@ describe("public API — barrel", () => {
     expect(typeof mod.parseSectionRules).toBe("function");
     expect(typeof mod.loadTemplateSectionRules).toBe("function");
     expect(typeof mod.getRequiredSections).toBe("function");
+    expect(typeof mod.findSectionRuleBlocks).toBe("function");
 
     // Pure validators
     expect(typeof mod.applyRules).toBe("function");
@@ -51,6 +52,7 @@ describe("public API — barrel", () => {
     expect(typeof mod.validateTemplateMetaLeak).toBe("function");
     expect(typeof mod.validateSlug).toBe("function");
     expect(typeof mod.validatePaths).toBe("function");
+    expect(typeof mod.validateSectionRulesLeak).toBe("function");
     expect(typeof mod.suggestSlug).toBe("function");
     expect(typeof mod.stripCodeRegions).toBe("function");
     expect(typeof mod.inferDocType).toBe("function");
@@ -117,10 +119,11 @@ describe("public API — exports map", () => {
       "parseSectionRules",
       "loadTemplateSectionRules",
       "getRequiredSections",
+      "findSectionRuleBlocks",
     ],
     "./formatter": ["formatVaultDocument", "formatVaultDocumentAsync"],
     "./conditional-eval": ["evaluate", "getField"],
-    "./validators": ["applyRules", "validateSlug", "CONFIG"],
+    "./validators": ["applyRules", "validateSlug", "validateSectionRulesLeak", "CONFIG"],
     "./vault-config": ["resolveProjectRoot", "loadVaultConfig"],
     "./utils": ["deepFreeze"],
     "./orchestrator": ["validateDocument", "findDocuments", "findAllFiles"],

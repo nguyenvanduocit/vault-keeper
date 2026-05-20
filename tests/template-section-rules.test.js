@@ -47,6 +47,7 @@ import {
   parseSectionRules,
   getRequiredSections,
   loadTemplateSectionRules,
+  findSectionRuleBlocks,
 } from "../lib/template-section-rules.js";
 import { parseBody } from "../lib/body-parser.js";
 
@@ -844,5 +845,95 @@ describe("end-to-end: template → section rules → body validation", () => {
     expect(priorityWarns).toHaveLength(1);
     expect(priorityWarns[0].message).toContain("nice");
     expect(priorityWarns[0].message).toContain("must, should");
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// findSectionRuleBlocks — locate `yaml section-rules` fences in a body
+// ────────────────────────────────────────────────────────────────────────────
+
+describe("findSectionRuleBlocks", () => {
+  test("null / undefined / empty body → empty array", () => {
+    expect(findSectionRuleBlocks(null)).toEqual([]);
+    expect(findSectionRuleBlocks(undefined)).toEqual([]);
+    expect(findSectionRuleBlocks("")).toEqual([]);
+  });
+
+  test("body with no code blocks → empty array", () => {
+    expect(findSectionRuleBlocks("# Title\n\nSome prose.\n")).toEqual([]);
+  });
+
+  test("single `yaml section-rules` fence → one block with its line", () => {
+    const body = [
+      "## Acceptance Criteria", // line 1
+      "", // line 2
+      "```yaml section-rules", // line 3
+      "required: true", // line 4
+      "```", // line 5
+    ].join("\n");
+    expect(findSectionRuleBlocks(body)).toEqual([{ line: 3 }]);
+  });
+
+  test("multiple fences → one entry per block, in document order", () => {
+    const body = [
+      "```yaml section-rules", // line 1
+      "required: true",
+      "```",
+      "",
+      "## Later", // line 5
+      "",
+      "```yaml section-rules", // line 7
+      "required: false",
+      "```",
+    ].join("\n");
+    expect(findSectionRuleBlocks(body)).toEqual([{ line: 1 }, { line: 7 }]);
+  });
+
+  test("plain `yaml` fence with no meta → not matched", () => {
+    const body = ["```yaml", "required: true", "```"].join("\n");
+    expect(findSectionRuleBlocks(body)).toEqual([]);
+  });
+
+  test("wrong lang (`json section-rules`) → not matched", () => {
+    const body = ['```json section-rules', '{"required": true}', "```"].join(
+      "\n",
+    );
+    expect(findSectionRuleBlocks(body)).toEqual([]);
+  });
+
+  test("near-miss meta (`section-rule`, extra word) → not matched", () => {
+    const singular = ["```yaml section-rule", "required: true", "```"].join(
+      "\n",
+    );
+    const extra = ["```yaml section-rules extra", "x: 1", "```"].join("\n");
+    expect(findSectionRuleBlocks(singular)).toEqual([]);
+    expect(findSectionRuleBlocks(extra)).toEqual([]);
+  });
+
+  test("fence nested inside a list item → still detected", () => {
+    const body = [
+      "- a list item", // line 1
+      "", // line 2
+      "  ```yaml section-rules", // line 3
+      "  required: true",
+      "  ```",
+    ].join("\n");
+    expect(findSectionRuleBlocks(body)).toEqual([{ line: 3 }]);
+  });
+
+  test("section-rules shown INSIDE an outer fence → not a real block", () => {
+    // A document that documents the construct wraps it in an outer `~~~`
+    // fence. remark parses the outer block as one code node; the inner
+    // ```yaml section-rules is plain text, not its own node.
+    const body = [
+      "Here is how a template declares rules:",
+      "",
+      "~~~markdown",
+      "```yaml section-rules",
+      "required: true",
+      "```",
+      "~~~",
+    ].join("\n");
+    expect(findSectionRuleBlocks(body)).toEqual([]);
   });
 });

@@ -4,6 +4,14 @@ All notable changes to `claude-code-vault-keeper` are tracked here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Built-in rule — `section-rules` fence leak.** A `yaml section-rules` code fence is a template-authoring construct (templates declare per-section requirements with it). The CLI validator and the LSP now flag a `section-rules` fence found in an authored document as an error (`error_type: section-rules-leak`) — the message reads *"A '```yaml section-rules' code block belongs to templates only and must not appear in a document"*. Templates under `templates/` are exempt. The rule is generic infrastructure — it keys off the plugin's own DSL construct, not vault vocabulary — so it needs no template configuration.
+  - New public API: `findSectionRuleBlocks` (from `./template-section-rules`) locates every `section-rules` fence in a markdown body; `validateSectionRulesLeak` (from `./validators`) returns the leak issues. Both re-exported from the barrel.
+  - Detection is AST-based, so a `section-rules` fence shown *inside* an outer code fence (documentation) is correctly treated as plain text, not a leak.
+
 ## [0.8.0] — 2026-05-19
 
 Ships the **Claude Code skill suite** that turns the plugin from "LSP + CLI" into six verbs the user types inside a Claude session. All skills are vault-agnostic — they read `validation_rules` from templates at runtime via the v0.7.0 public API, hardcode nothing.

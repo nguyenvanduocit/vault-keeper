@@ -91,6 +91,22 @@ AST, finds each H2 heading, looks for the first `yaml section-rules`
 code block in that section's subtree, parses it as YAML, and stores
 the result keyed by the section's snake-cased name.
 
+### Templates only — a document carrying one is flagged
+
+The `yaml section-rules` fence is a **template-authoring construct**. A
+`yaml section-rules` block found in an authored document is almost
+always a template fragment that was copy-pasted in by mistake — so both
+the CLI and the LSP carry a built-in rule that flags it as an error
+(`error_type: section-rules-leak`):
+
+> A "\`\`\`yaml section-rules" code block belongs to templates only and
+> must not appear in a document
+
+Templates under `templates/` are exempt — that is where the fence
+belongs. To *document* the construct inside an authored document (as
+this page does), wrap it in an outer fence; the parser then sees the
+inner fence as plain text, not a real `section-rules` block.
+
 ### Recognised keys
 
 | Key | Type | Effect |
