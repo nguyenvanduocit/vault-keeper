@@ -92,8 +92,8 @@ const FM_WITH_TEMPLATE_META_LEAK = `---
 template: templates/prd-template.md
 status: draft
 owner: @alice
-validation_rules:
-  required_fields: [template, status]
+fields:
+  title: { required: true }
 template_version: "2.0"
 ---
 
@@ -150,23 +150,23 @@ describe("code-action: no match", () => {
 // ── Tests: Template-meta leak fixer ──────────────────────────────────────────
 
 describe("code-action: template-meta leak fixer", () => {
-  test("produces quickfix for validation_rules leak", async () => {
+  test("produces quickfix for fields leak", async () => {
     const d = diag(
-      "validation_rules",
-      'Template-only field "validation_rules" leaked into instance from template scaffold',
+      "fields",
+      'Template-only field "fields" leaked into instance from template scaffold',
       4,
     );
     const actions = await getActions(FM_WITH_TEMPLATE_META_LEAK, [d]);
     expect(actions.length).toBeGreaterThan(0);
     expect(actions[0].kind).toBe("quickfix");
-    expect(actions[0].title).toMatch(/validation_rules/);
+    expect(actions[0].title).toMatch(/fields/);
   });
 
-  test("edit deletes the validation_rules block (multi-line)", async () => {
+  test("edit deletes the fields block (multi-line)", async () => {
     const uri = "file:///vault/product-knowledge/02-product/prds/My%20PRD.md";
     const d = diag(
-      "validation_rules",
-      'Template-only field "validation_rules" leaked into instance from template scaffold',
+      "fields",
+      'Template-only field "fields" leaked into instance from template scaffold',
       4,
     );
     const actions = await getActions(FM_WITH_TEMPLATE_META_LEAK, [d]);
@@ -175,7 +175,7 @@ describe("code-action: template-meta leak fixer", () => {
     expect(Array.isArray(edits)).toBe(true);
     const deleteEdit = edits[0];
     expect(deleteEdit.newText).toBe("");
-    // Deletes from line 4 (validation_rules:) through the indented child
+    // Deletes from line 4 (fields:) through the indented child
     expect(deleteEdit.range.start.line).toBe(4);
     expect(deleteEdit.range.end.line).toBeGreaterThan(4);
   });
@@ -193,7 +193,7 @@ describe("code-action: template-meta leak fixer", () => {
 
   test("does NOT fire for non-leak message on template_only code", async () => {
     // Same code but different message (shouldn't match 'leaked')
-    const d = diag("validation_rules", "Missing required field: validation_rules", 4);
+    const d = diag("fields", "Missing required field: fields", 4);
     const actions = await getActions(FM_WITH_TEMPLATE_META_LEAK, [d]);
     const leakActions = actions.filter((a) => a.title?.includes("Remove template-only"));
     expect(leakActions.length).toBe(0);

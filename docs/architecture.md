@@ -25,7 +25,6 @@ claude-code-vault-keeper/
 │   │   ├── completion.js
 │   │   ├── code-action.js
 │   │   ├── code-lens.js
-│   │   ├── inlay-hint.js        #   (no-op skeleton — see below)
 │   │   ├── rename.js
 │   │   └── document-formatting.js
 │   └── smoke.js                 #   End-to-end LSP regression test
@@ -292,9 +291,6 @@ projectRoot })` function. Providers are independent — a failure in one
 doesn't crash the server.
 
 Notable changes:
-- `inlay-hint.js` — currently a **no-op skeleton** (returns empty
-  array). Prior inlay hints depended on a domain-specific body parser
-  that has been replaced by the generic schema engine.
 - `code-lens.js` — provides a backlink count + last-updated lens above
   `template:`. Domain-specific body lenses (AC, Ship Timeline, Decision
   Log) have been removed.

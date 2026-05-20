@@ -89,16 +89,11 @@
   "docs/prds/prd-010-leaked-rules-invalid.md": {
     "valid": true,
     "errors": [],
-    "warnings": ["validation_rules"]
+    "warnings": ["fields"]
   },
   "docs/prds/prd-011-missing-template-invalid.md": {
     "valid": false,
     "errors": ["template"],
-    "warnings": []
-  },
-  "docs/prds/prd-012-broken-link-invalid.md": {
-    "valid": false,
-    "errors": ["relationships.implements_bet"],
     "warnings": []
   },
   "docs/prds/prd-013-bad-rice-type-invalid.md": {

@@ -14,7 +14,7 @@
  *   1. resolved the project root to this example vault,
  *   2. read `.claude/vault-keeper.json` (vaultRoot=docs) so the doc under
  *      `docs/` is classified a vault file,
- *   3. loaded THIS vault's `templates/note-template.md` validation_rules.
+ *   3. loaded THIS vault's `templates/note-template.md` field schema.
  *
  * Exit 0 on success, 1 otherwise. Run: `node examples/example/smoke.js` from
  * the repo root.
@@ -85,7 +85,7 @@ function waitForMessage(predicate, label, timeoutMs = 10000) {
 
 // An INVALID note: missing the template-required `owner` field. The example
 // vault's templates/note-template.md declares
-// required_fields: [template, document_type, title, owner].
+// fields.owner.required: true (plus template, document_type, title).
 const invalidNote = `---
 template: templates/note-template.md
 document_type: note
@@ -118,7 +118,7 @@ async function main() {
   send({ jsonrpc: "2.0", method: "initialized", params: {} });
 
   // Doc lives under docs/ (the configured vaultRoot). Filename matches the
-  // note template's path_regex so vault-side rules apply.
+  // note template's `$path` pattern so vault-side rules apply.
   const uri = `file://${exampleRoot}/docs/notes/note-999-smoke-invalid.md`;
   send({
     jsonrpc: "2.0",

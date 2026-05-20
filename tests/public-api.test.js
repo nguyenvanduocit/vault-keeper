@@ -76,8 +76,6 @@ describe("public API — barrel", () => {
     expect(typeof mod.validateDocument).toBe("function");
     expect(typeof mod.findDocuments).toBe("function");
     expect(typeof mod.findAllFiles).toBe("function");
-    expect(typeof mod.validateLinkExistence).toBe("function");
-
     // LSP-side validator
     expect(typeof mod.validateBuffer).toBe("function");
 

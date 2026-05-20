@@ -12181,11 +12181,11 @@ var require_excerpt = __commonJS({
       if (typeof opts.excerpt === "function") {
         return opts.excerpt(file, opts);
       }
-      const sep5 = file.data.excerpt_separator || opts.excerpt_separator;
-      if (sep5 == null && (opts.excerpt === false || opts.excerpt == null)) {
+      const sep4 = file.data.excerpt_separator || opts.excerpt_separator;
+      if (sep4 == null && (opts.excerpt === false || opts.excerpt == null)) {
         return file;
       }
-      const delimiter = typeof opts.excerpt === "string" ? opts.excerpt : sep5 || opts.delimiters[0];
+      const delimiter = typeof opts.excerpt === "string" ? opts.excerpt : sep4 || opts.delimiters[0];
       const idx = file.content.indexOf(delimiter);
       if (idx !== -1) {
         file.excerpt = file.content.slice(0, idx);
@@ -16414,10 +16414,10 @@ var require_resolve_block_map = __commonJS({
       let offset = bm.offset;
       let commentEnd = null;
       for (const collItem of bm.items) {
-        const { start, key, sep: sep5, value } = collItem;
+        const { start, key, sep: sep4, value } = collItem;
         const keyProps = resolveProps.resolveProps(start, {
           indicator: "explicit-key-ind",
-          next: key ?? sep5?.[0],
+          next: key ?? sep4?.[0],
           offset,
           onError,
           parentIndent: bm.indent,
@@ -16431,7 +16431,7 @@ var require_resolve_block_map = __commonJS({
             else if ("indent" in key && key.indent !== bm.indent)
               onError(offset, "BAD_INDENT", startColMsg);
           }
-          if (!keyProps.anchor && !keyProps.tag && !sep5) {
+          if (!keyProps.anchor && !keyProps.tag && !sep4) {
             commentEnd = keyProps.end;
             if (keyProps.comment) {
               if (map4.comment)
@@ -16455,7 +16455,7 @@ var require_resolve_block_map = __commonJS({
         ctx.atKey = false;
         if (utilMapIncludes.mapIncludes(ctx, map4.items, keyNode))
           onError(keyStart, "DUPLICATE_KEY", "Map keys must be unique");
-        const valueProps = resolveProps.resolveProps(sep5 ?? [], {
+        const valueProps = resolveProps.resolveProps(sep4 ?? [], {
           indicator: "map-value-ind",
           next: value,
           offset: keyNode.range[2],
@@ -16471,7 +16471,7 @@ var require_resolve_block_map = __commonJS({
             if (ctx.options.strict && keyProps.start < valueProps.found.offset - 1024)
               onError(keyNode.range, "KEY_OVER_1024_CHARS", "The : indicator must be at most 1024 chars after the start of an implicit block mapping key");
           }
-          const valueNode = value ? composeNode2(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep5, null, valueProps, onError);
+          const valueNode = value ? composeNode2(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep4, null, valueProps, onError);
           if (ctx.schema.compat)
             utilFlowIndentCheck.flowIndentCheck(bm.indent, value, onError);
           offset = valueNode.range[2];
@@ -16562,7 +16562,7 @@ var require_resolve_end = __commonJS({
       let comment = "";
       if (end) {
         let hasSpace = false;
-        let sep5 = "";
+        let sep4 = "";
         for (const token of end) {
           const { source, type: type2 } = token;
           switch (type2) {
@@ -16576,13 +16576,13 @@ var require_resolve_end = __commonJS({
               if (!comment)
                 comment = cb;
               else
-                comment += sep5 + cb;
-              sep5 = "";
+                comment += sep4 + cb;
+              sep4 = "";
               break;
             }
             case "newline":
               if (comment)
-                sep5 += source;
+                sep4 += source;
               hasSpace = true;
               break;
             default:
@@ -16625,18 +16625,18 @@ var require_resolve_flow_collection = __commonJS({
       let offset = fc.offset + fc.start.source.length;
       for (let i = 0; i < fc.items.length; ++i) {
         const collItem = fc.items[i];
-        const { start, key, sep: sep5, value } = collItem;
+        const { start, key, sep: sep4, value } = collItem;
         const props = resolveProps.resolveProps(start, {
           flow: fcName,
           indicator: "explicit-key-ind",
-          next: key ?? sep5?.[0],
+          next: key ?? sep4?.[0],
           offset,
           onError,
           parentIndent: fc.indent,
           startOnNewline: false
         });
         if (!props.found) {
-          if (!props.anchor && !props.tag && !sep5 && !value) {
+          if (!props.anchor && !props.tag && !sep4 && !value) {
             if (i === 0 && props.comma)
               onError(props.comma, "UNEXPECTED_TOKEN", `Unexpected , in ${fcName}`);
             else if (i < fc.items.length - 1)
@@ -16690,8 +16690,8 @@ var require_resolve_flow_collection = __commonJS({
             }
           }
         }
-        if (!isMap2 && !sep5 && !props.found) {
-          const valueNode = value ? composeNode2(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep5, null, props, onError);
+        if (!isMap2 && !sep4 && !props.found) {
+          const valueNode = value ? composeNode2(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep4, null, props, onError);
           coll.items.push(valueNode);
           offset = valueNode.range[2];
           if (isBlock(value))
@@ -16703,7 +16703,7 @@ var require_resolve_flow_collection = __commonJS({
           if (isBlock(key))
             onError(keyNode.range, "BLOCK_IN_FLOW", blockMsg);
           ctx.atKey = false;
-          const valueProps = resolveProps.resolveProps(sep5 ?? [], {
+          const valueProps = resolveProps.resolveProps(sep4 ?? [], {
             flow: fcName,
             indicator: "map-value-ind",
             next: value,
@@ -16714,8 +16714,8 @@ var require_resolve_flow_collection = __commonJS({
           });
           if (valueProps.found) {
             if (!isMap2 && !props.found && ctx.options.strict) {
-              if (sep5)
-                for (const st of sep5) {
+              if (sep4)
+                for (const st of sep4) {
                   if (st === valueProps.found)
                     break;
                   if (st.type === "newline") {
@@ -16732,7 +16732,7 @@ var require_resolve_flow_collection = __commonJS({
             else
               onError(valueProps.start, "MISSING_CHAR", `Missing , or : between ${fcName} items`);
           }
-          const valueNode = value ? composeNode2(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep5, null, valueProps, onError) : null;
+          const valueNode = value ? composeNode2(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep4, null, valueProps, onError) : null;
           if (valueNode) {
             if (isBlock(value))
               onError(valueNode.range, "BLOCK_IN_FLOW", blockMsg);
@@ -16912,7 +16912,7 @@ var require_resolve_block_scalar = __commonJS({
           chompStart = i + 1;
       }
       let value = "";
-      let sep5 = "";
+      let sep4 = "";
       let prevMoreIndented = false;
       for (let i = 0; i < contentStart; ++i)
         value += lines[i][0].slice(trimIndent) + "\n";
@@ -16929,24 +16929,24 @@ var require_resolve_block_scalar = __commonJS({
           indent2 = "";
         }
         if (type2 === Scalar.Scalar.BLOCK_LITERAL) {
-          value += sep5 + indent2.slice(trimIndent) + content3;
-          sep5 = "\n";
+          value += sep4 + indent2.slice(trimIndent) + content3;
+          sep4 = "\n";
         } else if (indent2.length > trimIndent || content3[0] === "	") {
-          if (sep5 === " ")
-            sep5 = "\n";
-          else if (!prevMoreIndented && sep5 === "\n")
-            sep5 = "\n\n";
-          value += sep5 + indent2.slice(trimIndent) + content3;
-          sep5 = "\n";
+          if (sep4 === " ")
+            sep4 = "\n";
+          else if (!prevMoreIndented && sep4 === "\n")
+            sep4 = "\n\n";
+          value += sep4 + indent2.slice(trimIndent) + content3;
+          sep4 = "\n";
           prevMoreIndented = true;
         } else if (content3 === "") {
-          if (sep5 === "\n")
+          if (sep4 === "\n")
             value += "\n";
           else
-            sep5 = "\n";
+            sep4 = "\n";
         } else {
-          value += sep5 + content3;
-          sep5 = " ";
+          value += sep4 + content3;
+          sep4 = " ";
           prevMoreIndented = false;
         }
       }
@@ -17128,25 +17128,25 @@ var require_resolve_flow_scalar = __commonJS({
       if (!match2)
         return source;
       let res = match2[1];
-      let sep5 = " ";
+      let sep4 = " ";
       let pos = first.lastIndex;
       line.lastIndex = pos;
       while (match2 = line.exec(source)) {
         if (match2[1] === "") {
-          if (sep5 === "\n")
-            res += sep5;
+          if (sep4 === "\n")
+            res += sep4;
           else
-            sep5 = "\n";
+            sep4 = "\n";
         } else {
-          res += sep5 + match2[1];
-          sep5 = " ";
+          res += sep4 + match2[1];
+          sep4 = " ";
         }
         pos = line.lastIndex;
       }
       const last = /[ \t]*(.*)/sy;
       last.lastIndex = pos;
       match2 = last.exec(source);
-      return res + sep5 + (match2?.[1] ?? "");
+      return res + sep4 + (match2?.[1] ?? "");
     }
     function doubleQuotedValue(source, onError) {
       let res = "";
@@ -17956,14 +17956,14 @@ var require_cst_stringify = __commonJS({
         }
       }
     }
-    function stringifyItem({ start, key, sep: sep5, value }) {
+    function stringifyItem({ start, key, sep: sep4, value }) {
       let res = "";
       for (const st of start)
         res += st.source;
       if (key)
         res += stringifyToken(key);
-      if (sep5)
-        for (const st of sep5)
+      if (sep4)
+        for (const st of sep4)
           res += st.source;
       if (value)
         res += stringifyToken(value);
@@ -19130,18 +19130,18 @@ var require_parser = __commonJS({
         if (this.type === "map-value-ind") {
           const prev = getPrevProps(this.peek(2));
           const start = getFirstKeyStartProps(prev);
-          let sep5;
+          let sep4;
           if (scalar.end) {
-            sep5 = scalar.end;
-            sep5.push(this.sourceToken);
+            sep4 = scalar.end;
+            sep4.push(this.sourceToken);
             delete scalar.end;
           } else
-            sep5 = [this.sourceToken];
+            sep4 = [this.sourceToken];
           const map4 = {
             type: "block-map",
             offset: scalar.offset,
             indent: scalar.indent,
-            items: [{ start, key: scalar, sep: sep5 }]
+            items: [{ start, key: scalar, sep: sep4 }]
           };
           this.onKeyLine = true;
           this.stack[this.stack.length - 1] = map4;
@@ -19294,15 +19294,15 @@ var require_parser = __commonJS({
                 } else if (isFlowToken(it.key) && !includesToken(it.sep, "newline")) {
                   const start2 = getFirstKeyStartProps(it.start);
                   const key = it.key;
-                  const sep5 = it.sep;
-                  sep5.push(this.sourceToken);
+                  const sep4 = it.sep;
+                  sep4.push(this.sourceToken);
                   delete it.key;
                   delete it.sep;
                   this.stack.push({
                     type: "block-map",
                     offset: this.offset,
                     indent: this.indent,
-                    items: [{ start: start2, key, sep: sep5 }]
+                    items: [{ start: start2, key, sep: sep4 }]
                   });
                 } else if (start.length > 0) {
                   it.sep = it.sep.concat(start, this.sourceToken);
@@ -19496,13 +19496,13 @@ var require_parser = __commonJS({
             const prev = getPrevProps(parent);
             const start = getFirstKeyStartProps(prev);
             fixFlowSeqItems(fc);
-            const sep5 = fc.end.splice(1, fc.end.length);
-            sep5.push(this.sourceToken);
+            const sep4 = fc.end.splice(1, fc.end.length);
+            sep4.push(this.sourceToken);
             const map4 = {
               type: "block-map",
               offset: fc.offset,
               indent: fc.indent,
-              items: [{ start, key: fc, sep: sep5 }]
+              items: [{ start, key: fc, sep: sep4 }]
             };
             this.onKeyLine = true;
             this.stack[this.stack.length - 1] = map4;
@@ -20218,8 +20218,8 @@ function getWellformedEdit(textEdit) {
 }
 
 // server/main.js
-var import_node_url10 = require("node:url");
-var import_node_path10 = require("node:path");
+var import_node_url9 = require("node:url");
+var import_node_path9 = require("node:path");
 var import_node_fs3 = require("node:fs");
 
 // server/validator.js
@@ -33276,7 +33276,9 @@ var CONFIG = {
   //     to document which template files in the folder belong to.
   templateOnlyFields: [
     "fields",
-    "validation_rules",
+    "strict",
+    "sections",
+    "tier",
     "template_version",
     "template_id"
   ],
@@ -38938,7 +38940,7 @@ var PathScurryBase = class {
    *
    * @internal
    */
-  constructor(cwd = process.cwd(), pathImpl, sep5, { nocase, childrenCacheSize = 16 * 1024, fs = defaultFS } = {}) {
+  constructor(cwd = process.cwd(), pathImpl, sep4, { nocase, childrenCacheSize = 16 * 1024, fs = defaultFS } = {}) {
     this.#fs = fsFromOption(fs);
     if (cwd instanceof URL || cwd.startsWith("file://")) {
       cwd = (0, import_node_url3.fileURLToPath)(cwd);
@@ -38949,7 +38951,7 @@ var PathScurryBase = class {
     this.#resolveCache = new ResolveCache();
     this.#resolvePosixCache = new ResolveCache();
     this.#children = new ChildrenCache(childrenCacheSize);
-    const split = cwdPath.substring(this.rootPath.length).split(sep5);
+    const split = cwdPath.substring(this.rootPath.length).split(sep4);
     if (split.length === 1 && !split[0]) {
       split.pop();
     }
@@ -39770,10 +39772,10 @@ var Ignore = class {
   ignored(p) {
     const fullpath = p.fullpath();
     const fullpaths = `${fullpath}/`;
-    const relative8 = p.relative() || ".";
-    const relatives = `${relative8}/`;
+    const relative7 = p.relative() || ".";
+    const relatives = `${relative7}/`;
     for (const m of this.relative) {
-      if (m.match(relative8) || m.match(relatives))
+      if (m.match(relative7) || m.match(relatives))
         return true;
     }
     for (const m of this.absolute) {
@@ -39784,9 +39786,9 @@ var Ignore = class {
   }
   childrenIgnored(p) {
     const fullpath = p.fullpath() + "/";
-    const relative8 = (p.relative() || ".") + "/";
+    const relative7 = (p.relative() || ".") + "/";
     for (const m of this.relativeChildren) {
-      if (m.match(relative8))
+      if (m.match(relative7))
         return true;
     }
     for (const m of this.absoluteChildren) {
@@ -40851,13 +40853,12 @@ async function fixersForDiagnostic(diag, uri, text5, { vaultIndex: vaultIndex2, 
   return actions;
 }
 var TEMPLATE_ONLY_FIELDS = /* @__PURE__ */ new Set([
-  "validation_rules",
-  "template_version",
-  "template_id",
   "fields",
   "strict",
   "sections",
-  "tier"
+  "tier",
+  "template_version",
+  "template_id"
 ]);
 function fixTemplateMetaLeak(diag, uri, text5, fieldKey) {
   const lines = text5.split("\n");
@@ -41000,15 +41001,16 @@ function escapeRegex2(s) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// server/providers/inlay-hint.js
-var inlay_hint_exports = {};
-__export(inlay_hint_exports, {
+// server/providers/code-lens.js
+var code_lens_exports = {};
+__export(code_lens_exports, {
   capability: () => capability3,
   register: () => register3
 });
 var import_node_url7 = require("node:url");
 var import_node_path7 = require("node:path");
-var capability3 = { inlayHintProvider: { resolveProvider: false } };
+var import_gray_matter5 = __toESM(require_gray_matter(), 1);
+var capability3 = { codeLensProvider: { resolveProvider: false } };
 function isVaultUri(uri, projectRoot2, vaultFolders) {
   if (!uri || !uri.startsWith("file://")) return false;
   const abs = (0, import_node_url7.fileURLToPath)(uri);
@@ -41021,48 +41023,11 @@ function isVaultUri(uri, projectRoot2, vaultFolders) {
 }
 function register3({ connection: connection2, docs: docs2, vaultIndex: vaultIndex2, projectRoot: projectRoot2 }) {
   const vaultFolders = projectRoot2 ? loadVaultConfig(projectRoot2).vaultFolders : [];
-  connection2.languages.inlayHint.on(async (params) => {
-    try {
-      const doc = docs2.get(params.textDocument.uri);
-      if (!doc) return [];
-      if (projectRoot2 && !isVaultUri(params.textDocument.uri, projectRoot2, vaultFolders)) {
-        return [];
-      }
-      return [];
-    } catch (err) {
-      connection2.console?.error?.(`inlayHint error: ${err.stack || err}`);
-      return [];
-    }
-  });
-}
-
-// server/providers/code-lens.js
-var code_lens_exports = {};
-__export(code_lens_exports, {
-  capability: () => capability4,
-  register: () => register4
-});
-var import_node_url8 = require("node:url");
-var import_node_path8 = require("node:path");
-var import_gray_matter5 = __toESM(require_gray_matter(), 1);
-var capability4 = { codeLensProvider: { resolveProvider: false } };
-function isVaultUri2(uri, projectRoot2, vaultFolders) {
-  if (!uri || !uri.startsWith("file://")) return false;
-  const abs = (0, import_node_url8.fileURLToPath)(uri);
-  const rel = (0, import_node_path8.relative)(projectRoot2, abs);
-  if (!rel || rel.startsWith("..")) return false;
-  const posix2 = rel.split(import_node_path8.sep).join("/");
-  return vaultFolders.some(
-    (f) => f === "." || posix2 === f || posix2.startsWith(`${f}/`)
-  );
-}
-function register4({ connection: connection2, docs: docs2, vaultIndex: vaultIndex2, projectRoot: projectRoot2 }) {
-  const vaultFolders = projectRoot2 ? loadVaultConfig(projectRoot2).vaultFolders : [];
   connection2.onCodeLens(async (params) => {
     try {
       const doc = docs2.get(params.textDocument.uri);
       if (!doc) return [];
-      if (projectRoot2 && !isVaultUri2(params.textDocument.uri, projectRoot2, vaultFolders)) {
+      if (projectRoot2 && !isVaultUri(params.textDocument.uri, projectRoot2, vaultFolders)) {
         return [];
       }
       const text5 = doc.getText();
@@ -41083,7 +41048,7 @@ function register4({ connection: connection2, docs: docs2, vaultIndex: vaultInde
       }
       let absPath = null;
       if (vaultIndex2 && params.textDocument.uri.startsWith("file://")) {
-        absPath = (0, import_node_url8.fileURLToPath)(params.textDocument.uri);
+        absPath = (0, import_node_url7.fileURLToPath)(params.textDocument.uri);
       }
       const lenses = [];
       for (let i = 0; i < lines.length; i++) {
@@ -41130,14 +41095,14 @@ function zeroRange(lineNum) {
 // server/providers/rename.js
 var rename_exports = {};
 __export(rename_exports, {
-  capability: () => capability5,
-  register: () => register5
+  capability: () => capability4,
+  register: () => register4
 });
 var import_promises4 = require("node:fs/promises");
-var import_node_path9 = require("node:path");
-var import_node_url9 = require("node:url");
+var import_node_path8 = require("node:path");
+var import_node_url8 = require("node:url");
 var import_node3 = __toESM(require_node3(), 1);
-var capability5 = {
+var capability4 = {
   renameProvider: { prepareProvider: true },
   workspace: {
     fileOperations: {
@@ -41145,7 +41110,7 @@ var capability5 = {
     }
   }
 };
-function register5({ connection: connection2, docs: docs2, vaultIndex: vaultIndex2, projectRoot: projectRoot2 }) {
+function register4({ connection: connection2, docs: docs2, vaultIndex: vaultIndex2, projectRoot: projectRoot2 }) {
   connection2.onPrepareRename(async (params) => {
     try {
       const doc = docs2.get(params.textDocument.uri);
@@ -41166,7 +41131,7 @@ function register5({ connection: connection2, docs: docs2, vaultIndex: vaultInde
       const text5 = doc.getText();
       const ctx = getRenameContext(text5, params.position);
       if (!ctx) return null;
-      const docAbsPath = (0, import_node_url9.fileURLToPath)(params.textDocument.uri);
+      const docAbsPath = (0, import_node_url8.fileURLToPath)(params.textDocument.uri);
       const newName = params.newName.trim();
       if (ctx.kind === "handle") {
         return await renameHandle(ctx, newName, docAbsPath, vaultIndex2, projectRoot2, connection2);
@@ -41190,15 +41155,15 @@ function register5({ connection: connection2, docs: docs2, vaultIndex: vaultInde
       const documentChanges = [];
       for (const { oldUri, newUri } of params.files) {
         if (!oldUri.endsWith(".md") || !newUri.endsWith(".md")) continue;
-        const oldAbsPath = (0, import_node_url9.fileURLToPath)(oldUri);
-        const newAbsPath = (0, import_node_url9.fileURLToPath)(newUri);
+        const oldAbsPath = (0, import_node_url8.fileURLToPath)(oldUri);
+        const newAbsPath = (0, import_node_url8.fileURLToPath)(newUri);
         const backlinks = vaultIndex2.getBacklinks(oldAbsPath);
         for (const bl of backlinks) {
           try {
-            const referrerDir = (0, import_node_path9.dirname)(bl.source);
-            const newRelPath = (0, import_node_path9.relative)(referrerDir, newAbsPath);
-            const oldRelPath = bl.rawPath || (0, import_node_path9.relative)(referrerDir, oldAbsPath);
-            const referrerUri = (0, import_node_url9.pathToFileURL)(bl.source).href;
+            const referrerDir = (0, import_node_path8.dirname)(bl.source);
+            const newRelPath = (0, import_node_path8.relative)(referrerDir, newAbsPath);
+            const oldRelPath = bl.rawPath || (0, import_node_path8.relative)(referrerDir, oldAbsPath);
+            const referrerUri = (0, import_node_url8.pathToFileURL)(bl.source).href;
             let referrerText;
             const liveDoc = docs2.get(referrerUri);
             if (liveDoc) {
@@ -41328,7 +41293,7 @@ async function renameHandle(ctx, newHandle, docAbsPath, vaultIndex2, projectRoot
         }
       }
       if (edits.length > 0) {
-        const uri = (0, import_node_url9.pathToFileURL)(absPath).href;
+        const uri = (0, import_node_url8.pathToFileURL)(absPath).href;
         documentChanges.push({
           textDocument: { uri, version: null },
           edits
@@ -41338,14 +41303,14 @@ async function renameHandle(ctx, newHandle, docAbsPath, vaultIndex2, projectRoot
       connection2.console.warn(`renameHandle: skipping ${absPath}: ${err.message}`);
     }
   }
-  const peopleDir = (0, import_node_path9.resolve)(projectRoot2, "product-data", "people");
-  const oldPeoplePath = (0, import_node_path9.resolve)(peopleDir, `${oldHandle}.md`);
-  const newPeoplePath = (0, import_node_path9.resolve)(peopleDir, `${cleanNew}.md`);
+  const peopleDir = (0, import_node_path8.resolve)(projectRoot2, "product-data", "people");
+  const oldPeoplePath = (0, import_node_path8.resolve)(peopleDir, `${oldHandle}.md`);
+  const newPeoplePath = (0, import_node_path8.resolve)(peopleDir, `${cleanNew}.md`);
   if (vaultIndex2.getEntry(oldPeoplePath)) {
     documentChanges.push(
       import_node3.RenameFile.create(
-        (0, import_node_url9.pathToFileURL)(oldPeoplePath).href,
-        (0, import_node_url9.pathToFileURL)(newPeoplePath).href,
+        (0, import_node_url8.pathToFileURL)(oldPeoplePath).href,
+        (0, import_node_url8.pathToFileURL)(newPeoplePath).href,
         { ignoreIfExists: false, overwrite: false }
       )
     );
@@ -41419,7 +41384,7 @@ async function renameId(ctx, newId, vaultIndex2, projectRoot2, connection2) {
       }
       if (edits.length > 0) {
         documentChanges.push({
-          textDocument: { uri: (0, import_node_url9.pathToFileURL)(absPath).href, version: null },
+          textDocument: { uri: (0, import_node_url8.pathToFileURL)(absPath).href, version: null },
           edits
         });
       }
@@ -41442,7 +41407,7 @@ function buildLinkReplacementEdits(referrerText, oldAbsPath, referrerDir, newRel
       if (rawPath.startsWith("http")) continue;
       let resolvedTarget;
       try {
-        resolvedTarget = (0, import_node_path9.resolve)(referrerDir, rawPath);
+        resolvedTarget = (0, import_node_path8.resolve)(referrerDir, rawPath);
       } catch {
         continue;
       }
@@ -41466,8 +41431,8 @@ function buildLinkReplacementEdits(referrerText, oldAbsPath, referrerDir, newRel
 // server/providers/document-formatting.js
 var document_formatting_exports = {};
 __export(document_formatting_exports, {
-  capability: () => capability6,
-  register: () => register6
+  capability: () => capability5,
+  register: () => register5
 });
 
 // lib/canonical-formatter.js
@@ -44340,8 +44305,8 @@ function findFrontmatterEnd(text5) {
 }
 
 // server/providers/document-formatting.js
-var capability6 = { documentFormattingProvider: true };
-function register6({ connection: connection2, docs: docs2, vaultIndex: _vaultIndex, projectRoot: projectRoot2 }) {
+var capability5 = { documentFormattingProvider: true };
+function register5({ connection: connection2, docs: docs2, vaultIndex: _vaultIndex, projectRoot: projectRoot2 }) {
   connection2.onDocumentFormatting(async (params) => {
     try {
       const uri = params.textDocument.uri;
@@ -44377,7 +44342,6 @@ var import_meta = {};
 var PROVIDERS = [
   completion_exports,
   code_action_exports,
-  inlay_hint_exports,
   code_lens_exports,
   rename_exports,
   document_formatting_exports
@@ -44388,9 +44352,9 @@ var PROVIDER_CAPABILITIES = PROVIDERS.reduce(
 );
 function resolvePkgPath() {
   if (typeof __dirname !== "undefined") {
-    return (0, import_node_path10.resolve)(__dirname, "..", "package.json");
+    return (0, import_node_path9.resolve)(__dirname, "..", "package.json");
   }
-  return (0, import_node_url10.fileURLToPath)(new URL("../package.json", import_meta.url));
+  return (0, import_node_url9.fileURLToPath)(new URL("../package.json", import_meta.url));
 }
 var PKG_VERSION = JSON.parse((0, import_node_fs3.readFileSync)(resolvePkgPath(), "utf-8")).version;
 var connection = (0, import_node4.createConnection)(import_node4.ProposedFeatures.all);
@@ -44476,7 +44440,7 @@ docs.onDidChangeContent(({ document: document3 }) => scheduleValidation(document
 docs.onDidSave(({ document: document3 }) => {
   scheduleValidation(document3, { immediate: true });
   if (vaultIndex && document3.uri.startsWith("file://")) {
-    const absPath = (0, import_node_url10.fileURLToPath)(document3.uri);
+    const absPath = (0, import_node_url9.fileURLToPath)(document3.uri);
     vaultIndex.refreshFile(absPath).catch(
       (err) => connection.console.error(`vault index refresh error: ${err.stack || err}`)
     );
@@ -44651,8 +44615,8 @@ function extractPrimitiveValue2(fieldSpec, primitiveName) {
 }
 async function hoverMarkdownLink(docUri, ctx) {
   if (!projectRoot || ctx.path.startsWith("http")) return null;
-  const docPath = (0, import_node_url10.fileURLToPath)(docUri);
-  const targetAbs = (0, import_node_path10.resolve)((0, import_node_path10.dirname)(docPath), ctx.path);
+  const docPath = (0, import_node_url9.fileURLToPath)(docUri);
+  const targetAbs = (0, import_node_path9.resolve)((0, import_node_path9.dirname)(docPath), ctx.path);
   if (!(0, import_node_fs3.existsSync)(targetAbs)) {
     return { contents: { kind: "markdown", value: `**Broken link**: \`${ctx.path}\` \u2014 target not found` } };
   }
@@ -44670,8 +44634,8 @@ async function hoverMarkdownLink(docUri, ctx) {
       targetFm = {};
     }
   }
-  const title = targetFm.title || (0, import_node_path10.basename)(targetAbs, ".md");
-  const template = targetFm.template ? (0, import_node_path10.basename)(targetFm.template, ".md").replace(/-template$/, "") : "unknown";
+  const title = targetFm.title || (0, import_node_path9.basename)(targetAbs, ".md");
+  const template = targetFm.template ? (0, import_node_path9.basename)(targetFm.template, ".md").replace(/-template$/, "") : "unknown";
   const parts = [`**${title}** (${template})`];
   if (targetFm.status) parts.push(`status: \`${targetFm.status}\``);
   if (targetFm.phase) parts.push(`phase: \`${targetFm.phase}\``);
@@ -44686,7 +44650,7 @@ async function hoverTaskId(ctx) {
     return { contents: { kind: "markdown", value: `**${ctx.id}** \u2014 _Not found in vault_` } };
   }
   const entry = vaultIndex.getEntry(absPath);
-  const parts = [`**${ctx.id}**: ${entry?.title || (0, import_node_path10.basename)(absPath, ".md")}`];
+  const parts = [`**${ctx.id}**: ${entry?.title || (0, import_node_path9.basename)(absPath, ".md")}`];
   if (entry?.status) parts.push(`status: \`${entry.status}\``);
   if (entry?.phase) parts.push(`phase: \`${entry.phase}\``);
   if (entry?.owner) parts.push(`owner: ${entry.owner}`);
@@ -44707,11 +44671,11 @@ async function resolveDefinition(params) {
   const ctx = getPositionContext(text5, params.position);
   if (ctx.type === "markdown-link") {
     if (!projectRoot || ctx.path.startsWith("http")) return null;
-    const docPath = (0, import_node_url10.fileURLToPath)(params.textDocument.uri);
-    const targetAbs = (0, import_node_path10.resolve)((0, import_node_path10.dirname)(docPath), ctx.path);
+    const docPath = (0, import_node_url9.fileURLToPath)(params.textDocument.uri);
+    const targetAbs = (0, import_node_path9.resolve)((0, import_node_path9.dirname)(docPath), ctx.path);
     if (!(0, import_node_fs3.existsSync)(targetAbs)) return null;
     return {
-      uri: (0, import_node_url10.pathToFileURL)(targetAbs).href,
+      uri: (0, import_node_url9.pathToFileURL)(targetAbs).href,
       range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
     };
   }
@@ -44721,7 +44685,7 @@ async function resolveDefinition(params) {
     const absPath = vaultIndex.resolveId(ctx.id);
     if (!absPath) return null;
     return {
-      uri: (0, import_node_url10.pathToFileURL)(absPath).href,
+      uri: (0, import_node_url9.pathToFileURL)(absPath).href,
       range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
     };
   }
@@ -44731,7 +44695,7 @@ connection.onReferences(async (params) => {
   try {
     if (!vaultIndex || !projectRoot) return [];
     await vaultIndex.ensureLoaded();
-    const absPath = (0, import_node_url10.fileURLToPath)(params.textDocument.uri);
+    const absPath = (0, import_node_url9.fileURLToPath)(params.textDocument.uri);
     const backlinks = vaultIndex.getBacklinks(absPath);
     const results = [];
     if (params.context?.includeDeclaration) {
@@ -44742,7 +44706,7 @@ connection.onReferences(async (params) => {
     }
     for (const bl of backlinks) {
       results.push({
-        uri: (0, import_node_url10.pathToFileURL)(bl.source).href,
+        uri: (0, import_node_url9.pathToFileURL)(bl.source).href,
         range: {
           start: { line: bl.line, character: 0 },
           end: { line: bl.line, character: 0 }
@@ -44769,11 +44733,11 @@ connection.onRequest("callHierarchy/outgoingCalls", () => []);
 function resolveProjectRoot2(params) {
   const workspace = params?.workspaceFolders?.[0]?.uri;
   if (workspace) {
-    const p = (0, import_node_url10.fileURLToPath)(workspace);
+    const p = (0, import_node_url9.fileURLToPath)(workspace);
     if (isProjectRoot(p)) return p;
   }
   if (params?.rootUri) {
-    const p = (0, import_node_url10.fileURLToPath)(params.rootUri);
+    const p = (0, import_node_url9.fileURLToPath)(params.rootUri);
     if (isProjectRoot(p)) return p;
   }
   if (params?.rootPath && isProjectRoot(params.rootPath)) return params.rootPath;
@@ -44783,11 +44747,11 @@ function resolveProjectRoot2(params) {
 }
 function isProjectRoot(absPath) {
   try {
-    if ((0, import_node_fs3.statSync)((0, import_node_path10.resolve)(absPath, "templates")).isDirectory()) return true;
+    if ((0, import_node_fs3.statSync)((0, import_node_path9.resolve)(absPath, "templates")).isDirectory()) return true;
   } catch {
   }
   try {
-    if ((0, import_node_fs3.statSync)((0, import_node_path10.resolve)(absPath, ".claude", "vault-keeper.json")).isFile()) {
+    if ((0, import_node_fs3.statSync)((0, import_node_path9.resolve)(absPath, ".claude", "vault-keeper.json")).isFile()) {
       return true;
     }
   } catch {
@@ -44796,13 +44760,13 @@ function isProjectRoot(absPath) {
 }
 function uriToRepoPath(uri, root2) {
   if (!uri || !uri.startsWith("file://") || !root2) return null;
-  const abs = (0, import_node_url10.fileURLToPath)(uri);
-  const rel = (0, import_node_path10.relative)(root2, abs);
+  const abs = (0, import_node_url9.fileURLToPath)(uri);
+  const rel = (0, import_node_path9.relative)(root2, abs);
   if (!rel || rel.startsWith("..")) return null;
-  return rel.split(import_node_path10.sep).join("/");
+  return rel.split(import_node_path9.sep).join("/");
 }
 function isVaultFile(repoPath) {
-  const base = (0, import_node_path10.basename)(repoPath);
+  const base = (0, import_node_path9.basename)(repoPath);
   if (base === "CLAUDE.md" || base === "CLAUDE.local.md") return false;
   return VAULT_FOLDERS.some(
     (f) => f === "." || repoPath === f || repoPath.startsWith(`${f}/`)

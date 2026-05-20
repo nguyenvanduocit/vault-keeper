@@ -15,7 +15,7 @@ rice:
 
 # PRD with sub-minimum rice reach
 
-Isolates `field_rules.min` enforcement — the template declares
+Isolates `min` enforcement — the template declares
 `rice.reach: type: integer, min: 1`. This doc sets `rice.reach: 0`.
 
 ## Problem

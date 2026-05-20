@@ -207,7 +207,7 @@ Node ≥ 18.
 - **CLI** (`vault-keeper`) — `validate`, `doctor`, `init`,
   `install-claude-code-plugin`. Exit codes wired for CI.
 - **LSP server** — diagnostics, hover, completion, code-action, code-lens,
-  inlay-hint, rename, document formatting. Pre-built bundle, no install step
+  rename, document formatting. Pre-built bundle, no install step
   for editor diagnostics.
 - **Composable schema engine** — the same validation primitives drive editor
   and CI. What passes locally passes in CI; no "works on my machine."

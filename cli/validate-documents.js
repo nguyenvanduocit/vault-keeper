@@ -46,50 +46,6 @@ import {
   validateSectionRulesLeak,
 } from '../lib/validators.js';
 
-// stripCodeRegions, validatePaths → imported from ../lib/validators.js above.
-
-/**
- * Validate link existence for frontmatter.relationships.
- *
- * The vault graph is directed-only: every typed predicate points
- * downstream → upstream, and backlinks are computed by scanning outgoing edges
- * at query time, not stored on the upstream doc. There is no bidirectional
- * symmetry to enforce. The only structural check left for frontmatter edges
- * is: the target file actually exists on disk.
- *
- * Body relationships (the source of truth) get path resolution
- * via `resolveDocPath()` inside V1 — unresolvable body paths there are
- * already surfaced by V1's type-pair check. This function covers the legacy
- * frontmatter.relationships keys that haven't been migrated to body yet.
- */
-async function validateLinkExistence(frontmatter, _filepath) {
-  const issues = [];
-  if (!frontmatter.relationships) return issues;
-
-  for (const [type, items] of Object.entries(frontmatter.relationships)) {
-    if (!Array.isArray(items)) continue;
-    for (const item of items) {
-      if (!item?.path) continue;
-      // Strip `#anchor` before checking file existence — `resolveDocPath`
-      // already encodes this convention and V3/V1/incoming-graph all honour
-      // it. Without this, `foo.md#AC1` is treated as a literal filename and
-      // every anchored frontmatter edge gets a false "Broken link" error.
-      const resolved = resolveDocPath(item.path);
-      if (!resolved) continue;
-      const linkedDoc = await parseDocument(join(process.cwd(), resolved));
-      if (linkedDoc.error) {
-        issues.push({
-          level: 'error',
-          field: `relationships.${type}`,
-          message: `Broken link: ${item.path}`,
-          fix: 'Update or remove the broken link',
-        });
-      }
-    }
-  }
-  return issues;
-}
-
 /**
  * Validate a single document.
  *
@@ -98,8 +54,7 @@ async function validateLinkExistence(frontmatter, _filepath) {
  *      YAML may not parse and that is by design).
  *   2. Parse the file.
  *   3. Run cross-cutting validators that don't depend on per-doc-type rules
- *      (template field shape, naming pattern, path absoluteness, bidirectional
- *      links).
+ *      (template field shape, naming pattern, path absoluteness).
  *   4. Resolve the doc's template (`frontmatter.template`) and load its
  *      composable field schema. If the template can't be resolved, emit an
  *      actionable error and skip schema-driven validation — we cannot
@@ -142,8 +97,6 @@ async function validateDocument(filepath, options = {}) {
   allIssues.push(...validateSlug(filepath));
   allIssues.push(...validatePaths(fm, doc.body));
   allIssues.push(...validateSectionRulesLeak(doc.body));
-  allIssues.push(...await validateLinkExistence(fm, filepath));
-
   // Template-driven rules. loadTemplateRules returns null when the template
   // cannot be resolved — file missing, malformed YAML, or unparseable
   // frontmatter. Without a schema we cannot validate; emit an actionable error
@@ -702,8 +655,6 @@ export {
   suggestSlug,
   validatePaths,
   validateSectionRulesLeak,
-  // FS-touching validators
-  validateLinkExistence,
   // Helpers
   isTemplateFile,
   isTemplateInstance,

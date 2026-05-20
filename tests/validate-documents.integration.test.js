@@ -3,9 +3,8 @@
  * that touch the filesystem.
  *
  * Each test runs inside an isolated temp directory created in beforeEach and
- * removed in afterEach. process.cwd() is also redirected so that
- * validateLinkExistence (which resolves links via process.cwd()) sees the
- * fixture vault as its root.
+ * removed in afterEach. process.cwd() is also redirected so that validators
+ * (which resolve paths via process.cwd()) see the fixture vault as their root.
  *
  * Pure-function coverage lives in validate-documents.test.js.
  */
@@ -17,7 +16,6 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   parseDocument,
-  validateLinkExistence,
   validateDocument,
   findDocuments,
 } from "../cli/validate-documents.js";
@@ -115,110 +113,6 @@ describe("parseDocument", () => {
     const path = writeDoc("dated.md", md(`created: 2026-01-01`));
     const result = await parseDocument(path);
     expect(result.frontmatter.created).toBeInstanceOf(Date);
-  });
-});
-
-// ────────────────────────────────────────────────────────────────────────────
-// validateLinkExistence — directed-edge graph
-// ────────────────────────────────────────────────────────────────────────────
-
-describe("validateLinkExistence", () => {
-  test("no relationships → no issues", async () => {
-    expect(await validateLinkExistence({}, "any.md")).toEqual([]);
-  });
-
-  test("link target exists → no issues", async () => {
-    writeDoc("dibb.md", md(`template: templates/dibb.md`));
-    const prdPath = writeDoc("prd.md", md(`template: templates/prd.md`));
-
-    const issues = await validateLinkExistence(
-      { relationships: { implements_bet: [{ path: "dibb.md", title: "DIBB" }] } },
-      prdPath,
-    );
-    expect(issues).toEqual([]);
-  });
-
-  test("link target does not exist → broken-link error", async () => {
-    const prdPath = writeDoc("prd.md", md(`template: templates/prd.md`));
-
-    const issues = await validateLinkExistence(
-      { relationships: { implements_bet: [{ path: "ghost.md" }] } },
-      prdPath,
-    );
-    expect(issues.length).toBeGreaterThanOrEqual(1);
-    expect(issues[0].level).toBe("error");
-    expect(issues[0].message).toMatch(/Broken link/);
-  });
-
-  test("relationships entry with no path is skipped silently", async () => {
-    const path = writeDoc("x.md", md(`template: templates/x.md`));
-    const issues = await validateLinkExistence(
-      { relationships: { implements_bet: [{ title: "no path" }] } },
-      path,
-    );
-    expect(issues).toEqual([]);
-  });
-
-  test("reference to a template file does not error when the template exists", async () => {
-    // validateLinkExistence only checks file existence. Edges to
-    // templates are file-system-valid even if semantically dubious (other
-    // validators flag those).
-    writeDoc(
-      "templates/prd-template.md",
-      md(`template_id: prd\ndocument_type: prd-template`, "Template scaffold."),
-    );
-    const sourcePath = writeDoc(
-      "product-knowledge/02-product/decisions/decision-001.md",
-      md(`template: templates/product-decision-template.md`),
-    );
-
-    const issues = await validateLinkExistence(
-      {
-        relationships: {
-          references: [{ path: "templates/prd-template.md" }],
-          blocked_by: [{ path: "templates/prd-template.md" }],
-        },
-      },
-      sourcePath,
-    );
-    expect(issues).toEqual([]);
-  });
-
-  test("reference to a MISSING template still produces a broken-link error", async () => {
-    const sourcePath = writeDoc(
-      "product-knowledge/02-product/decisions/decision-002.md",
-      md(`template: templates/product-decision-template.md`),
-    );
-
-    const issues = await validateLinkExistence(
-      {
-        relationships: {
-          references: [{ path: "templates/does-not-exist.md" }],
-        },
-      },
-      sourcePath,
-    );
-
-    expect(issues.length).toBeGreaterThan(0);
-    expect(issues[0].level).toBe("error");
-    expect(issues[0].message).toMatch(/Broken link/);
-  });
-
-  test("multiple relationship types are all checked for link existence", async () => {
-    writeDoc("dep.md", md(`template: templates/x.md`));
-    const path = writeDoc("a.md", md(`template: templates/x.md`));
-    const issues = await validateLinkExistence(
-      {
-        relationships: {
-          depends_on: [{ path: "dep.md" }],
-          references: [{ path: "missing.md" }],
-        },
-      },
-      path,
-    );
-    expect(issues).toHaveLength(1);
-    expect(issues[0].field).toBe("relationships.references");
-    expect(issues[0].message).toMatch(/Broken link/);
   });
 });
 

@@ -10,7 +10,7 @@ prd_type: enhancement
 
 # Approved PRD missing shipped_date
 
-Isolates `conditional_required_fields` (frontmatter variant on `status`) —
+Isolates conditional `when` gate (frontmatter variant on `status`) —
 the template declares `shipped_date` required when
 `status in ['approved', 'shipped']`. This doc is `approved` but ships no
 `shipped_date`.

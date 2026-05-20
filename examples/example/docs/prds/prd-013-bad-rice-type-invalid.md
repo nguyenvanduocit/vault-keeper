@@ -15,7 +15,7 @@ rice:
 
 # PRD with non-integer rice reach
 
-Isolates `field_rules.type: integer` enforcement — the template declares
+Isolates `type: integer` enforcement — the template declares
 `rice.reach: type: integer`. This doc supplies the string `'fifty'`. The
 validator emits a "Expected integer" error, separate from the `min` check
 exercised by `prd-008-bad-rice-reach-invalid.md`.

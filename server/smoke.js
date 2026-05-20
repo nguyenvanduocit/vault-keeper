@@ -156,7 +156,7 @@ async function main() {
 
   // 2. didOpen — broken PRD targeting the configured vault root so it's
   // classified as a vault file. Multiple violations packed in to exercise
-  // every diagnostic path: validation_rules leak (warning), bad date regex
+  // every diagnostic path: fields leak (warning), bad date regex
   // (error), missing Ship Timeline body section (conditional error,
   // status=shipped), malformed Relationships bullet (body warning),
   // malformed AC heading (body warning).
@@ -174,8 +174,8 @@ rice:
   impact: 1
   confidence: 80
   effort: 2
-validation_rules:
-  required_fields: [a, b]
+fields:
+  title: { required: true }
 ---
 
 # Test PRD
@@ -188,7 +188,7 @@ validation_rules:
 ### AC1 - missing dashes
 `;
   // Build the URI under the configured vaultRoot so isVaultFile classifies it
-  // as a vault doc, and match the PRD template's path_regex so per-template
+  // as a vault doc, and match the PRD template's `$path` pattern so per-template
   // rules apply.
   const smokeVaultRoot = loadVaultConfig(projectRoot).vaultRoot;
   const uri = `file://${projectRoot}/${smokeVaultRoot}/prds/prd-999-bogus.md`;
@@ -216,7 +216,7 @@ validation_rules:
 
   // ── Assertion group 2: Diagnostics (original) ─────────────────────────────
   const findings = {
-    leakValidationRules: diags.some((d) => d.code === "validation_rules"),
+    leakFields: diags.some((d) => d.code === "fields"),
     badCreatedDate: diags.some((d) => d.code === "created"),
     // The PRD schema migrated to minimal frontmatter — `target_ship_date`
     // and `shipped_at` no longer exist; the conditional now requires the body section

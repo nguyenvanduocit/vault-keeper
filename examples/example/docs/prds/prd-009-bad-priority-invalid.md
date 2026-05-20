@@ -11,9 +11,8 @@ priority: critical
 
 # PRD with unrecognised priority
 
-Isolates `field_rules.values` (enum) enforcement — the template declares
-`priority` must be one of `[must, should, nice]`. This doc sets
-`priority: critical`.
+Isolates `enum` enforcement — the template declares `priority` must be
+one of `[must, should, nice]`. This doc sets `priority: critical`.
 
 ## Problem
 

@@ -10,8 +10,8 @@
  *   - optionally a message regex to narrow within the same field
  *
  * FIXERS IMPLEMENTED
- *   code ∈ templateOnlyFields (validation_rules, template_version,
- *        template_id, fields, strict, sections, tier) — delete the leaked
+ *   code ∈ templateOnlyFields (fields, strict, sections, tier,
+ *        template_version, template_id) — delete the leaked
  *        key from frontmatter.
  *   code="filename" — rename file to kebab-case using WorkspaceEdit rename.
  *   code="<field>" + msg starts "Required field" — insert placeholder.
@@ -110,11 +110,11 @@ async function fixersForDiagnostic(diag, uri, text, { vaultIndex, projectRoot })
 }
 
 // ── Template-only fields set ──────────────────────────────────────────────────
-// Mirrors CONFIG.templateOnlyFields from lib/validators.js, plus the new
-// composable-schema template-authoring keys (fields, strict, sections, tier).
+// Mirrors CONFIG.templateOnlyFields from lib/validators.js — template-authoring
+// keys that must not appear in document instances.
 const TEMPLATE_ONLY_FIELDS = new Set([
-  "validation_rules", "template_version", "template_id",
   "fields", "strict", "sections", "tier",
+  "template_version", "template_id",
 ]);
 
 // ══════════════════════════════════════════════════════════════════════════════

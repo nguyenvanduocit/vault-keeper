@@ -37,7 +37,6 @@ stale state) and are otherwise ignored.
 | **completion** | `(`, `:`, `#`, `/`, `*` triggers | Link-target completions, heading-anchor completions, template-path completions, frontmatter enum completions (driven by template `fields:` schema). |
 | **codeAction** | Diagnostic quick-fix prompt | Auto-fixes for template-only field leaks, missing required fields, filename rename, relative-path correction. |
 | **codeLens** | Editor request | Action line above `template:` showing backlink count + last-updated age. |
-| **inlayHint** | Editor request | Currently a no-op (returns empty array). See [inlay hints](#inlayhint) below. |
 | **rename** | Editor rename request / file move | Atomically renames a file and updates every markdown link pointing at it. |
 | **documentFormatting** | Format-on-save / explicit format | Applies the canonical formatter to the buffer. |
 
@@ -188,20 +187,6 @@ handles the click; otherwise they're a no-op.
 Counts (backlinks, days-since-update) come from the vault index at
 request time. The days-since-update is derived from
 `frontmatter.updated_at` or `frontmatter.updated`.
-
-## inlayHint
-
-Currently a **no-op skeleton** — returns an empty array for all
-requests. The inlay-hint provider registration and capability are
-preserved so the LSP handshake stays stable.
-
-Prior inlay hints depended on a domain-specific body parser that
-extracted structured section data (relationship counts, AC
-implementations, status phase durations). The composable schema engine
-validates body structure generically but does not expose the parsed
-section data needed for inline decorations. Future work may reintroduce
-generic inlay hints driven by template-declared body schema and the
-`body-shapes.js` parsers.
 
 ## rename
 

@@ -9,9 +9,9 @@ decision_type: product
 
 # Draft decision with no due_date
 
-Isolates `conditional_required_fields` with `severity: warning` — the
-template recommends `due_date` for draft decisions but does NOT make it a
-hard error. The validator emits a WARNING (not an error), so this doc still
+Isolates conditional `when` gate with `severity: warning` — the template
+recommends `due_date` for draft decisions but does NOT make it a hard
+error. The validator emits a WARNING (not an error), so this doc still
 counts as `valid: true` in `summary.valid` but contributes 1 to
 `warningCount`.
 

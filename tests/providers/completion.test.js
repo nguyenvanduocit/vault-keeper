@@ -272,7 +272,7 @@ See [foo](`;
 });
 
 describe("status enum completions — after status:", () => {
-  test("returns EnumMember items from field_rules", async () => {
+  test("returns EnumMember items from field schema enum", async () => {
     setupSandbox();
     const connection = makeConnection();
     const docText = `---

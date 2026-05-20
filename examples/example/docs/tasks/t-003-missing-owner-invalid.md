@@ -8,7 +8,7 @@ estimate_hours: 4
 
 # Task with no owner
 
-Isolates `required_fields` enforcement — the task template declares
+Isolates `required: true` enforcement — the task template declares
 `owner` required. This doc omits it.
 
 ## Intent

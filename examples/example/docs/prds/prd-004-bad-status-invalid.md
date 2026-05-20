@@ -10,9 +10,9 @@ prd_type: enhancement
 
 # PRD with unknown status
 
-Isolates `state_machine` enforcement — `shippping` (typo) is not a declared
-node in the template's state graph. The validator emits a WARNING (not an
-error) because state-machine drift is recoverable.
+Isolates `enum` enforcement — `shippping` (typo) is not a declared
+value in the template's `status` field schema. The validator emits a WARNING
+(not an error) because enum drift is recoverable.
 
 ## Problem
 

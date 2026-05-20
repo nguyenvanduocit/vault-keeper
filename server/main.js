@@ -2,11 +2,10 @@
 /**
  * main.js — Vault-keeper LSP entry point.
  *
- * Validates a knowledge-vault's markdown documents against the rules each
- * document's template declares (`validation_rules` block in the template's
- * frontmatter):
+ * Validates a knowledge-vault's markdown documents against the composable
+ * field schema each document's template declares in its frontmatter:
  *   - required / conditional-required frontmatter fields
- *   - field-rules (regex, enum, type, min)
+ *   - field schema (regex, enum, type, min/max, pattern)
  *   - template-only-field leakage detection
  *   - slug + naming conventions
  *   - relative-path policy
@@ -49,14 +48,13 @@ import { getPositionContext } from "./position-context.js";
 import { loadTemplateRules } from "../lib/template-rules.js";
 import { loadVaultConfig } from "../lib/vault-config.js";
 
-// Provider modules (Wave 1+2 LSP providers — completion, code-action,
-// inlay-hint, code-lens, rename, document-formatting). Each module exports a
+// Provider modules (LSP providers — completion, code-action, code-lens,
+// rename, document-formatting). Each module exports a
 // static `capability` declaration and a `register({connection, docs,
 // vaultIndex, projectRoot})` function. The register() call happens AFTER
 // onInitialize sets up vaultIndex so closures capture live references.
 import * as completionProvider from "./providers/completion.js";
 import * as codeActionProvider from "./providers/code-action.js";
-import * as inlayHintProvider from "./providers/inlay-hint.js";
 import * as codeLensProvider from "./providers/code-lens.js";
 import * as renameProvider from "./providers/rename.js";
 import * as documentFormattingProvider from "./providers/document-formatting.js";
@@ -64,7 +62,6 @@ import * as documentFormattingProvider from "./providers/document-formatting.js"
 const PROVIDERS = [
   completionProvider,
   codeActionProvider,
-  inlayHintProvider,
   codeLensProvider,
   renameProvider,
   documentFormattingProvider,

@@ -2,11 +2,11 @@
  * Unit tests for .claude/skills/tools/validate-documents.js — pure validators
  * and helpers. No I/O.
  *
- * After the template-driven refactor, doc-type-specific rules (required fields,
- * allowed statuses, status transitions) live in each template's
- * `validation_rules` block — not in CONFIG. The cross-cutting validators
- * (template path shape, naming convention, path-absoluteness) and the new rule
- * applier (applyRules) are unit-tested here. End-to-end behaviour against real
+ * After the composable-schema refactor, doc-type-specific rules (required
+ * fields, allowed statuses, status transitions) live in each template's
+ * `fields` / `sections` / body section-rules — not in CONFIG. The cross-cutting
+ * validators (template path shape, naming convention, path-absoluteness) and
+ * the schema engine are unit-tested here. End-to-end behaviour against real
  * fixture templates is in validate-documents.integration.test.js.
  */
 
@@ -456,17 +456,20 @@ describe("CONFIG (canonical cross-cutting rules)", () => {
     expect(CONFIG.validStatuses).toBeUndefined();
   });
 
-  test("templateOnlyFields covers the 3 unambiguously template-only meta fields", () => {
-    // Source: templates/prd-template.md header declares the meta block.
+  test("templateOnlyFields covers the template-authoring meta fields", () => {
+    // Source: composable schema keys declared in template frontmatter.
     // Used by template-meta-leak detection.
-    expect(CONFIG.templateOnlyFields).toContain("validation_rules");
+    expect(CONFIG.templateOnlyFields).toContain("fields");
+    expect(CONFIG.templateOnlyFields).toContain("strict");
+    expect(CONFIG.templateOnlyFields).toContain("sections");
+    expect(CONFIG.templateOnlyFields).toContain("tier");
     expect(CONFIG.templateOnlyFields).toContain("template_version");
     expect(CONFIG.templateOnlyFields).toContain("template_id");
   });
 
   test("templateOnlyFields does NOT include `template` (singular — required in instances)", () => {
     // Catastrophic regression guard: stripping `template` would break every
-    // instance — `template` is in template-driven required_fields.
+    // instance — `template` is declared required in every template's field schema.
     expect(CONFIG.templateOnlyFields).not.toContain("template");
   });
 
@@ -539,20 +542,20 @@ describe("findTemplateMetaLeaks", () => {
     ).toEqual([]);
   });
 
-  test("flags validation_rules leak in instance", () => {
+  test("flags fields leak in instance", () => {
     const fm = {
       template: "templates/prd-template.md",
       status: "draft",
-      validation_rules: { required_fields: ["template"] },
+      fields: { title: { required: true } },
     };
     const leaks = findTemplateMetaLeaks(
       "product-knowledge/02-product/prds/2026-05-01-prd-001.md",
       fm
     );
-    expect(leaks).toEqual(["validation_rules"]);
+    expect(leaks).toEqual(["fields"]);
   });
 
-  test("flags the 3 template-only fields when full meta block leaks", () => {
+  test("flags template-only fields when full meta block leaks", () => {
     // Realistic copy-paste scenario: user duplicates templates/prd-template.md
     // header into a new instance — meta fields ride along. template_path is
     // intentionally NOT flagged (overloaded semantics).
@@ -561,14 +564,14 @@ describe("findTemplateMetaLeaks", () => {
       template_version: "3.1.0",
       template_id: "prd-template",
       template_path: "templates/prd-template.md", // overloaded, must NOT flag
-      validation_rules: { required_fields: ["template"] },
+      fields: { title: { required: true } },
       status: "draft",
     };
     const leaks = findTemplateMetaLeaks(
       "product-knowledge/02-product/prds/2026-05-01-prd-001.md",
       fm
     );
-    expect(leaks).toContain("validation_rules");
+    expect(leaks).toContain("fields");
     expect(leaks).toContain("template_version");
     expect(leaks).toContain("template_id");
     expect(leaks).not.toContain("template_path"); // overloaded survives
@@ -605,10 +608,10 @@ describe("findTemplateMetaLeaks", () => {
     expect(leaks).toEqual(["template_id"]);
   });
 
-  test("returns [] for the template scaffold itself (validation_rules belongs there)", () => {
+  test("returns [] for the template scaffold itself (fields belongs there)", () => {
     const fm = {
       template_id: "prd-template",
-      validation_rules: { required_fields: ["template"] },
+      fields: { title: { required: true } },
     };
     expect(findTemplateMetaLeaks("templates/prd-template.md", fm)).toEqual([]);
   });
@@ -639,7 +642,7 @@ describe("validateTemplateMetaLeak", () => {
     const issues = validateTemplateMetaLeak(
       {
         template: "templates/prd-template.md",
-        validation_rules: {},
+        fields: {},
         template_id: "prd-template",
       },
       "product-knowledge/02-product/prds/2026-05-01-prd-001.md"
@@ -647,15 +650,15 @@ describe("validateTemplateMetaLeak", () => {
     expect(issues).toHaveLength(2);
     expect(issues.every((i) => i.level === "warning")).toBe(true);
     expect(issues.map((i) => i.field).sort()).toEqual([
+      "fields",
       "template_id",
-      "validation_rules",
     ]);
   });
 
   test("template scaffold itself → no issues", () => {
     expect(
       validateTemplateMetaLeak(
-        { validation_rules: {} },
+        { fields: {} },
         "templates/prd-template.md"
       )
     ).toEqual([]);

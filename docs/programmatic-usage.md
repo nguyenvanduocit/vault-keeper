@@ -59,7 +59,7 @@ import {
   deepFreeze,
 
   // Orchestrator (file-walking + per-doc validation)
-  validateDocument, findDocuments, findAllFiles, validateLinkExistence,
+  validateDocument, findDocuments, findAllFiles,
   runValidateCli,
 
   // LSP-side variant — validates an in-memory buffer, no FS scan

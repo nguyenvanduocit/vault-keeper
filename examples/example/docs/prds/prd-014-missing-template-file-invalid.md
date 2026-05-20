@@ -12,5 +12,5 @@ prd_type: enhancement
 
 Isolates the template-resolution failure path — `template:` resolves to a
 file that doesn't exist. `loadTemplateRules` returns `null`; the validator
-synthesizes a "Cannot load validation_rules from template '<path>'…" error
-so the author sees the problem instead of silent schema-less validation.
+synthesizes a "Cannot load schema from template '<path>'…" error so the
+author sees the problem instead of silent schema-less validation.

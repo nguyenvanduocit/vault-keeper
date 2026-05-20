@@ -7,9 +7,9 @@ owner: '@alice'
 
 # Onboarding notes for new contributors
 
-A free-form note. `note-template.md` declares no `state_machine`, no
-conditional rules, and no required body sections — proving that templates
-with a minimal `validation_rules` block work too.
+A free-form note. `note-template.md` declares no conditional rules and no
+required body sections — proving that templates with a minimal field
+schema work too.
 
 ## Relationships
 

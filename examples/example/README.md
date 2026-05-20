@@ -21,10 +21,10 @@ Conventions:
 
 | Template | Showcases |
 |---|---|
-| [`templates/prd-template.md`](templates/prd-template.md) | The full rule catalog: `required_fields`, `optional_fields`, `conditional_required_fields` (frontmatter + `body_section:`), `field_rules` (regex / values / type / min), `state_machine`, `path_regex`, `sections`, body section-rules code fences. |
+| [`templates/prd-template.md`](templates/prd-template.md) | The full rule catalog: `fields` (required, conditional `when`, type, enum, pattern, min/max), `$path` synthetic field, `sections`, body section-rules code fences. |
 | [`templates/task-template.md`](templates/task-template.md) | A mid-density template — engineering tasks linked to PRDs. |
-| [`templates/note-template.md`](templates/note-template.md) | The minimum viable template — identity-only required fields, one path_regex, no conditional rules. |
-| [`templates/decision-template.md`](templates/decision-template.md) | Advanced recipe surface: **compound DSL with `and`**, **DSL `not in`**, **`min_count`** on arrays, **`severity: warning`** override. |
+| [`templates/note-template.md`](templates/note-template.md) | The minimum viable template — identity-only required fields, one `$path` pattern, no conditional rules. |
+| [`templates/decision-template.md`](templates/decision-template.md) | Advanced recipe surface: **compound DSL with `and`**, **DSL `not in`**, **`min`** on arrays, **`severity: warning`** override. |
 
 ## Fixture map — diagnostics demonstrated
 
@@ -39,25 +39,24 @@ Conventions:
 | [`docs/notes/note-001-onboarding.md`](docs/notes/note-001-onboarding.md) | Free-form note against the minimal template |
 | [`docs/decisions/d-001-microservice-split.md`](docs/decisions/d-001-microservice-split.md) | Ratified architecture decision — every advanced conditional satisfied at once |
 
-### Invalid fixtures (15) — one violation per file
+### Invalid fixtures (14) — one violation per file
 
 | File | Diagnostic kind | Field code |
 |---|---|---|
-| [`docs/prds/prd-003-bad-date-invalid.md`](docs/prds/prd-003-bad-date-invalid.md) | `field_rules.regex` failure | `created` |
-| [`docs/prds/prd-004-bad-status-invalid.md`](docs/prds/prd-004-bad-status-invalid.md) | `state_machine` unknown-status **warning** | `status` |
-| [`docs/prds/prd-005-missing-rice-invalid.md`](docs/prds/prd-005-missing-rice-invalid.md) | `conditional_required_fields` (frontmatter, `required:true`) | `rice` |
-| [`docs/prds/prd-006-missing-shipped-date-invalid.md`](docs/prds/prd-006-missing-shipped-date-invalid.md) | `conditional_required_fields` (frontmatter, `required:true`) | `shipped_date` |
-| [`docs/prds/prd-007-missing-ship-section-invalid.md`](docs/prds/prd-007-missing-ship-section-invalid.md) | `conditional_required_fields` (`body_section:`) | `body_section:## Ship Timeline` |
-| [`docs/prds/prd-008-bad-rice-reach-invalid.md`](docs/prds/prd-008-bad-rice-reach-invalid.md) | `field_rules.min` violation | `rice.reach` |
-| [`docs/prds/prd-009-bad-priority-invalid.md`](docs/prds/prd-009-bad-priority-invalid.md) | `field_rules.values` (enum) violation | `priority` |
-| [`docs/prds/prd-010-leaked-rules-invalid.md`](docs/prds/prd-010-leaked-rules-invalid.md) | template-meta-leak **warning** | `validation_rules` |
-| [`docs/prds/prd-bad-name-invalid.md`](docs/prds/prd-bad-name-invalid.md) | `path_regex` mismatch | `location` |
+| [`docs/prds/prd-003-bad-date-invalid.md`](docs/prds/prd-003-bad-date-invalid.md) | `pattern` failure | `created` |
+| [`docs/prds/prd-004-bad-status-invalid.md`](docs/prds/prd-004-bad-status-invalid.md) | `enum` unknown-status **warning** | `status` |
+| [`docs/prds/prd-005-missing-rice-invalid.md`](docs/prds/prd-005-missing-rice-invalid.md) | Conditional `required` (frontmatter, `when` condition) | `rice` |
+| [`docs/prds/prd-006-missing-shipped-date-invalid.md`](docs/prds/prd-006-missing-shipped-date-invalid.md) | Conditional `required` (frontmatter, `when` condition) | `shipped_date` |
+| [`docs/prds/prd-007-missing-ship-section-invalid.md`](docs/prds/prd-007-missing-ship-section-invalid.md) | Body section-rule `required` heading | `## Ship Timeline` |
+| [`docs/prds/prd-008-bad-rice-reach-invalid.md`](docs/prds/prd-008-bad-rice-reach-invalid.md) | `min` violation | `rice.reach` |
+| [`docs/prds/prd-009-bad-priority-invalid.md`](docs/prds/prd-009-bad-priority-invalid.md) | `enum` violation | `priority` |
+| [`docs/prds/prd-010-leaked-rules-invalid.md`](docs/prds/prd-010-leaked-rules-invalid.md) | template-meta-leak **warning** | `fields` |
+| [`docs/prds/prd-bad-name-invalid.md`](docs/prds/prd-bad-name-invalid.md) | `$path` pattern mismatch | `$path` |
 | [`docs/prds/prd-011-missing-template-invalid.md`](docs/prds/prd-011-missing-template-invalid.md) | Doc has no `template:` key | `template` |
-| [`docs/prds/prd-012-broken-link-invalid.md`](docs/prds/prd-012-broken-link-invalid.md) | Broken `frontmatter.relationships` link | `relationships.implements_bet` |
-| [`docs/prds/prd-013-bad-rice-type-invalid.md`](docs/prds/prd-013-bad-rice-type-invalid.md) | `field_rules.type: integer` violation | `rice.reach` |
+| [`docs/prds/prd-013-bad-rice-type-invalid.md`](docs/prds/prd-013-bad-rice-type-invalid.md) | `type: integer` violation | `rice.reach` |
 | [`docs/prds/prd-014-missing-template-file-invalid.md`](docs/prds/prd-014-missing-template-file-invalid.md) | `template:` points at nonexistent file | `template` |
-| [`docs/tasks/t-003-missing-owner-invalid.md`](docs/tasks/t-003-missing-owner-invalid.md) | `required_fields` missing | `owner` |
-| [`docs/decisions/d-002-not-enough-approvers-invalid.md`](docs/decisions/d-002-not-enough-approvers-invalid.md) | Conditional `min_count` violation | `approvers` |
+| [`docs/tasks/t-003-missing-owner-invalid.md`](docs/tasks/t-003-missing-owner-invalid.md) | `required` field missing | `owner` |
+| [`docs/decisions/d-002-not-enough-approvers-invalid.md`](docs/decisions/d-002-not-enough-approvers-invalid.md) | Conditional `min` count violation | `approvers` |
 | [`docs/decisions/d-003-missing-summary-invalid.md`](docs/decisions/d-003-missing-summary-invalid.md) | Conditional with DSL `not in` | `decision_summary` |
 | [`docs/decisions/d-004-warn-due-date-invalid.md`](docs/decisions/d-004-warn-due-date-invalid.md) | Conditional `severity: warning` | `due_date` |
 | [`docs/assets/Bad_Asset.json`](docs/assets/Bad_Asset.json) | Asset filename slug violation | `filename` |

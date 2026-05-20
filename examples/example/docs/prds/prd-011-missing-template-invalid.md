@@ -10,5 +10,5 @@ prd_type: enhancement
 # PRD with no template field
 
 Isolates `validateTemplateField` — the doc declares no `template:` key, so
-the validator cannot look up any `validation_rules` and emits a single
-error pointing at the missing identity field.
+the validator cannot look up any field schema and emits a single error
+pointing at the missing identity field.

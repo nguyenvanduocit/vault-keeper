@@ -54,7 +54,7 @@ function issueToDiagnostic(issue, lineMap, lines) {
 }
 
 function resolveLine(issue, lineMap) {
-  // 1. Explicit line from the issue (body-parser warnings, frontmatter parse
+  // 1. Explicit line from the issue (body validation warnings, frontmatter parse
   //    errors) — already 0-indexed by the validator wrapper.
   if (typeof issue.line === "number" && issue.line >= 0) return issue.line;
 

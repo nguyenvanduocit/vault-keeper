@@ -10,7 +10,7 @@ prd_type: feature
 
 # Feature PRD missing rice score
 
-Isolates `conditional_required_fields` (frontmatter variant) — the template
+Isolates conditional `when` gate (frontmatter variant) — the template
 declares `rice` required when `prd_type in ['feature']`. This doc is a
 feature but ships no `rice:` block.
 

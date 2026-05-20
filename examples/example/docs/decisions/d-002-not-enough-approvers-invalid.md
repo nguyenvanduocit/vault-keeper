@@ -13,7 +13,7 @@ decision_summary: >
 
 # Ratified ops decision with only one approver
 
-Isolates `conditional_required_fields` with `min_count` — the template
+Isolates conditional `when` gate with `min` count — the template
 requires `approvers` array to have ≥2 entries when `status in ['ratified']`.
 This doc has 1.
 

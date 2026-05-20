@@ -12,8 +12,8 @@ tags: [search]
 
 # Search relevance tuning
 
-A draft PRD — exercises the `state_machine` graph at its initial node and
-demonstrates that `conditional_required_fields` only fire when their
+A draft PRD — exercises the `enum` constraint at its initial node and
+demonstrates that conditional `when` gates only fire when their
 condition matches (no `shipped_date`, no `rice`, no `## Ship Timeline`
 section required while `status: draft`).
 

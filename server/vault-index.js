@@ -9,10 +9,10 @@
  *
  * The index is built lazily on first cross-doc request, then incrementally
  * updated on didSave events. Full rebuild is ~500ms for ~1000 docs (async
- * readFile + gray-matter parse, no body-parser needed).
+ * readFile + gray-matter parse, no body validation needed).
  */
 
-import { readFile, readdir, stat } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { join, relative, resolve, dirname, basename, extname } from "node:path";
 import { pathToFileURL } from "node:url";
 import matter from "gray-matter";

@@ -133,7 +133,7 @@ describe('examples/example/ — fixture-cum-documentation', () => {
   //   - `path-regex-bad-regex` — would require a template with a malformed
   //     regex; out of scope for an authoring-mistake-focused example.
   //   - `bundle-readme-template-mismatch` — requires a template whose
-  //     `path_regex` declares a bundle pattern; the example uses flat-file
+  //     `$path` pattern declares a bundle pattern; the example uses flat-file
   //     templates.
   //   - "Failed to parse" frontmatter — diagnostic has no `field`, breaks the
   //     field-code expectations contract. Could be added with a sentinel but
@@ -147,35 +147,35 @@ describe('examples/example/ — fixture-cum-documentation', () => {
         i.field === 'template' && /Missing required template field/.test(i.message),
     },
     {
-      name: 'required_fields missing',
+      name: 'required field missing',
       match: (i) => /Required field '.+' is missing/.test(i.message),
     },
     {
-      name: 'field_rules regex mismatch',
+      name: 'field schema pattern mismatch',
       match: (i) => /does not match pattern/.test(i.message),
     },
     {
-      name: 'field_rules values (enum) mismatch',
+      name: 'field schema enum mismatch',
       match: (i) => /is not in allowed values/.test(i.message),
     },
     {
-      name: 'field_rules type:integer',
+      name: 'field schema type:integer',
       match: (i) => /Expected type/.test(i.message),
     },
     {
-      name: 'field_rules min (below minimum)',
+      name: 'field schema min (below minimum)',
       match: (i) => /is less than minimum/.test(i.message),
     },
     {
-      name: 'conditional_required_fields (required:true, frontmatter)',
+      name: 'conditional required (when gate, frontmatter)',
       match: (i) => i.error_type === 'required-missing' && /Required field '.+' is missing/.test(i.message),
     },
     {
-      name: 'conditional_required_fields (min_count)',
+      name: 'conditional required (min_count)',
       match: (i) => /is less than minimum/.test(i.message) && i.error_type === 'min-violation',
     },
     {
-      name: 'conditional_required_fields (severity:warning)',
+      name: 'conditional required (severity:warning)',
       match: (i) =>
         i.level === 'warning' && /Required field '.+' is missing/.test(i.message),
     },
@@ -184,7 +184,7 @@ describe('examples/example/ — fixture-cum-documentation', () => {
       match: (i) => i.error_type === 'required-missing' && /Required section '.+' is missing/.test(i.message),
     },
     {
-      name: 'path_regex mismatch',
+      name: '$path pattern mismatch',
       match: (i) => i.error_type === 'pattern-mismatch',
     },
     {
@@ -194,10 +194,6 @@ describe('examples/example/ — fixture-cum-documentation', () => {
     {
       name: 'unresolvable template',
       match: (i) => /Cannot load schema/.test(i.message),
-    },
-    {
-      name: 'broken frontmatter relationship link',
-      match: (i) => /^Broken link/.test(i.message),
     },
     {
       name: 'filename slug violation',

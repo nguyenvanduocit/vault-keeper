@@ -144,7 +144,7 @@ export async function validateBuffer({ text, filepath, projectRoot }) {
 }
 
 /**
- * Convert a `parseBody` line (1-indexed, body-relative) to a document-absolute
+ * Convert a body-validation line (1-indexed, body-relative) to a document-absolute
  * 0-indexed line. The body starts right after the closing `---` fence.
  *
  * `gray-matter` strips the frontmatter from `content`, so body line 1 maps to
