@@ -1,6 +1,6 @@
 {
   "name": "claude-code-vault-keeper",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "type": "module",
   "description": "Stop your markdown vault from rotting. Validate Obsidian / Logseq / any markdown notes against templates you control — per-keystroke in your editor (LSP), exit-1 in CI (CLI), or as a library (`import { validateDocument } from 'claude-code-vault-keeper'`). Rules live in your template's `fields:` frontmatter schema, not in tool code; drop into any vault and it adapts. Pre-built LSP bundle, no build step. Bins: `vault-keeper` (validate, doctor, init, install-claude-code-plugin) + legacy `vault-keeper-validate`.",
   "main": "lib/index.js",

@@ -4,7 +4,7 @@ All notable changes to `claude-code-vault-keeper` are tracked here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 the project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.9.0] — 2026-05-20
 
 ### Changed — composable schema validation redesign
 
