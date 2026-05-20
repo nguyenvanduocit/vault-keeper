@@ -255,6 +255,31 @@ formula: "score == reach * impact * confidence / effort"
 `Dimension` column); `formula` evaluates the expression over them. No plugin
 code mentions RICE.
 
+### 6.6 Pinned details
+
+**Repeatable cardinality & matching.** A `repeatable` template heading at
+depth N claims every document heading at depth N within the matched parent
+section. Cardinality is `min`/`max` (count of matching headings); `required:
+true` means `min: 1`; absent means `0..N`. A document heading at that depth
+that fails the section's `heading.pattern` is a `heading-mismatch` error — a
+repeatable section owns its heading level.
+
+**`table` + `formula` value resolution.** When a `table` declares
+`key_column` + `value_column`, its rows become a map: each identifier is the
+`key_column` cell normalized (lowercased, trimmed, spaces → `_`), its value
+the `value_column` cell parsed as a number. `formula` identifiers resolve
+against that map; an identifier whose cell is non-numeric yields a
+`formula-violation`. Numeric `==` uses an epsilon tolerance (`1e-9`) so float
+arithmetic does not fail spuriously.
+
+**Body issue addressing.** A body issue carries an explicit 0-indexed
+document-absolute `line` (from the offending AST node's `position`, offset as
+`validateSectionRulesLeak` already does) so `server/diagnostics.js` resolves
+it directly. `field` is a human-readable heading path (`## Acceptance
+Criteria`, or `## Acceptance Criteria › ### AC1`) used as the diagnostic
+`code`; `narrowRange` falls back to a whole-line highlight, which is correct
+for a body node.
+
 ## 7. Engine
 
 A new module `lib/schema-engine.js`:
@@ -266,9 +291,11 @@ A new module `lib/schema-engine.js`:
 - `applyBodySchema(templateBodyAst, docBodyAst)` — body validation (§6).
 
 `applyRules` in `lib/validators.js` and the 12 `SECTION_HANDLERS` in
-`body-parser.js` are removed. A generic expression evaluator (`when` + the new
-`formula` arithmetic) lives in `lib/conditional-eval.js` (extended) or a
-sibling module — finalized in the plan.
+`body-parser.js` are removed. `when` keeps using `lib/conditional-eval.js`
+unchanged. `formula` gets a new module `lib/expression-eval.js` — a
+recursive-descent evaluator for arithmetic (`+ - * /`) and comparison,
+hand-rolled following the proven structure of `conditional-eval.js`, no new
+dependency.
 
 The issue shape is **unchanged** — `{ level, field, message, fix, error_type?,
 line?/bodyLine? }` — so `server/diagnostics.js` and the CLI reporter keep
@@ -349,6 +376,8 @@ independent of documents) is a natural follow-up — noted, out of scope.
 | `lib/index.js` | public-API exports updated |
 | `examples/example/templates/*.md` (4 templates) | migrated to the new format |
 | `docs/templates/*.md` | rewritten |
+| `skills/vault.new/SKILL.md` | API-usage section rewritten — it calls `loadTemplateRules` and maps `field_rules`; the returned shape changes |
+| `skills/vault.setup/`, `vault.health/`, `vault.fix/`, `skills/README.md` | terminology updated (`validation_rules` / `field_rules` → `fields:` schema) |
 | `tests/*` | extensive updates + new coverage for the engine, body schema, meta-validation |
 | `CHANGELOG.md`, project `CLAUDE.md` | updated |
 
@@ -361,8 +390,10 @@ The implementation plan will sequence this work into phases.
 - Real state-machine transition validation (transitions checked against a body
   history table — a separate future feature).
 - Derived lifecycle fields (`approved_at`, `started_at`, …). These are
-  *extraction*, not validation; they leave the validation path. A consumer
-  that needs them computes from the generic `table` shape-parser output.
+  *extraction*, not validation; they leave the validation path. A grep
+  confirmed no code reads them today — only `body-parser` produces them — so
+  dropping them breaks nothing. A future consumer computes them from the
+  generic `table` shape-parser output.
 - `vault-keeper lint-templates` subcommand (natural follow-up; see §8).
 - Capture-group → sub-field decomposition of headings (a `heading.pattern`
   regex carries its own enums inline; deferred).
