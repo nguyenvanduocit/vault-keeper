@@ -4,7 +4,7 @@ document_type: prd
 title: Checkout redesign
 owner: '@alice'
 status: approved
-created: '2026-04-01'
+created: 2026-04-01
 prd_type: feature
 priority: must
 rice:

@@ -17,3 +17,15 @@ rice:
 
 Isolates `field_rules.min` enforcement — the template declares
 `rice.reach: type: integer, min: 1`. This doc sets `rice.reach: 0`.
+
+## Problem
+
+Placeholder for required section.
+
+## Goals
+
+Placeholder for required section.
+
+## Acceptance Criteria
+
+Placeholder for required section.

@@ -15,6 +15,18 @@ the template declares `shipped_date` required when
 `status in ['approved', 'shipped']`. This doc is `approved` but ships no
 `shipped_date`.
 
+## Problem
+
+Placeholder for required section.
+
+## Goals
+
+Placeholder for required section.
+
+## Acceptance Criteria
+
+Placeholder for required section.
+
 ## Ship Timeline
 
 | target_ship_date | locked_at  | locked_by |

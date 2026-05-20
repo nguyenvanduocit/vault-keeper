@@ -17,3 +17,15 @@ relationships:
 Isolates `validateLinkExistence` — the legacy `frontmatter.relationships`
 surface points at a file that does not exist on disk. The validator emits a
 broken-link error per dangling edge.
+
+## Problem
+
+Placeholder for required section.
+
+## Goals
+
+Placeholder for required section.
+
+## Acceptance Criteria
+
+Placeholder for required section.

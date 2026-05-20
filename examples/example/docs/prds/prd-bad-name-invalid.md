@@ -13,3 +13,15 @@ prd_type: enhancement
 Isolates `path_regex` enforcement — the template requires
 `^docs/prds/prd-\d{3}-[a-z0-9-]+\.md$` (three digits after `prd-`). This
 file's name has no numeric segment.
+
+## Problem
+
+Placeholder for required section.
+
+## Goals
+
+Placeholder for required section.
+
+## Acceptance Criteria
+
+Placeholder for required section.

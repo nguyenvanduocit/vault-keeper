@@ -80,7 +80,7 @@ required: true
 ```yaml section-rules
 repeatable: true
 heading:
-  pattern: "^AC\\d+ — .+ — `(must|should|nice)` · `(draft|in_progress|verified|descoped)`$"
+  pattern: "^AC\\d+ — .+ — (must|should|nice) · (draft|in_progress|verified|descoped)$"
 ```
 
 ## Ship Timeline
@@ -101,5 +101,5 @@ required: false
 required: false
 list:
   item:
-    pattern: "^\\*\\*[a-z_]+\\*\\* \\[.+\\]\\(.+\\)( — .+)?$"
+    pattern: "^[a-z0-9_-]+ — .+$"
 ```

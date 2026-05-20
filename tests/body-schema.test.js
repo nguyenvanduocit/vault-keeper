@@ -106,6 +106,81 @@ describe("applyBodySchema — required non-repeatable", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────────
+// applyBodySchema — conditional required (when gate) on non-repeatable sections
+// ────────────────────────────────────────────────────────────────────────────
+
+describe("applyBodySchema — conditional required (non-repeatable)", () => {
+  test("when condition true + section missing → required-missing", () => {
+    const schema = [node(2, "Timeline", { required: { when: "status in ['approved', 'shipped']" } })];
+    const body = "## Other\n\nContent.";
+    const fm = { status: "approved" };
+    const issues = applyBodySchema(schema, body, {}, fm);
+    expect(issues).toHaveLength(1);
+    expect(issues[0].error_type).toBe("required-missing");
+    expect(issues[0].field).toContain("Timeline");
+  });
+
+  test("when condition false + section missing → no issues", () => {
+    const schema = [node(2, "Timeline", { required: { when: "status in ['approved', 'shipped']" } })];
+    const body = "## Other\n\nContent.";
+    const fm = { status: "draft" };
+    const issues = applyBodySchema(schema, body, {}, fm);
+    expect(issues).toHaveLength(0);
+  });
+
+  test("when condition true + section present → no issues", () => {
+    const schema = [node(2, "Timeline", { required: { when: "status in ['approved']" } })];
+    const body = "## Timeline\n\nDone by next week.";
+    const fm = { status: "approved" };
+    const issues = applyBodySchema(schema, body, {}, fm);
+    expect(issues).toHaveLength(0);
+  });
+
+  test("unconditional required still works (no when)", () => {
+    const schema = [node(2, "Overview", { required: true })];
+    const body = "## Other\n\nContent.";
+    const issues = applyBodySchema(schema, body, {}, {});
+    expect(issues).toHaveLength(1);
+    expect(issues[0].error_type).toBe("required-missing");
+  });
+
+  test("no frontmatter passed → when gate defaults to false (safe)", () => {
+    const schema = [node(2, "Timeline", { required: { when: "status in ['approved']" } })];
+    const body = "## Other\n\nContent.";
+    // No frontmatter arg — defaults to {}
+    const issues = applyBodySchema(schema, body);
+    expect(issues).toHaveLength(0);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
+// applyBodySchema — conditional required (when gate) on repeatable sections
+// ────────────────────────────────────────────────────────────────────────────
+
+describe("applyBodySchema — conditional required (repeatable)", () => {
+  test("when true + 0 matches → cardinality error", () => {
+    const schema = [node(2, "Parent", { required: true }, [
+      node(3, "<item>", { repeatable: true, required: { when: "phase in ['active']" } }),
+    ])];
+    const body = "## Parent\n\nNo items.";
+    const fm = { phase: "active" };
+    const issues = applyBodySchema(schema, body, {}, fm);
+    expect(issues).toHaveLength(1);
+    expect(issues[0].error_type).toBe("cardinality");
+  });
+
+  test("when false + 0 matches → no issues", () => {
+    const schema = [node(2, "Parent", { required: true }, [
+      node(3, "<item>", { repeatable: true, required: { when: "phase in ['active']" } }),
+    ])];
+    const body = "## Parent\n\nNo items.";
+    const fm = { phase: "planning" };
+    const issues = applyBodySchema(schema, body, {}, fm);
+    expect(issues).toHaveLength(0);
+  });
+});
+
+// ────────────────────────────────────────────────────────────────────────────
 // applyBodySchema — repeatable sections
 // ────────────────────────────────────────────────────────────────────────────
 

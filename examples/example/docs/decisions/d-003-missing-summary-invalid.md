@@ -12,3 +12,11 @@ decision_type: ops
 Isolates `conditional_required_fields` with `not in` DSL — the template
 declares `decision_summary` required when `status not in ['draft']`. This
 doc is in `review` (not `draft`) and omits `decision_summary`.
+
+## Context
+
+Placeholder for required section.
+
+## Decision
+
+Placeholder for required section.

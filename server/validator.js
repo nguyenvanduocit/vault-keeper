@@ -127,7 +127,8 @@ export async function validateBuffer({ text, filepath, projectRoot }) {
 
     // Body schema validation.
     if (Array.isArray(rules.bodySchema) && rules.bodySchema.length > 0) {
-      const bodyIssues = applyBodySchema(rules.bodySchema, body);
+      const docMeta2 = { repoRelativePath: filepath };
+      const bodyIssues = applyBodySchema(rules.bodySchema, body, docMeta2, fm);
       // Body issues carry 1-indexed body-relative `bodyLine` — translate
       // each to a document-absolute 0-indexed `line`.
       for (const bi of bodyIssues) {

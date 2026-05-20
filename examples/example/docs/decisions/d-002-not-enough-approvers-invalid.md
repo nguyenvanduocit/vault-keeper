@@ -16,3 +16,11 @@ decision_summary: >
 Isolates `conditional_required_fields` with `min_count` — the template
 requires `approvers` array to have ≥2 entries when `status in ['ratified']`.
 This doc has 1.
+
+## Context
+
+Placeholder for required section.
+
+## Decision
+
+Placeholder for required section.

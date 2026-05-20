@@ -44,6 +44,11 @@ describe("primitive — type", () => {
     expect(issues[0].field).toBe("x");
   });
 
+  test("string — pass (Date instance from gray-matter)", () => {
+    const issues = apply({ x: { type: "string" } }, { x: new Date("2026-04-01") });
+    expect(issues).toHaveLength(0);
+  });
+
   test("integer — pass", () => {
     const issues = apply({ x: { type: "integer" } }, { x: 7 });
     expect(issues).toHaveLength(0);
@@ -209,6 +214,28 @@ describe("primitive — pattern", () => {
   test("pattern coerces value to string", () => {
     const issues = apply({ x: { pattern: "^42$" } }, { x: 42 });
     expect(issues).toHaveLength(0);
+  });
+
+  test("pattern on Date instance uses ISO date form (YYYY-MM-DD)", () => {
+    // gray-matter parses unquoted YAML dates into JS Date objects.
+    // The pattern primitive must convert them to ISO date strings before
+    // testing, so YYYY-MM-DD regexes match reliably.
+    const date = new Date("2026-04-01T00:00:00.000Z");
+    const issues = apply(
+      { created: { pattern: "^\\d{4}-\\d{2}-\\d{2}$" } },
+      { created: date },
+    );
+    expect(issues).toHaveLength(0);
+  });
+
+  test("pattern on invalid Date instance still reports mismatch", () => {
+    const badDate = new Date("not-a-date");
+    const issues = apply(
+      { created: { pattern: "^\\d{4}-\\d{2}-\\d{2}$" } },
+      { created: badDate },
+    );
+    expect(issues).toHaveLength(1);
+    expect(issues[0].error_type).toBe("pattern-mismatch");
   });
 });
 

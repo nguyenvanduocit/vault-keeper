@@ -13,3 +13,15 @@ prd_type: enhancement
 Isolates `state_machine` enforcement — `shippping` (typo) is not a declared
 node in the template's state graph. The validator emits a WARNING (not an
 error) because state-machine drift is recoverable.
+
+## Problem
+
+Placeholder for required section.
+
+## Goals
+
+Placeholder for required section.
+
+## Acceptance Criteria
+
+Placeholder for required section.

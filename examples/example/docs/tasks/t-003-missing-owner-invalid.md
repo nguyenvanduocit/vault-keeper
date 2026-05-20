@@ -10,3 +10,7 @@ estimate_hours: 4
 
 Isolates `required_fields` enforcement — the task template declares
 `owner` required. This doc omits it.
+
+## Intent
+
+Placeholder for required section.

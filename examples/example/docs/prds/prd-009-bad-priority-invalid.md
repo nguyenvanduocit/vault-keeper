@@ -14,3 +14,15 @@ priority: critical
 Isolates `field_rules.values` (enum) enforcement — the template declares
 `priority` must be one of `[must, should, nice]`. This doc sets
 `priority: critical`.
+
+## Problem
+
+Placeholder for required section.
+
+## Goals
+
+Placeholder for required section.
+
+## Acceptance Criteria
+
+Placeholder for required section.

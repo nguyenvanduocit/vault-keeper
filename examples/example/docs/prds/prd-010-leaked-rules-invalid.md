@@ -15,3 +15,15 @@ validation_rules:
 Isolates the template-only-field-leak detector — `validation_rules:` is a
 template-only key. When it appears in an instance, the validator emits a
 WARNING ("Template-only field leaked into instance from template scaffold").
+
+## Problem
+
+Placeholder for required section.
+
+## Goals
+
+Placeholder for required section.
+
+## Acceptance Criteria
+
+Placeholder for required section.

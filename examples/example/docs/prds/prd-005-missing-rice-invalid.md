@@ -13,3 +13,15 @@ prd_type: feature
 Isolates `conditional_required_fields` (frontmatter variant) — the template
 declares `rice` required when `prd_type in ['feature']`. This doc is a
 feature but ships no `rice:` block.
+
+## Problem
+
+Placeholder for required section.
+
+## Goals
+
+Placeholder for required section.
+
+## Acceptance Criteria
+
+Placeholder for required section.

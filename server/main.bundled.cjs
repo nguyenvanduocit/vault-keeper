@@ -32331,7 +32331,7 @@ var PRIMITIVES = {
     const field = ctx.field;
     switch (param) {
       case "string":
-        if (typeof value !== "string") {
+        if (typeof value !== "string" && !(value instanceof Date)) {
           return [issue(level, field, ctx.message || `Expected type 'string', got '${typeof value}'`, "type-mismatch")];
         }
         break;
@@ -32377,7 +32377,7 @@ var PRIMITIVES = {
   pattern(value, param, ctx) {
     const level = ctx.severity || "error";
     const field = ctx.field;
-    const str3 = String(value);
+    const str3 = value instanceof Date && !Number.isNaN(value.getTime()) ? value.toISOString().slice(0, 10) : String(value);
     const re = new RegExp(param);
     if (!re.test(str3)) {
       return [issue(level, field, ctx.message || `Value '${str3}' does not match pattern '${param}'`, "pattern-mismatch", `Must match: ${param}`)];
@@ -32816,16 +32816,24 @@ function extractTableMap(table, keyCol, valCol) {
   }
   return { map: map4, nonNumeric };
 }
-function applyBodySchema(templateBodySchema, docMarkdownBody, docMeta) {
+function applyBodySchema(templateBodySchema, docMarkdownBody, docMeta, frontmatter = {}) {
   if (!Array.isArray(templateBodySchema) || templateBodySchema.length === 0) {
     return [];
   }
   const docTree = parseHeadingTree(docMarkdownBody || "");
   const issues = [];
-  validateChildren(templateBodySchema, docTree.children, docTree.contentNodes, [], issues);
+  let effectiveSchema = templateBodySchema;
+  let effectiveDocNodes = docTree.children;
+  let effectiveContentNodes = docTree.contentNodes;
+  if (effectiveSchema.length === 1 && effectiveSchema[0].depth === 1 && effectiveDocNodes.length === 1 && effectiveDocNodes[0].depth === 1) {
+    effectiveSchema = effectiveSchema[0].children || [];
+    effectiveContentNodes = effectiveDocNodes[0].contentNodes || [];
+    effectiveDocNodes = effectiveDocNodes[0].children || [];
+  }
+  validateChildren(effectiveSchema, effectiveDocNodes, effectiveContentNodes, [], issues, frontmatter);
   return issues;
 }
-function validateChildren(schemaNodes, docNodes, parentContentNodes, ancestorPath, issues) {
+function validateChildren(schemaNodes, docNodes, parentContentNodes, ancestorPath, issues, frontmatter) {
   const repeatableSchemas = schemaNodes.filter((s) => s.sectionRules?.repeatable);
   const nonRepeatableSchemas = schemaNodes.filter((s) => !s.sectionRules?.repeatable);
   const claimedDocIndices = /* @__PURE__ */ new Set();
@@ -32837,20 +32845,34 @@ function validateChildren(schemaNodes, docNodes, parentContentNodes, ancestorPat
       (d, idx) => !claimedDocIndices.has(idx) && d.depth === schema2.depth && normalizeHeading(d.text) === normalizedSchemaText
     );
     if (matchIdx === -1) {
-      if (schema2.sectionRules?.required) {
-        const severity = schema2.sectionRules.severity || "error";
-        issues.push({
-          level: severity,
-          field: path3,
-          message: schema2.sectionRules.message || `Required section '${label}' is missing`,
-          error_type: "required-missing"
-        });
+      if (schema2.sectionRules?.required != null) {
+        const norm = normalizeConstraint("required", schema2.sectionRules.required);
+        const isRequired = norm.value === true || norm.value === void 0;
+        if (isRequired) {
+          let gatePass = true;
+          if (norm.when) {
+            try {
+              gatePass = evaluate(norm.when, frontmatter);
+            } catch {
+              gatePass = false;
+            }
+          }
+          if (gatePass) {
+            const severity = norm.severity || schema2.sectionRules.severity || "error";
+            issues.push({
+              level: severity,
+              field: path3,
+              message: norm.message || schema2.sectionRules.message || `Required section '${label}' is missing`,
+              error_type: "required-missing"
+            });
+          }
+        }
       }
       continue;
     }
     claimedDocIndices.add(matchIdx);
     const docNode = docNodes[matchIdx];
-    validateSection(schema2, docNode, ancestorPath, issues);
+    validateSection(schema2, docNode, ancestorPath, issues, frontmatter);
   }
   for (const schema2 of repeatableSchemas) {
     const label = headingLabel(schema2.depth, schema2.text);
@@ -32863,7 +32885,23 @@ function validateChildren(schemaNodes, docNodes, parentContentNodes, ancestorPat
         matchingDocNodes.push(docNodes[i]);
       }
     }
-    const minCount = rules.min ?? (rules.required ? 1 : 0);
+    let requiredEffective = false;
+    if (rules.required != null) {
+      const norm = normalizeConstraint("required", rules.required);
+      const isRequired = norm.value === true || norm.value === void 0;
+      if (isRequired) {
+        let gatePass = true;
+        if (norm.when) {
+          try {
+            gatePass = evaluate(norm.when, frontmatter);
+          } catch {
+            gatePass = false;
+          }
+        }
+        requiredEffective = gatePass;
+      }
+    }
+    const minCount = rules.min ?? (requiredEffective ? 1 : 0);
     const maxCount = rules.max ?? Infinity;
     const severity = rules.severity || "error";
     if (matchingDocNodes.length < minCount) {
@@ -32894,19 +32932,19 @@ function validateChildren(schemaNodes, docNodes, parentContentNodes, ancestorPat
         }
       }
       if (schema2.children && schema2.children.length > 0) {
-        validateChildren(schema2.children, docNode.children, docNode.contentNodes, [...ancestorPath, itemLabel], issues);
+        validateChildren(schema2.children, docNode.children, docNode.contentNodes, [...ancestorPath, itemLabel], issues, frontmatter);
       }
       validateSectionContent(rules, docNode, itemPath, issues);
     }
   }
 }
-function validateSection(schema2, docNode, ancestorPath, issues) {
+function validateSection(schema2, docNode, ancestorPath, issues, frontmatter) {
   const label = headingLabel(schema2.depth, schema2.text);
   const path3 = headingPath(ancestorPath, label);
   const rules = schema2.sectionRules || {};
   validateSectionContent(rules, docNode, path3, issues);
   if (schema2.children && schema2.children.length > 0) {
-    validateChildren(schema2.children, docNode.children, docNode.contentNodes, [...ancestorPath, label], issues);
+    validateChildren(schema2.children, docNode.children, docNode.contentNodes, [...ancestorPath, label], issues, frontmatter);
   }
 }
 function validateSectionContent(rules, docNode, path3, issues) {
@@ -33590,7 +33628,8 @@ async function validateBuffer({ text: text5, filepath, projectRoot: projectRoot2
       issues.push(...applyFieldSchema({ fields: rules.fields, strict: rules.strict }, fm, docMeta));
     }
     if (Array.isArray(rules.bodySchema) && rules.bodySchema.length > 0) {
-      const bodyIssues = applyBodySchema(rules.bodySchema, body);
+      const docMeta2 = { repoRelativePath: filepath };
+      const bodyIssues = applyBodySchema(rules.bodySchema, body, docMeta2, fm);
       for (const bi of bodyIssues) {
         issues.push({
           ...bi,

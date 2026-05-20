@@ -72,8 +72,8 @@
     "warnings": []
   },
   "docs/prds/prd-007-missing-ship-section-invalid.md": {
-    "valid": true,
-    "errors": [],
+    "valid": false,
+    "errors": ["## Ship Timeline"],
     "warnings": []
   },
   "docs/prds/prd-008-bad-rice-reach-invalid.md": {

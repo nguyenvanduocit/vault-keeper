@@ -180,6 +180,10 @@ describe('examples/example/ — fixture-cum-documentation', () => {
         i.level === 'warning' && /Required field '.+' is missing/.test(i.message),
     },
     {
+      name: 'conditional body-section required (when gate)',
+      match: (i) => i.error_type === 'required-missing' && /Required section '.+' is missing/.test(i.message),
+    },
+    {
       name: 'path_regex mismatch',
       match: (i) => i.error_type === 'pattern-mismatch',
     },

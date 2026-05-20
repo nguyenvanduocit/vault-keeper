@@ -186,7 +186,7 @@ async function validateDocument(filepath, options = {}) {
 
     // Body section-rules validation.
     if (rules.bodySchema?.length) {
-      allIssues.push(...applyBodySchema(rules.bodySchema, doc.body, docMeta));
+      allIssues.push(...applyBodySchema(rules.bodySchema, doc.body, docMeta, fm));
     }
   }
 
