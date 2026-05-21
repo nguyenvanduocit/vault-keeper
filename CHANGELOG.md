@@ -1,3 +1,10 @@
+## [0.12.2](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v0.12.1...v0.12.2) (2026-05-21)
+
+
+### Bug Fixes
+
+* keep Claude plugin manifest version current ([a4adc35](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/a4adc35101ae384c669ab4a01c1a6bfe52149924))
+
 ## [0.12.1](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v0.12.0...v0.12.1) (2026-05-21)
 
 
