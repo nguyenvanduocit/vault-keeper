@@ -1,6 +1,6 @@
 ---
 name: vault.garden
-description: "Gardener-style vault maintenance — runs `vault-keeper entropy --json` to measure 4 chaos dimensions (schema drift, vocab drift, lifecycle decay, distribution health), surfaces emergence patterns, proposes context-aware pruning actions, applies per-batch with approval, remeasures to confirm entropy dropped. Closed loop. Modifies files (delegates deterministic edits to `/vault.fix`, performs semantic edits directly). Use when user says 'cắt tỉa vault', 'garden vault', 'prune vault', 'vault health gradient', 'vault entropy', 'cleanup drift', '/vault.garden'."
+description: "Gardener-style vault maintenance — runs `vault-keeper entropy --json` to measure 4 chaos dimensions (schema drift, vocab drift, lifecycle decay, distribution health), surfaces emergence patterns, proposes context-aware pruning actions, applies per-batch with approval, remeasures to confirm entropy dropped. Closed loop. Modifies files (performs all edits directly via the Edit tool). Use when user says 'cắt tỉa vault', 'garden vault', 'prune vault', 'vault health gradient', 'vault entropy', 'cleanup drift', '/vault.garden'."
 ---
 
 # vault.garden — gardener-style vault maintenance
@@ -66,7 +66,7 @@ Internal proposal shape (do not show user yet):
   "actions": [ { "kind": "find_replace_tag", "from": "#books", "to": "#book", "files_affected": 12 } ],
   "confidence": 0.92,
   "reversibility": "reversible",
-  "delegated_to": "vault.fix"
+  "delegated_to": "skill_direct"
 }
 ```
 
@@ -99,10 +99,9 @@ Approve: [a]ll · [n]one · [s]elect individual · [d]iff first · [q]uit garden
 
 ## Phase 4 — Execute
 
-Per proposal, dispatch by `delegated_to`:
+All proposals run via `delegated_to: "skill_direct"` — use the `Edit` /
+`Write` tool directly. Examples:
 
-- `"vault.fix"` → run `vault-keeper fix --paths=<comma-joined-list>` (existing deterministic formatter).
-- `"skill_direct"` → use the `Edit` / `Write` tool directly. Examples:
   - **prune** → move file to `<vault>/archive/<YYYY>/<basename>`.
   - **graft** → find-replace the canonical-vs-variant in body / frontmatter across the listed files.
   - **promote** → edit the template file's `fields:` block (add an optional entry).

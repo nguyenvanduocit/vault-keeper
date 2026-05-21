@@ -41,7 +41,7 @@ CI on `JSON.overall_score < threshold`, not on the exit code.
 1. **Measure** — calls the CLI.
 2. **Suggest** — proposes 5 kinds of action: **prune** (archive stale), **graft** (merge tag/link duplicates), **promote** (add emergent pattern to template), **retire** (remove unused template), **compost** (un-stick zombie statuses).
 3. **Approve** — per-batch, grouped by verb, most reversible first.
-4. **Execute** — delegates deterministic edits to `/vault.fix`, performs semantic edits directly.
+4. **Execute** — performs all edits directly via the `Edit` tool (file moves, find/replace, frontmatter edits, template edits).
 5. **Remeasure** — confirms entropy dropped, renders the delta.
 
 The skill does NOT auto-commit, push, or delete documents. `prune` archives to `<vault>/archive/<YYYY>/`.
