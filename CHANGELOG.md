@@ -1,3 +1,31 @@
+# [1.1.0](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v1.0.0...v1.1.0) (2026-05-21)
+
+
+### Bug Fixes
+
+* **entropy:** honor excludePatterns in measurement walker ([f2ea606](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/f2ea606f4311760aa5f3e7bc69aea035e6df6fdb))
+* **entropy:** null-guard diffSnapshots deltas ([bda872c](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/bda872cce5b17f042747536f8066cc2a10c98f31))
+* **entropy:** surface missing template refs in EntropyReport ([8d5444f](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/8d5444f76496779f001f941293428413f1e2b031))
+* **skill:** drop vault.garden's vault.fix delegation (subcommand doesn't exist) ([f61743f](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/f61743f4d9a2f3b241730efde90eabe7be8ac2c4))
+
+
+### Features
+
+* **api:** expose entropy engine via public API ([c7f9463](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/c7f94630b3b500c3e5779e66f5d6a8ba4a077f53))
+* **cli:** vault-keeper entropy subcommand ([b74975a](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/b74975a3d35122002f1675ca7685e86003b3a8b2))
+* **entropy:** chaos→health conversion + weighted aggregate ([eea7246](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/eea72468aa94ed348eaabefa7fcb8c7936007059))
+* **entropy:** default thresholds + resolveEntropyConfig ([f479549](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/f479549a91502c750ed945c1c96ff8ed7376c50d))
+* **entropy:** distribution primitive (Gini + compression) ([ef6ec60](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/ef6ec60a0b1683d3e5b9f970b8a1ef27d5851984))
+* **entropy:** emergence primitive (positive entropy) ([22b6c2b](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/22b6c2b4a7b2c54a4f01c83e0e9c392d7d1e188d))
+* **entropy:** lifecycle primitive (stale/orphan/zombie) ([7ff43f6](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/7ff43f6b6b13def95cc1971d57fd5f39ddb5cdd2))
+* **entropy:** orchestrator + public barrel ([66d4c55](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/66d4c55f49d13e695c5bd1a055baf6b54185054e))
+* **entropy:** schema-drift primitive ([ed5ff06](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/ed5ff06bd684307b123149eb3005c785198fa988))
+* **entropy:** snapshot read/write/diff utility ([0488555](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/04885558dac02bc7d3b92e2d0893264919337803))
+* **entropy:** vocab-drift primitive (fuzzy clustering) ([75633ca](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/75633ca026d09cc90e1a9c44fc507669b09f48af))
+* **lib:** extract pure countIncomingLinks for CLI consumers ([3cdb55e](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/3cdb55e0d4e184683b4f3713670aea7d1e17f992))
+* **skill:** vault.garden — gardener-style maintenance loop ([f2b81d5](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/f2b81d592321e345d859fd53a4b1c3c84330f7a7))
+* **vault-config:** surface entropy block from config ([9c1de13](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/9c1de13dc4ea0a564e42336d8d3ba7b1cd9013fe))
+
 # [1.0.0](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v0.12.2...v1.0.0) (2026-05-21)
 
 
