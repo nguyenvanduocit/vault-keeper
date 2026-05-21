@@ -15,6 +15,7 @@
     "./validators": "./lib/validators.js",
     "./vault-config": "./lib/vault-config.js",
     "./utils": "./lib/utils.js",
+    "./entropy": "./lib/entropy/index.js",
     "./orchestrator": "./cli/validate-documents.js",
     "./lsp-validator": "./server/validator.js",
     "./lsp-bundle": "./server/main.bundled.cjs",

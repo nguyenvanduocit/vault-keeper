@@ -170,3 +170,28 @@ describe("public API — orchestrator side-effect safety", () => {
     expect(process.env.CLAUDE_PROJECT_DIR).toBe(envBefore);
   });
 });
+
+describe('public API — entropy', () => {
+  test('exports measureEntropy', async () => {
+    const mod = await import('../lib/index.js');
+    expect(typeof mod.measureEntropy).toBe('function');
+  });
+
+  test('exports ENTROPY_DEFAULTS', async () => {
+    const mod = await import('../lib/index.js');
+    expect(mod.ENTROPY_DEFAULTS).toBeDefined();
+    expect(mod.ENTROPY_DEFAULTS.weights.schema).toBe(0.30);
+  });
+
+  test('exports snapshot helpers', async () => {
+    const mod = await import('../lib/index.js');
+    expect(typeof mod.writeSnapshot).toBe('function');
+    expect(typeof mod.readLatestSnapshot).toBe('function');
+    expect(typeof mod.diffSnapshots).toBe('function');
+  });
+
+  test('package.json exposes ./entropy entry', async () => {
+    const pkg = JSON.parse(await Bun.file('package.json').text());
+    expect(pkg.exports['./entropy']).toBe('./lib/entropy/index.js');
+  });
+});
