@@ -293,115 +293,6 @@ describe("applyBodySchema — table primitive", () => {
 });
 
 // ────────────────────────────────────────────────────────────────────────────
-// applyBodySchema — table + formula (RICE-like scenario)
-// ────────────────────────────────────────────────────────────────────────────
-
-describe("applyBodySchema — table + formula", () => {
-  test("formula passes with correct values", () => {
-    const schema = [node(2, "Score", {
-      required: true,
-      table: { key_column: "Dimension", value_column: "Value" },
-      formula: "score == reach * impact * confidence / effort",
-    })];
-    const body = [
-      "## Score",
-      "",
-      "| Dimension | Value |",
-      "|---|---|",
-      "| Reach | 8 |",
-      "| Impact | 3 |",
-      "| Confidence | 1 |",
-      "| Effort | 4 |",
-      "| Score | 6 |",
-    ].join("\n");
-
-    const issues = applyBodySchema(schema, body);
-    expect(issues).toHaveLength(0);
-  });
-
-  test("formula fails with wrong values → formula-violation", () => {
-    const schema = [node(2, "Score", {
-      required: true,
-      table: { key_column: "Dimension", value_column: "Value" },
-      formula: "total == a + b",
-    })];
-    const body = [
-      "## Score",
-      "",
-      "| Dimension | Value |",
-      "|---|---|",
-      "| A | 10 |",
-      "| B | 20 |",
-      "| Total | 99 |",
-    ].join("\n");
-
-    const issues = applyBodySchema(schema, body);
-    expect(issues.some((i) => i.error_type === "formula-violation")).toBe(true);
-  });
-
-  test("formula with non-numeric value → formula-violation", () => {
-    const schema = [node(2, "Score", {
-      required: true,
-      table: { key_column: "Key", value_column: "Val" },
-      formula: "x + y == z",
-    })];
-    const body = [
-      "## Score",
-      "",
-      "| Key | Val |",
-      "|---|---|",
-      "| X | ten |",
-      "| Y | 5 |",
-      "| Z | 15 |",
-    ].join("\n");
-
-    const issues = applyBodySchema(schema, body);
-    expect(issues.some((i) => i.error_type === "formula-violation")).toBe(true);
-  });
-
-  test("formula with epsilon tolerance (float arithmetic)", () => {
-    const schema = [node(2, "Calc", {
-      required: true,
-      table: { key_column: "Var", value_column: "Num" },
-      formula: "c == a + b",
-    })];
-    // 0.1 + 0.2 = 0.30000000000000004 in JS, but epsilon should handle it
-    const body = [
-      "## Calc",
-      "",
-      "| Var | Num |",
-      "|---|---|",
-      "| A | 0.1 |",
-      "| B | 0.2 |",
-      "| C | 0.3 |",
-    ].join("\n");
-
-    const issues = applyBodySchema(schema, body);
-    expect(issues).toHaveLength(0);
-  });
-
-  test("table key normalization: spaces → underscores, lowercased", () => {
-    const schema = [node(2, "Metrics", {
-      required: true,
-      table: { key_column: "Metric Name", value_column: "Score" },
-      formula: "metric_name_a + metric_name_b == total_val",
-    })];
-    const body = [
-      "## Metrics",
-      "",
-      "| Metric Name | Score |",
-      "|---|---|",
-      "| Metric Name A | 10 |",
-      "| Metric Name B | 20 |",
-      "| Total Val | 30 |",
-    ].join("\n");
-
-    const issues = applyBodySchema(schema, body);
-    expect(issues).toHaveLength(0);
-  });
-});
-
-// ────────────────────────────────────────────────────────────────────────────
 // applyBodySchema — list primitive
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -712,7 +603,7 @@ describe("validateBodyTemplateSchema", () => {
       node(2, "Items", { required: true }, [
         node(3, "<item>", { repeatable: true, min: 1, heading: { pattern: "^IT-\\d+" } }),
       ]),
-      node(2, "Data", { table: { columns: ["a", "b"], key_column: "a", value_column: "b" }, formula: "x + y == z" }),
+      node(2, "Data", { table: { columns: ["a", "b"] } }),
     ];
     const issues = validateBodyTemplateSchema(schema);
     expect(issues).toHaveLength(0);

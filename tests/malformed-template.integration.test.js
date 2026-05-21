@@ -92,8 +92,6 @@ fields:
 \`\`\`yaml section-rules
 table:
   columns: [Metric, Value]
-  key_column: Metric
-  value_column: Value
 formula: "a + + b"
 notaprimitive: true
 \`\`\`

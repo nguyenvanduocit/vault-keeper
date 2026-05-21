@@ -151,8 +151,9 @@ describe("parseBodySchema — section-rules extraction", () => {
       '  pattern: "^AC\\\\d+"',
       "table:",
       "  columns: [A, B, C]",
-      '  key_column: "A"',
-      '  value_column: "B"',
+      "  rows:",
+      "    min: 1",
+      "  strict: true",
       "```",
     ].join("\n");
     const result = parseBodySchema(body);
@@ -165,7 +166,7 @@ describe("parseBodySchema — section-rules extraction", () => {
     expect(rules.severity).toBe("warning");
     expect(rules.message).toBe("custom message here");
     expect(rules.heading).toEqual({ pattern: "^AC\\d+" });
-    expect(rules.table).toEqual({ columns: ["A", "B", "C"], key_column: "A", value_column: "B" });
+    expect(rules.table).toEqual({ columns: ["A", "B", "C"], rows: { min: 1 }, strict: true });
   });
 
   test("repeatable + heading pattern", () => {
@@ -191,24 +192,17 @@ describe("parseBodySchema — section-rules extraction", () => {
     });
   });
 
-  test("formula in section-rules", () => {
+  test("formula in section-rules (operates on frontmatter values only)", () => {
     const body = [
       "## Score",
       "",
       "```yaml section-rules",
       "required: true",
-      "table:",
-      "  key_column: Dimension",
-      "  value_column: Value",
       'formula: "score == a * b / c"',
       "```",
     ].join("\n");
     const result = parseBodySchema(body);
     expect(result[0].sectionRules.formula).toBe("score == a * b / c");
-    expect(result[0].sectionRules.table).toEqual({
-      key_column: "Dimension",
-      value_column: "Value",
-    });
   });
 });
 
