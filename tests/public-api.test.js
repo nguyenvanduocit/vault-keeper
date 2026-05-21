@@ -145,8 +145,13 @@ describe("public API — exports map", () => {
     }
   });
 
-  test("deep-path back-compat — lib/cli/server wildcards still resolve", () => {
-    expect(pkg.exports["./lib/*"]).toBe("./lib/*");
+  test("deep-path back-compat — cli/server wildcards resolve, lib is closed", () => {
+    // `./lib/*` was deliberately removed in v0.11.0 so the upcoming
+    // module split (primitives/, meta/, apply/, helpers/) doesn't bleed
+    // every internal file into the public surface. External consumers
+    // must use the named entry points (`./schema-engine`, `./validators`,
+    // ...) declared earlier in this exports map.
+    expect(pkg.exports["./lib/*"]).toBeUndefined();
     expect(pkg.exports["./cli/*"]).toBe("./cli/*");
     expect(pkg.exports["./server/*"]).toBe("./server/*");
   });
