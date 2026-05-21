@@ -826,9 +826,9 @@ describe("zero domain-word branching", () => {
   test("PRIMITIVES registry contains exactly the expected keys", () => {
     const keys = Object.keys(PRIMITIVES).sort();
     const expected = [
-      "code", "description", "enum", "exists", "formula", "heading",
-      "list", "max", "min", "pattern", "repeatable", "required",
-      "table", "type", "uniqueItems",
+      "after", "before", "code", "description", "enum", "exists",
+      "formula", "heading", "list", "max", "min", "pattern",
+      "repeatable", "required", "table", "type", "uniqueItems",
     ].sort();
     expect(keys).toEqual(expected);
   });
