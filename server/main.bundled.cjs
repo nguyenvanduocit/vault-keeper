@@ -32318,13 +32318,109 @@ function evalAst2(ast, values) {
   }
 }
 
+// lib/fuzzy-suggest.js
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a) return b.length;
+  if (!b) return a.length;
+  if (a.length < b.length) {
+    const tmp = a;
+    a = b;
+    b = tmp;
+  }
+  let prev = new Array(b.length + 1);
+  let curr = new Array(b.length + 1);
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a.charCodeAt(i - 1) === b.charCodeAt(j - 1) ? 0 : 1;
+      curr[j] = Math.min(
+        curr[j - 1] + 1,
+        // insertion
+        prev[j] + 1,
+        // deletion
+        prev[j - 1] + cost
+        // substitution
+      );
+    }
+    const tmp = prev;
+    prev = curr;
+    curr = tmp;
+  }
+  return prev[b.length];
+}
+function cutoffFor(candidateLen) {
+  if (candidateLen <= 1) return 0;
+  if (candidateLen <= 3) return 1;
+  return Math.min(2, Math.floor(candidateLen / 3) + 1);
+}
+function suggest(needle, haystack) {
+  if (typeof needle !== "string" || !needle) return null;
+  const lowerNeedle = needle.toLowerCase();
+  let bestCandidate = null;
+  let bestDistance = Infinity;
+  let bestLength = Infinity;
+  for (const candidate of haystack) {
+    if (typeof candidate !== "string" || !candidate) continue;
+    const lowerCandidate = candidate.toLowerCase();
+    if (lowerCandidate === lowerNeedle) {
+      return candidate;
+    }
+    const distance = levenshtein(lowerNeedle, lowerCandidate);
+    const cutoff = cutoffFor(lowerCandidate.length);
+    if (distance > cutoff) continue;
+    if (distance < bestDistance || distance === bestDistance && lowerCandidate.length < bestLength) {
+      bestCandidate = candidate;
+      bestDistance = distance;
+      bestLength = lowerCandidate.length;
+    }
+  }
+  return bestCandidate;
+}
+function didYouMean(needle, haystack) {
+  const hit = suggest(needle, haystack);
+  return hit ? ` Did you mean '${hit}'?` : "";
+}
+
 // lib/schema-engine.js
 function issue(level, field, message, errorType, fix) {
   const i = { level, field, message, error_type: errorType };
   if (fix) i.fix = fix;
   return i;
 }
-var VALID_TYPES = /* @__PURE__ */ new Set(["string", "integer", "number", "boolean", "date", "array"]);
+var VALID_TYPES = /* @__PURE__ */ new Set([
+  "string",
+  "integer",
+  "number",
+  "boolean",
+  "date",
+  "datetime",
+  "time",
+  "array"
+]);
+var TIME_RE = /^([01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/;
+var DATETIME_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?$/;
+function toComparableTime(value, type2) {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value.getTime();
+  }
+  if (typeof value !== "string") return null;
+  if (type2 === "time") {
+    const m = value.match(/^([01]\d|2[0-3]):([0-5]\d)(?::([0-5]\d))?$/);
+    if (!m) return null;
+    const [, h, mi, s] = m;
+    return Number(h) * 3600 + Number(mi) * 60 + Number(s || 0);
+  }
+  const t = Date.parse(value);
+  return Number.isNaN(t) ? null : t;
+}
+function formatDateLike(value) {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString();
+  }
+  return String(value);
+}
 var PRIMITIVES = {
   type(value, param, ctx) {
     const level = ctx.severity || "error";
@@ -32353,6 +32449,20 @@ var PRIMITIVES = {
       case "date":
         if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
           return [issue(level, field, ctx.message || `Expected type 'date', got '${typeof value}'`, "type-mismatch")];
+        }
+        break;
+      case "datetime":
+        if (value instanceof Date) {
+          if (Number.isNaN(value.getTime())) {
+            return [issue(level, field, ctx.message || `Expected type 'datetime', got Invalid Date`, "type-mismatch")];
+          }
+        } else if (typeof value !== "string" || !DATETIME_RE.test(value) || Number.isNaN(Date.parse(value))) {
+          return [issue(level, field, ctx.message || `Expected type 'datetime' (ISO 8601), got '${formatDateLike(value)}'`, "type-mismatch")];
+        }
+        break;
+      case "time":
+        if (typeof value !== "string" || !TIME_RE.test(value)) {
+          return [issue(level, field, ctx.message || `Expected type 'time' (HH:MM or HH:MM:SS), got '${formatDateLike(value)}'`, "type-mismatch")];
         }
         break;
       case "array":
@@ -32409,6 +32519,28 @@ var PRIMITIVES = {
     if (actual > param) {
       const label = minMaxLabel(ctx.type);
       return [issue(level, field, ctx.message || `${label} ${actual} exceeds maximum ${param}`, "max-violation")];
+    }
+    return [];
+  },
+  before(value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    const lv = toComparableTime(value, ctx.type);
+    const rv = toComparableTime(param, ctx.type);
+    if (lv === null || rv === null) return [];
+    if (!(lv < rv)) {
+      return [issue(level, field, ctx.message || `Value '${formatDateLike(value)}' is not before '${param}'`, "before-violation")];
+    }
+    return [];
+  },
+  after(value, param, ctx) {
+    const level = ctx.severity || "error";
+    const field = ctx.field;
+    const lv = toComparableTime(value, ctx.type);
+    const rv = toComparableTime(param, ctx.type);
+    if (lv === null || rv === null) return [];
+    if (!(lv > rv)) {
+      return [issue(level, field, ctx.message || `Value '${formatDateLike(value)}' is not after '${param}'`, "after-violation")];
     }
     return [];
   },
@@ -32473,11 +32605,37 @@ var PRIMITIVES = {
       return [issue(level, field, ctx.message || "Expected a table but none found", "table-shape")];
     }
     const issues = [];
-    if (param.columns) {
-      const expected = param.columns.map((c) => c.toLowerCase().trim());
-      for (const col of expected) {
-        if (!_value.headers.includes(col)) {
-          issues.push(issue(level, field, ctx.message || `Table missing required column '${col}'`, "table-shape"));
+    const normalisedColumns = normaliseColumns(param.columns);
+    for (const col of normalisedColumns) {
+      const headerKey = String(col.name).toLowerCase().trim();
+      const headerIdx = _value.headers.indexOf(headerKey);
+      const required = col.required !== false;
+      if (headerIdx === -1) {
+        if (required) {
+          issues.push(issue(level, field, ctx.message || `Table missing required column '${col.name}'`, "table-shape"));
+        }
+        continue;
+      }
+      if (col.values && typeof col.values === "object") {
+        applyValueRulesToColumn(_value, headerIdx, col, ctx, issues);
+      }
+    }
+    if (param.rows && typeof param.rows === "object") {
+      const rowCount = _value.rows.length;
+      const rmin = param.rows.min ?? 0;
+      const rmax = param.rows.max ?? Infinity;
+      if (rowCount < rmin) {
+        issues.push(issue(level, field, ctx.message || `Table has ${rowCount} row(s), expected at least ${rmin}`, "table-shape"));
+      }
+      if (rowCount > rmax) {
+        issues.push(issue(level, field, ctx.message || `Table has ${rowCount} row(s), expected at most ${rmax}`, "table-shape"));
+      }
+    }
+    if (param.strict === true) {
+      const declared = new Set(normalisedColumns.map((c) => String(c.name).toLowerCase().trim()));
+      for (const header of _value.headers) {
+        if (!declared.has(header)) {
+          issues.push(issue(level, field, ctx.message || `Table contains undeclared column '${header}'`, "table-shape"));
         }
       }
     }
@@ -32490,16 +32648,55 @@ var PRIMITIVES = {
       return [issue(level, field, ctx.message || "Expected a list but none found", "list-item")];
     }
     const issues = [];
-    if (param.item && param.item.pattern) {
-      let re;
-      try {
-        re = new RegExp(param.item.pattern);
-      } catch {
-        return [];
+    const items = _value.items || [];
+    const min = param.min ?? 0;
+    const max = param.max ?? Infinity;
+    if (items.length < min) {
+      issues.push(issue(level, field, ctx.message || `Expected at least ${min} list item(s), found ${items.length}`, "list-item"));
+    }
+    if (items.length > max) {
+      issues.push(issue(level, field, ctx.message || `Expected at most ${max} list item(s), found ${items.length}`, "list-item"));
+    }
+    if (param.unique) {
+      const seen = /* @__PURE__ */ new Map();
+      for (const item of items) {
+        const key = item.text;
+        if (seen.has(key)) {
+          const dup = issue(level, field, ctx.message || `Duplicate list item '${key}'`, "unique-violation");
+          dup.bodyLine = item.line;
+          issues.push(dup);
+        } else {
+          seen.set(key, item);
+        }
       }
-      for (const item of _value.items) {
-        if (!re.test(item.text)) {
-          issues.push(issue(level, field, ctx.message || `List item '${item.text}' does not match pattern '${param.item.pattern}'`, "list-item"));
+    }
+    if (param.items && typeof param.items === "object") {
+      const itemRules = param.items;
+      let re = null;
+      if (itemRules.pattern) {
+        try {
+          re = new RegExp(itemRules.pattern);
+        } catch {
+          re = null;
+        }
+      }
+      const allowedEnum = Array.isArray(itemRules.enum) ? itemRules.enum.map((v) => String(v)) : null;
+      for (const item of items) {
+        if (itemRules.required && (!item.text || !item.text.trim())) {
+          const i = issue(level, field, ctx.message || `List item is empty`, "list-item");
+          i.bodyLine = item.line;
+          issues.push(i);
+          continue;
+        }
+        if (re && !re.test(item.text)) {
+          const i = issue(level, field, ctx.message || `List item '${item.text}' does not match pattern '${itemRules.pattern}'`, "list-item");
+          i.bodyLine = item.line;
+          issues.push(i);
+        }
+        if (allowedEnum && !allowedEnum.includes(item.text)) {
+          const i = issue(level, field, ctx.message || `List item '${item.text}' is not in allowed values: [${allowedEnum.join(", ")}]`, "list-item");
+          i.bodyLine = item.line;
+          issues.push(i);
         }
       }
     }
@@ -32509,18 +32706,49 @@ var PRIMITIVES = {
     const level = ctx.severity || "error";
     const field = ctx.field;
     const fences = Array.isArray(_value) ? _value : [];
-    if (param.lang) {
-      const target = param.lang.toLowerCase();
-      const found = fences.some((f) => f.lang && f.lang.toLowerCase() === target);
-      if (!found) {
-        return [issue(level, field, ctx.message || `Expected a '${param.lang}' code fence but none found`, "code-missing")];
+    const issues = [];
+    const filtered = param.lang ? fences.filter((f) => f.lang && f.lang.toLowerCase() === param.lang.toLowerCase()) : fences;
+    const what = param.lang ? `'${param.lang}' code fence(s)` : "code fence(s)";
+    const min = param.min ?? 1;
+    const max = param.max ?? Infinity;
+    if (filtered.length < min) {
+      issues.push(issue(
+        level,
+        field,
+        ctx.message || (filtered.length === 0 ? `Expected ${min === 1 ? "a" : `at least ${min}`} ${what} but none found` : `Expected at least ${min} ${what}, found ${filtered.length}`),
+        "code-missing"
+      ));
+    }
+    if (filtered.length > max) {
+      issues.push(issue(
+        level,
+        field,
+        ctx.message || `Expected at most ${max} ${what}, found ${filtered.length}`,
+        "code-missing"
+      ));
+    }
+    if (param.content && param.content.pattern) {
+      let re;
+      try {
+        re = new RegExp(param.content.pattern);
+      } catch {
+        return issues;
       }
-    } else {
-      if (fences.length === 0) {
-        return [issue(level, field, ctx.message || "Expected a code fence but none found", "code-missing")];
+      for (const fence of filtered) {
+        if (!re.test(fence.value)) {
+          const i = issue(
+            level,
+            field,
+            ctx.message || `Code fence at line ${fence.line} does not match content.pattern '${param.content.pattern}'`,
+            "code-content-mismatch",
+            `Must match: ${param.content.pattern}`
+          );
+          i.bodyLine = fence.line;
+          issues.push(i);
+        }
       }
     }
-    return [];
+    return issues;
   },
   repeatable(_value, _param, _ctx) {
     return [];
@@ -32551,6 +32779,202 @@ function minMaxLabel(type2) {
   if (type2 === "string") return "Length";
   if (type2 === "array") return "Count";
   return "Value";
+}
+function normaliseColumns(columns) {
+  if (!Array.isArray(columns)) return [];
+  const out = [];
+  for (const c of columns) {
+    if (typeof c === "string") {
+      out.push({ name: c, required: true });
+    } else if (c && typeof c === "object" && typeof c.name === "string") {
+      out.push(c);
+    }
+  }
+  return out;
+}
+function applyValueRulesToColumn(table, headerIdx, column, ctx, issues) {
+  const level = ctx.severity || "error";
+  const field = ctx.field;
+  const rules = column.values;
+  const name = column.name;
+  let re = null;
+  if (rules.pattern) {
+    try {
+      re = new RegExp(rules.pattern);
+    } catch {
+      re = null;
+    }
+  }
+  const enumSet = Array.isArray(rules.enum) ? rules.enum.map((v) => String(v)) : null;
+  const seen = /* @__PURE__ */ new Map();
+  for (let r = 0; r < table.rows.length; r++) {
+    const cell = (table.rows[r][headerIdx] ?? "").trim();
+    const cellField = `${field} [col '${name}' row ${r + 1}]`;
+    if (rules.required && !cell) {
+      issues.push(issue(level, cellField, ctx.message || `Cell in column '${name}' (row ${r + 1}) is empty`, "table-cell"));
+      continue;
+    }
+    if (!cell) continue;
+    if (rules.type && cellTypeMismatch(cell, rules.type)) {
+      issues.push(issue(level, cellField, ctx.message || `Cell '${cell}' in column '${name}' is not a ${rules.type}`, "table-cell"));
+      continue;
+    }
+    if (enumSet && !enumSet.includes(cell)) {
+      issues.push(issue(level, cellField, ctx.message || `Cell '${cell}' in column '${name}' is not in allowed values: [${enumSet.join(", ")}]`, "table-cell"));
+    }
+    if (re && !re.test(cell)) {
+      issues.push(issue(level, cellField, ctx.message || `Cell '${cell}' in column '${name}' does not match pattern '${rules.pattern}'`, "table-cell"));
+    }
+    if (rules.min !== void 0 || rules.max !== void 0) {
+      const target = resolveCellMinMaxTarget(cell, rules.type);
+      if (target !== void 0) {
+        if (rules.min !== void 0 && target < rules.min) {
+          issues.push(issue(level, cellField, ctx.message || `Cell '${cell}' in column '${name}' is below minimum ${rules.min}`, "table-cell"));
+        }
+        if (rules.max !== void 0 && target > rules.max) {
+          issues.push(issue(level, cellField, ctx.message || `Cell '${cell}' in column '${name}' exceeds maximum ${rules.max}`, "table-cell"));
+        }
+      }
+    }
+    if (rules.unique) {
+      if (seen.has(cell)) {
+        issues.push(issue(level, cellField, ctx.message || `Duplicate cell value '${cell}' in column '${name}'`, "table-cell"));
+      } else {
+        seen.set(cell, r);
+      }
+    }
+  }
+}
+function validateTableColumns(columns, path3, issues) {
+  if (!Array.isArray(columns)) {
+    issues.push(issue(
+      "error",
+      path3,
+      `'table.columns' in '${path3}' must be an array`,
+      "template-schema-invalid"
+    ));
+    return;
+  }
+  let sawString = false;
+  let sawObject = false;
+  for (let idx = 0; idx < columns.length; idx++) {
+    const c = columns[idx];
+    if (typeof c === "string") {
+      sawString = true;
+      continue;
+    }
+    if (c && typeof c === "object" && !Array.isArray(c)) {
+      sawObject = true;
+      if (typeof c.name !== "string" || !c.name.trim()) {
+        issues.push(issue(
+          "error",
+          path3,
+          `'table.columns[${idx}]' in '${path3}' must declare a 'name' string`,
+          "template-schema-invalid"
+        ));
+        continue;
+      }
+      for (const key of Object.keys(c)) {
+        if (!TABLE_COLUMN_INNER_KEYS.has(key)) {
+          issues.push(issue(
+            "error",
+            path3,
+            `Unknown key '${key}' in 'table.columns[${idx}]' (${c.name}) at '${path3}'.${didYouMean(key, TABLE_COLUMN_INNER_KEYS)}`,
+            "template-schema-invalid",
+            `Allowed keys: ${[...TABLE_COLUMN_INNER_KEYS].join(", ")}`
+          ));
+        }
+      }
+      if (c.values && typeof c.values === "object") {
+        for (const key of Object.keys(c.values)) {
+          if (!TABLE_VALUES_INNER_KEYS.has(key)) {
+            issues.push(issue(
+              "error",
+              path3,
+              `Unknown key '${key}' in 'table.columns[${idx}].values' (${c.name}) at '${path3}'.${didYouMean(key, TABLE_VALUES_INNER_KEYS)}`,
+              "template-schema-invalid",
+              `Allowed keys: ${[...TABLE_VALUES_INNER_KEYS].join(", ")}`
+            ));
+          }
+        }
+        if (c.values.pattern) {
+          try {
+            new RegExp(c.values.pattern);
+          } catch {
+            issues.push(issue(
+              "error",
+              path3,
+              `Invalid regex in table.columns[${idx}].values.pattern (${c.name}) of '${path3}': ${c.values.pattern}`,
+              "template-schema-invalid"
+            ));
+          }
+        }
+        if (c.values.enum !== void 0 && !Array.isArray(c.values.enum)) {
+          issues.push(issue(
+            "error",
+            path3,
+            `'table.columns[${idx}].values.enum' (${c.name}) at '${path3}' must be an array`,
+            "template-schema-invalid"
+          ));
+        }
+        if (c.values.type !== void 0 && !VALID_TYPES.has(c.values.type)) {
+          issues.push(issue(
+            "error",
+            path3,
+            `Invalid type '${c.values.type}' on table.columns[${idx}].values (${c.name}) of '${path3}'. Allowed: ${[...VALID_TYPES].join(", ")}.${didYouMean(String(c.values.type), VALID_TYPES)}`,
+            "template-schema-invalid"
+          ));
+        }
+      }
+      continue;
+    }
+    issues.push(issue(
+      "error",
+      path3,
+      `'table.columns[${idx}]' in '${path3}' must be a string or an object`,
+      "template-schema-invalid"
+    ));
+  }
+  if (sawString && sawObject) {
+    issues.push(issue(
+      "error",
+      path3,
+      `'table.columns' in '${path3}' mixes string shorthand and object form \u2014 pick one`,
+      "template-schema-invalid"
+    ));
+  }
+}
+function cellTypeMismatch(cell, type2) {
+  switch (type2) {
+    case "string":
+      return false;
+    case "integer":
+      return !/^-?\d+$/.test(cell);
+    case "number":
+      return !/^-?\d+(?:\.\d+)?$/.test(cell);
+    case "boolean":
+      return !/^(true|false)$/i.test(cell);
+    case "date":
+      return Number.isNaN(Date.parse(cell)) || !/^\d{4}-\d{2}-\d{2}/.test(cell);
+    case "datetime":
+      return Number.isNaN(Date.parse(cell)) || !DATETIME_RE.test(cell);
+    case "time":
+      return !TIME_RE.test(cell);
+    default:
+      return false;
+  }
+}
+function resolveCellMinMaxTarget(cell, type2) {
+  if (type2 === "string") return cell.length;
+  if (type2 === "integer" || type2 === "number") {
+    const n = Number(cell);
+    return Number.isFinite(n) ? n : void 0;
+  }
+  if (type2 === void 0) {
+    const n = Number(cell);
+    return Number.isFinite(n) ? n : cell.length;
+  }
+  return void 0;
 }
 var SYNTHETIC_RESOLVERS = {
   $path: (docMeta) => docMeta.repoRelativePath
@@ -32629,7 +33053,7 @@ function applyFieldSchema({ fields, strict }, frontmatter, docMeta) {
         issues.push(issue(
           "error",
           key,
-          `Undeclared field '${key}' is not in the schema`,
+          `Undeclared field '${key}' is not in the schema.${didYouMean(key, declaredFields)}`,
           "undeclared-field",
           `Remove '${key}' or declare it in the template fields`
         ));
@@ -32671,7 +33095,7 @@ function validateTemplateSchema(fieldsSchema) {
         issues.push(issue(
           "error",
           fieldName,
-          `Unknown primitive '${key}' on field '${fieldName}'`,
+          `Unknown primitive '${key}' on field '${fieldName}'.${didYouMean(key, Object.keys(PRIMITIVES))}`,
           "template-schema-invalid",
           `Known primitives: ${Object.keys(PRIMITIVES).join(", ")}`
         ));
@@ -32694,7 +33118,7 @@ function validateTemplateSchema(fieldsSchema) {
               issues.push(issue(
                 "error",
                 fieldName,
-                `Unknown modifier '${modKey}' in expanded constraint '${key}' on field '${fieldName}'`,
+                `Unknown modifier '${modKey}' in expanded constraint '${key}' on field '${fieldName}'.${didYouMean(modKey, MODIFIER_KEYS)}`,
                 "template-schema-invalid",
                 `Allowed modifiers: value, when, severity, message`
               ));
@@ -32708,7 +33132,7 @@ function validateTemplateSchema(fieldsSchema) {
             issues.push(issue(
               "error",
               fieldName,
-              `Invalid type '${norm.value}' on field '${fieldName}'. Allowed: ${[...VALID_TYPES].join(", ")}`,
+              `Invalid type '${norm.value}' on field '${fieldName}'. Allowed: ${[...VALID_TYPES].join(", ")}.${didYouMean(String(norm.value), VALID_TYPES)}`,
               "template-schema-invalid"
             ));
           }
@@ -32753,6 +33177,32 @@ function validateTemplateSchema(fieldsSchema) {
               "error",
               fieldName,
               `'${key}' on field '${fieldName}' requires a declared 'type'`,
+              "template-schema-invalid"
+            ));
+          }
+          break;
+        }
+        case "before":
+        case "after": {
+          if (!declaredType) {
+            issues.push(issue(
+              "error",
+              fieldName,
+              `'${key}' on field '${fieldName}' requires a declared 'type' of date, datetime, or time`,
+              "template-schema-invalid"
+            ));
+          } else if (declaredType !== "date" && declaredType !== "datetime" && declaredType !== "time") {
+            issues.push(issue(
+              "error",
+              fieldName,
+              `'${key}' on field '${fieldName}' is only valid with type 'date', 'datetime', or 'time' \u2014 got '${declaredType}'`,
+              "template-schema-invalid"
+            ));
+          } else if (toComparableTime(norm.value, declaredType) === null) {
+            issues.push(issue(
+              "error",
+              fieldName,
+              `'${key}' value '${norm.value}' on field '${fieldName}' is not a parseable ${declaredType}`,
               "template-schema-invalid"
             ));
           }
@@ -32809,28 +33259,6 @@ function headingLabel(depth, text5) {
 }
 function normalizeHeading(s) {
   return (s || "").toLowerCase().trim();
-}
-function normalizeTableKey(s) {
-  return (s || "").toLowerCase().trim().replace(/\s+/g, "_");
-}
-function extractTableMap(table, keyCol, valCol) {
-  const keyIdx = table.headers.indexOf(keyCol.toLowerCase().trim());
-  const valIdx = table.headers.indexOf(valCol.toLowerCase().trim());
-  const map4 = {};
-  const nonNumeric = [];
-  if (keyIdx === -1 || valIdx === -1) return { map: map4, nonNumeric };
-  for (const row of table.rows) {
-    const rawKey = row[keyIdx] || "";
-    const rawVal = row[valIdx] || "";
-    const key = normalizeTableKey(rawKey);
-    if (!key) continue;
-    const num = Number(rawVal);
-    if (Number.isNaN(num)) {
-      nonNumeric.push(rawKey);
-    }
-    map4[key] = num;
-  }
-  return { map: map4, nonNumeric };
 }
 function applyBodySchema(templateBodySchema, docMarkdownBody, docMeta, frontmatter = {}) {
   if (!Array.isArray(templateBodySchema) || templateBodySchema.length === 0) {
@@ -32920,12 +33348,14 @@ function validateChildren(schemaNodes, docNodes, parentContentNodes, ancestorPat
     const minCount = rules.min ?? (requiredEffective ? 1 : 0);
     const maxCount = rules.max ?? Infinity;
     const severity = rules.severity || "error";
+    const cardinalityAnchor = matchingDocNodes[0]?.line ?? void 0;
     if (matchingDocNodes.length < minCount) {
       issues.push({
         level: severity,
         field: path3,
         message: rules.message || `Expected at least ${minCount} '${label}' section(s), found ${matchingDocNodes.length}`,
-        error_type: "cardinality"
+        error_type: "cardinality",
+        bodyLine: cardinalityAnchor
       });
     }
     if (matchingDocNodes.length > maxCount) {
@@ -32933,7 +33363,8 @@ function validateChildren(schemaNodes, docNodes, parentContentNodes, ancestorPat
         level: severity,
         field: path3,
         message: rules.message || `Expected at most ${maxCount} '${label}' section(s), found ${matchingDocNodes.length}`,
-        error_type: "cardinality"
+        error_type: "cardinality",
+        bodyLine: cardinalityAnchor
       });
     }
     for (const docNode of matchingDocNodes) {
@@ -32950,7 +33381,7 @@ function validateChildren(schemaNodes, docNodes, parentContentNodes, ancestorPat
       if (schema2.children && schema2.children.length > 0) {
         validateChildren(schema2.children, docNode.children, docNode.contentNodes, [...ancestorPath, itemLabel], issues, frontmatter);
       }
-      validateSectionContent(rules, docNode, itemPath, issues);
+      validateSectionContent(rules, docNode, itemPath, issues, frontmatter);
     }
   }
 }
@@ -32958,45 +33389,22 @@ function validateSection(schema2, docNode, ancestorPath, issues, frontmatter) {
   const label = headingLabel(schema2.depth, schema2.text);
   const path3 = headingPath(ancestorPath, label);
   const rules = schema2.sectionRules || {};
-  validateSectionContent(rules, docNode, path3, issues);
+  validateSectionContent(rules, docNode, path3, issues, frontmatter);
   if (schema2.children && schema2.children.length > 0) {
     validateChildren(schema2.children, docNode.children, docNode.contentNodes, [...ancestorPath, label], issues, frontmatter);
   }
 }
-function validateSectionContent(rules, docNode, path3, issues) {
+function validateSectionContent(rules, docNode, path3, issues, frontmatter = {}) {
   const severity = rules.severity || "error";
   if (rules.table) {
     const tableNode = docNode.contentNodes.find((n) => n.type === "table");
     const parsedTable = tableNode ? parseTable(tableNode) : null;
     const ctx = { field: path3, severity, message: rules.message };
     const tableIssues = PRIMITIVES.table(parsedTable, rules.table, ctx);
+    const tableAnchorLine = tableNode?.position?.start?.line ?? void 0;
     for (const ti of tableIssues) {
-      if (tableNode) ti.bodyLine = tableNode.position?.start?.line ?? void 0;
+      if (ti.bodyLine == null) ti.bodyLine = tableAnchorLine;
       issues.push(ti);
-    }
-    if (rules.formula && parsedTable && rules.table.key_column && rules.table.value_column) {
-      const { map: map4, nonNumeric } = extractTableMap(
-        parsedTable,
-        rules.table.key_column,
-        rules.table.value_column
-      );
-      for (const key of nonNumeric) {
-        issues.push({
-          level: severity,
-          field: path3,
-          message: `Table key '${key}' has a non-numeric value \u2014 cannot evaluate formula`,
-          error_type: "formula-violation",
-          bodyLine: tableNode?.position?.start?.line ?? void 0
-        });
-      }
-      if (nonNumeric.length === 0) {
-        const ctx2 = { field: path3, severity, message: rules.message };
-        const formulaIssues = PRIMITIVES.formula(map4, rules.formula, ctx2);
-        for (const fi of formulaIssues) {
-          fi.bodyLine = tableNode?.position?.start?.line ?? void 0;
-          issues.push(fi);
-        }
-      }
     }
   }
   if (rules.list) {
@@ -33004,8 +33412,9 @@ function validateSectionContent(rules, docNode, path3, issues) {
     const parsedList = listNode ? parseList(listNode) : null;
     const ctx = { field: path3, severity, message: rules.message };
     const listIssues = PRIMITIVES.list(parsedList, rules.list, ctx);
+    const listAnchorLine = listNode?.position?.start?.line ?? void 0;
     for (const li of listIssues) {
-      if (listNode) li.bodyLine = listNode.position?.start?.line ?? void 0;
+      if (li.bodyLine == null) li.bodyLine = listAnchorLine;
       issues.push(li);
     }
   }
@@ -33013,14 +33422,17 @@ function validateSectionContent(rules, docNode, path3, issues) {
     const fences = findCodeFences(docNode.contentNodes);
     const ctx = { field: path3, severity, message: rules.message };
     const codeIssues = PRIMITIVES.code(fences, rules.code, ctx);
+    const codeAnchorLine = fences?.[0]?.line ?? docNode.line ?? void 0;
     for (const ci of codeIssues) {
+      if (ci.bodyLine == null) ci.bodyLine = codeAnchorLine;
       issues.push(ci);
     }
   }
-  if (rules.formula && !rules.table) {
+  if (rules.formula) {
     const ctx = { field: path3, severity, message: rules.message };
-    const formulaIssues = PRIMITIVES.formula({}, rules.formula, ctx);
+    const formulaIssues = PRIMITIVES.formula(frontmatter, rules.formula, ctx);
     for (const fi of formulaIssues) {
+      fi.bodyLine = docNode.line ?? void 0;
       issues.push(fi);
     }
   }
@@ -33038,6 +33450,22 @@ var SECTION_RULES_KEYS = /* @__PURE__ */ new Set([
   "severity",
   "message"
 ]);
+var LIST_INNER_KEYS = /* @__PURE__ */ new Set(["items", "min", "max", "unique"]);
+var LIST_ITEMS_INNER_KEYS = /* @__PURE__ */ new Set(["required", "pattern", "enum"]);
+var CODE_INNER_KEYS = /* @__PURE__ */ new Set(["lang", "min", "max", "content"]);
+var CODE_CONTENT_INNER_KEYS = /* @__PURE__ */ new Set(["pattern"]);
+var TABLE_INNER_KEYS = /* @__PURE__ */ new Set(["columns", "rows", "strict"]);
+var TABLE_COLUMN_INNER_KEYS = /* @__PURE__ */ new Set(["name", "required", "values"]);
+var TABLE_VALUES_INNER_KEYS = /* @__PURE__ */ new Set([
+  "required",
+  "pattern",
+  "enum",
+  "unique",
+  "type",
+  "min",
+  "max"
+]);
+var TABLE_ROWS_INNER_KEYS = /* @__PURE__ */ new Set(["min", "max"]);
 function validateBodyTemplateSchema(bodySchema) {
   const issues = [];
   if (!Array.isArray(bodySchema)) return issues;
@@ -33052,7 +33480,7 @@ function validateBodyTemplateSchema(bodySchema) {
             issues.push(issue(
               "error",
               path3,
-              `Unknown section-rules key '${key}' in '${path3}'`,
+              `Unknown section-rules key '${key}' in '${path3}'.${didYouMean(key, SECTION_RULES_KEYS)}`,
               "template-schema-invalid",
               `Allowed keys: ${[...SECTION_RULES_KEYS].join(", ")}`
             ));
@@ -33080,13 +33508,43 @@ function validateBodyTemplateSchema(bodySchema) {
             ));
           }
         }
-        if (rules.table && typeof rules.table !== "object") {
-          issues.push(issue(
-            "error",
-            path3,
-            `'table' in '${path3}' must be an object`,
-            "template-schema-invalid"
-          ));
+        if (rules.table) {
+          if (typeof rules.table !== "object") {
+            issues.push(issue(
+              "error",
+              path3,
+              `'table' in '${path3}' must be an object`,
+              "template-schema-invalid"
+            ));
+          } else {
+            for (const key of Object.keys(rules.table)) {
+              if (!TABLE_INNER_KEYS.has(key)) {
+                issues.push(issue(
+                  "error",
+                  path3,
+                  `Unknown key '${key}' in 'table' at '${path3}'.${didYouMean(key, TABLE_INNER_KEYS)}`,
+                  "template-schema-invalid",
+                  `Allowed keys: ${[...TABLE_INNER_KEYS].join(", ")}`
+                ));
+              }
+            }
+            if (rules.table.columns !== void 0) {
+              validateTableColumns(rules.table.columns, path3, issues);
+            }
+            if (rules.table.rows && typeof rules.table.rows === "object") {
+              for (const key of Object.keys(rules.table.rows)) {
+                if (!TABLE_ROWS_INNER_KEYS.has(key)) {
+                  issues.push(issue(
+                    "error",
+                    path3,
+                    `Unknown key '${key}' in 'table.rows' at '${path3}'.${didYouMean(key, TABLE_ROWS_INNER_KEYS)}`,
+                    "template-schema-invalid",
+                    `Allowed keys: ${[...TABLE_ROWS_INNER_KEYS].join(", ")}`
+                  ));
+                }
+              }
+            }
+          }
         }
         if (rules.list) {
           if (typeof rules.list !== "object") {
@@ -33096,26 +33554,99 @@ function validateBodyTemplateSchema(bodySchema) {
               `'list' in '${path3}' must be an object`,
               "template-schema-invalid"
             ));
-          } else if (rules.list.item && rules.list.item.pattern) {
-            try {
-              new RegExp(rules.list.item.pattern);
-            } catch {
-              issues.push(issue(
-                "error",
-                path3,
-                `Invalid regex in list.item.pattern of '${path3}': ${rules.list.item.pattern}`,
-                "template-schema-invalid"
-              ));
+          } else {
+            for (const key of Object.keys(rules.list)) {
+              if (!LIST_INNER_KEYS.has(key)) {
+                issues.push(issue(
+                  "error",
+                  path3,
+                  `Unknown key '${key}' in 'list' at '${path3}'.${didYouMean(key, LIST_INNER_KEYS)}`,
+                  "template-schema-invalid",
+                  `Allowed keys: ${[...LIST_INNER_KEYS].join(", ")}`
+                ));
+              }
+            }
+            if (rules.list.items && typeof rules.list.items === "object") {
+              for (const key of Object.keys(rules.list.items)) {
+                if (!LIST_ITEMS_INNER_KEYS.has(key)) {
+                  issues.push(issue(
+                    "error",
+                    path3,
+                    `Unknown key '${key}' in 'list.items' at '${path3}'.${didYouMean(key, LIST_ITEMS_INNER_KEYS)}`,
+                    "template-schema-invalid",
+                    `Allowed keys: ${[...LIST_ITEMS_INNER_KEYS].join(", ")}`
+                  ));
+                }
+              }
+              if (rules.list.items.pattern) {
+                try {
+                  new RegExp(rules.list.items.pattern);
+                } catch {
+                  issues.push(issue(
+                    "error",
+                    path3,
+                    `Invalid regex in list.items.pattern of '${path3}': ${rules.list.items.pattern}`,
+                    "template-schema-invalid"
+                  ));
+                }
+              }
+              if (rules.list.items.enum !== void 0 && !Array.isArray(rules.list.items.enum)) {
+                issues.push(issue(
+                  "error",
+                  path3,
+                  `'list.items.enum' in '${path3}' must be an array`,
+                  "template-schema-invalid"
+                ));
+              }
             }
           }
         }
-        if (rules.code && typeof rules.code !== "object") {
-          issues.push(issue(
-            "error",
-            path3,
-            `'code' in '${path3}' must be an object`,
-            "template-schema-invalid"
-          ));
+        if (rules.code) {
+          if (typeof rules.code !== "object") {
+            issues.push(issue(
+              "error",
+              path3,
+              `'code' in '${path3}' must be an object`,
+              "template-schema-invalid"
+            ));
+          } else {
+            for (const key of Object.keys(rules.code)) {
+              if (!CODE_INNER_KEYS.has(key)) {
+                issues.push(issue(
+                  "error",
+                  path3,
+                  `Unknown key '${key}' in 'code' at '${path3}'.${didYouMean(key, CODE_INNER_KEYS)}`,
+                  "template-schema-invalid",
+                  `Allowed keys: ${[...CODE_INNER_KEYS].join(", ")}`
+                ));
+              }
+            }
+            if (rules.code.content && typeof rules.code.content === "object") {
+              for (const key of Object.keys(rules.code.content)) {
+                if (!CODE_CONTENT_INNER_KEYS.has(key)) {
+                  issues.push(issue(
+                    "error",
+                    path3,
+                    `Unknown key '${key}' in 'code.content' at '${path3}'.${didYouMean(key, CODE_CONTENT_INNER_KEYS)}`,
+                    "template-schema-invalid",
+                    `Allowed keys: ${[...CODE_CONTENT_INNER_KEYS].join(", ")}`
+                  ));
+                }
+              }
+              if (rules.code.content.pattern) {
+                try {
+                  new RegExp(rules.code.content.pattern);
+                } catch {
+                  issues.push(issue(
+                    "error",
+                    path3,
+                    `Invalid regex in code.content.pattern of '${path3}': ${rules.code.content.pattern}`,
+                    "template-schema-invalid"
+                  ));
+                }
+              }
+            }
+          }
         }
         if (rules.formula) {
           if (typeof rules.formula !== "string") {
