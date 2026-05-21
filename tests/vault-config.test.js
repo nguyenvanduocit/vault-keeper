@@ -173,3 +173,44 @@ describe('loadVaultConfig', () => {
     expect(Object.isFrozen(cfg.excludePatterns)).toBe(true);
   });
 });
+
+describe('loadVaultConfig — entropy block', () => {
+  test('returns entropy: null when config omits the key', () => {
+    mkdirSync(join(tmp, '.claude'), { recursive: true });
+    writeFileSync(
+      join(tmp, '.claude', 'vault-keeper.json'),
+      JSON.stringify({ vaultFolders: ['notes'] }),
+    );
+    const cfg = loadVaultConfig(tmp);
+    expect(cfg.entropy).toBe(null);
+  });
+
+  test('surfaces entropy block as-is when present', () => {
+    mkdirSync(join(tmp, '.claude'), { recursive: true });
+    writeFileSync(
+      join(tmp, '.claude', 'vault-keeper.json'),
+      JSON.stringify({
+        vaultFolders: ['notes'],
+        entropy: {
+          weights: { schema: 0.5, vocab: 0.5 },
+          vocab: { distance_threshold: 0.15 },
+        },
+      }),
+    );
+    const cfg = loadVaultConfig(tmp);
+    expect(cfg.entropy).toEqual({
+      weights: { schema: 0.5, vocab: 0.5 },
+      vocab: { distance_threshold: 0.15 },
+    });
+  });
+
+  test('entropy block is frozen', () => {
+    mkdirSync(join(tmp, '.claude'), { recursive: true });
+    writeFileSync(
+      join(tmp, '.claude', 'vault-keeper.json'),
+      JSON.stringify({ entropy: { weights: { schema: 1 } } }),
+    );
+    const cfg = loadVaultConfig(tmp);
+    expect(Object.isFrozen(cfg.entropy)).toBe(true);
+  });
+});
