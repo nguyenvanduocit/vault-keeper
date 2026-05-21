@@ -52,7 +52,8 @@ silently.
 ### `type` (string)
 
 Declares the expected JavaScript type of the field value. Allowed
-values: `string`, `integer`, `number`, `boolean`, `date`, `array`.
+values: `string`, `integer`, `number`, `boolean`, `array`, plus the
+chronological types `date`, `datetime`, `time`.
 
 ```yaml
 fields:
@@ -61,13 +62,26 @@ fields:
   tags:
     type: array
   created:
-    type: string
+    type: date            # JS Date instance (gray-matter parses YYYY-MM-DD)
+  shipped_at:
+    type: datetime        # ISO 8601 / RFC 3339 (must include T separator)
+  daily_standup:
+    type: time            # HH:MM or HH:MM:SS (24-hour, no timezone)
 ```
 
-`integer` requires `typeof value === "number" && Number.isInteger(value)`.
-A string `"50"` fails — YAML must parse it as a bare number.
+- `integer` — `typeof value === "number" && Number.isInteger(value)`.
+  A quoted YAML string `"50"` fails — the value must parse as a bare
+  number.
+- `date` — JS `Date` instance, or a string gray-matter coerced into
+  one. `YYYY-MM-DD` is the canonical form.
+- `datetime` — ISO 8601 / RFC 3339 string with a `T` separator and
+  optional sub-second precision and timezone (`Z` or `±HH:MM`). A bare
+  `YYYY-MM-DD` is **rejected** — use `type: date` for date-only values.
+- `time` — `HH:MM` or `HH:MM:SS` in 24-hour form. No timezone.
 
-Error type: `type-mismatch`.
+Error type: `type-mismatch`. Typos on the type name itself
+(`type: tiem`) surface a `Did you mean 'time'?` suggestion at
+template-load time.
 
 ---
 
@@ -131,6 +145,38 @@ fields:
 ```
 
 Error types: `min-violation`, `max-violation`.
+
+---
+
+### `before` / `after` (date / datetime / time)
+
+Chronological bounds. The value must strictly precede (`before`) or
+strictly follow (`after`) the declared bound. Usable on any of
+`type: date`, `type: datetime`, or `type: time` — the comparison is
+performed under the declared type (date / datetime → ms since epoch;
+time → seconds since 00:00).
+
+```yaml
+fields:
+  shipped_at:
+    type: date
+    after: "2025-01-01"      # value > 2025-01-01
+    before: "2027-01-01"     # value < 2027-01-01
+  standup_at:
+    type: time
+    after: "08:00"
+    before: "10:00"
+```
+
+**Meta-validation enforces:**
+
+- `before` / `after` require a declared `type` of `date`, `datetime`,
+  or `time`. Applying them to `type: string` (or no type) is a
+  template-time error.
+- The bound itself must parse under the declared type — `before: "not-a-date"`
+  on `type: date` is caught at template load.
+
+Error types: `before-violation`, `after-violation`.
 
 ---
 

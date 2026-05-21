@@ -4,6 +4,98 @@ All notable changes to `claude-code-vault-keeper` are tracked here. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.10.0] — 2026-05-21
+
+### Added — richer primitive registry
+
+- **`type: time`** — 24-hour `HH:MM` or `HH:MM:SS` (no timezone).
+- **`type: datetime`** — ISO 8601 / RFC 3339 string or `Date` instance.
+  Bare `YYYY-MM-DD` (no time part) is rejected — use `type: date`.
+- **`before` / `after`** — chronological bounds usable on any of
+  `date` / `datetime` / `time`. Template meta-validation rejects them
+  when applied to a non-chronological type or with a bound that does
+  not parse under the declared type.
+- **`list` primitive** — list-level `min` / `max` / `unique` plus
+  per-item `required` / `pattern` / `enum`. Per-item diagnostics are
+  anchored at the offending item's own line, not the list head.
+- **`code` primitive** — `min` / `max` fence counts and a `content.pattern`
+  applied per matching fence (one issue per failing fence, each anchored
+  at its own fence line). `lang` filter retained.
+- **`table` primitive** — `columns:` now accepts either the shorthand
+  `[string]` form (each entry = required header) or an expanded
+  `[{ name, required?, values? }]` form. A `values:` namespace
+  carries per-cell constraints (`required` / `pattern` / `enum` /
+  `unique` / `type` / `min` / `max`) applied in a documented order:
+  presence → type → required → enum → pattern → min/max → unique.
+  Plus table-level `rows: { min?, max? }` cardinality and a
+  `strict: true` policy that rejects undeclared columns.
+- **Fuzzy "did you mean?"** — every unknown-key diagnostic now carries a
+  Levenshtein-based suggestion when one falls within a length-scaled
+  cutoff. Covers section-rules keys, primitive names, modifier keys,
+  the `type:` value, undeclared frontmatter fields, and every nested
+  inner-key inside `table:` / `list:` / `code:` (e.g. `coluns` →
+  `columns`, `patern` → `pattern`, `mn` → `min`, `tiem` → `time`).
+- **Universal `bodyLine`** on body diagnostics — code-fence cardinality,
+  standalone formula, cardinality on repeatable sections, and every
+  per-cell / per-item issue now expose a body-relative line number. The
+  CLI renders these as `body (line N)` and the LSP wrapper translates
+  them into editor squiggles at exactly the offending construct.
+
+### Changed — clearer error messages
+
+- The `section-rules-leak` diagnostic is now action-first
+  (`Delete this …` instead of `A code block belongs to …`) and the
+  fix names the exact span the author must remove (opening fence
+  through closing ```` ``` ````).
+
+### Removed — table-formula coupling (BREAKING)
+
+- `table.key_column` and `table.value_column` are GONE, along with the
+  formula-on-table extraction they powered. The `formula` primitive
+  still exists but now evaluates against **frontmatter** values
+  directly — references inside the expression map to frontmatter
+  field names. Vaults that used RICE-style scoring tables should lift
+  the dimensions into frontmatter:
+
+  ```yaml
+  # before
+  table:
+    key_column: Dimension
+    value_column: Value
+  formula: "reach * impact / effort >= 5"
+
+  # after
+  ---
+  reach: 8
+  impact: 3
+  effort: 4
+  ---
+  formula: "reach * impact / effort >= 5"
+  ```
+
+### Changed — `list.item` → `list.items` (BREAKING)
+
+- The list primitive's per-item rules now live under `items:` (plural)
+  to keep the API consistent with the new `code.content:` and
+  `table.columns[].values:` namespaces. The legacy `item:` key triggers
+  the fuzzy-suggestion path (`Did you mean 'items'?`) so authors get a
+  clear migration prompt the first time they validate.
+
+### Migration
+
+Two breaking changes to be aware of:
+
+1. **`list.item` → `list.items`** — rename `item:` to `items:` in every
+   template's `yaml section-rules` fence.
+2. **`table.key_column` / `table.value_column` removed** — lift the
+   keyed dimensions into frontmatter and reference them directly in
+   the `formula:` expression.
+
+Anywhere else, templates load unchanged; the new constraints
+(`type: time` / `datetime`, `before` / `after`, expanded `columns:`,
+`rows`, `strict`, `code.content.pattern`, list `min` / `max` /
+`unique` / `items.enum`) are all opt-in.
+
 ## [0.9.0] — 2026-05-20
 
 ### Changed — composable schema validation redesign

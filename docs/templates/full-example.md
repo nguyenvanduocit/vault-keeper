@@ -134,7 +134,7 @@ required: false
 ```yaml section-rules
 required: false
 list:
-  item:
+  items:
     pattern: "^\\*\\*[a-z_]+\\*\\* \\[.+\\]\\(.+\\)( — .+)?$"
 ```
 ````

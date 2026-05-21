@@ -105,14 +105,19 @@ meta-validation.
 | `required` | boolean or `{ when: "..." }` | `true` -> this heading must exist in instances. Supports the `when` DSL for conditional requirements. |
 | `repeatable` | boolean | `true` -> this heading is a pattern-placeholder that claims all unclaimed doc headings at the same depth. |
 | `heading` | `{ pattern?, enum? }` | Constrain the heading text of matched sections. `pattern` is a regex; `enum` is a list of allowed values (case-insensitive match). |
-| `table` | `{ columns?, key_column?, value_column? }` | Require a GFM table in the section. `columns` lists required column headers (case-insensitive). `key_column` + `value_column` feed the `formula` primitive. |
-| `list` | `{ item?: { pattern? } }` | Require a list in the section. `item.pattern` is a regex each list item must match. |
-| `code` | `{ lang? }` | Require a fenced code block. `lang` constrains the language tag (case-insensitive match). |
-| `formula` | string (expression) | Arithmetic/comparison expression evaluated against the table's key-value map. See [formula primitive](#formula-primitive). |
+| `table` | `{ columns?, rows?, strict? }` | Require a GFM table. `columns:` is either `[string]` (shorthand: required headers) or `[{name, required?, values?}]` (per-column rules — see below). `rows: {min?,max?}` for row cardinality; `strict: true` rejects undeclared columns. |
+| `list` | `{ items?, min?, max?, unique? }` | Require a list. `items: {required?, pattern?, enum?}` apply per-item; `min`/`max`/`unique` are list-level. |
+| `code` | `{ lang?, min?, max?, content? }` | Require fenced code blocks. `lang` filters by language; `min`/`max` bound fence count (default `min: 1`); `content: {pattern}` matches each fence's body. |
+| `formula` | string (expression) | Arithmetic / comparison expression evaluated against frontmatter values. See [formula primitive](#formula-primitive). |
 | `min` | number | Minimum cardinality for repeatable headings. |
 | `max` | number | Maximum cardinality for repeatable headings. |
 | `severity` | `"error"` or `"warning"` | Override the default severity for all issues from this section. |
 | `message` | string | Override the default error message for all issues from this section. |
+
+Unknown nested keys (e.g. `table.coluns`, `list.item`, `code.contnt`)
+produce a `template-schema-invalid` error with a "did you mean …?"
+suggestion drawn from the closed inner-key set of each compound
+primitive.
 
 ### Heading matching
 
@@ -187,67 +192,123 @@ within a section.
 
 ### `table`
 
-Validates a GFM table within the section's content nodes.
+Validates a GFM table within the section's content nodes. Three layers
+of constraint, each scoped to a different target:
+
+| Layer | Where it lives | What it constrains |
+|---|---|---|
+| Table-level | `rows: {min,max}`, `strict: true` | The table as a whole — row count, undeclared headers |
+| Column-level | `columns: [{name, required?}]` | Whether a header must appear |
+| Cell-value-level | `columns: [{name, values: {...}}]` | Every cell in that column, row-by-row |
+
+**Shorthand — required column headers only:**
 
 ```yaml section-rules
-required: true
 table:
   columns: [metric, target, actual]
-  key_column: metric
-  value_column: actual
 ```
 
-- `columns` — required column headers (case-insensitive match against
-  the table's header row).
-- `key_column` / `value_column` — identify columns for extracting a
-  key-value map used by the `formula` primitive.
+Each string becomes `{name: <x>, required: true}`. Use this when the
+only contract is "these headers exist."
 
-Error type: `table-shape`.
+**Expanded — per-column-cell rules:**
+
+```yaml section-rules
+table:
+  columns:
+    - name: title
+      required: true            # header must exist (default true)
+      values:                   # cell-value-level — applied to every row
+        required: true          # cells non-empty
+        pattern: "^[A-Z]"
+        enum: [todo, doing, done]
+        unique: true
+        type: string
+        min: 1                  # length min when type=string
+        max: 100
+    - name: priority
+      values:
+        enum: [must, should, nice]
+  rows:
+    min: 1                      # row-count cardinality
+    max: 50
+  strict: true                  # reject undeclared columns
+```
+
+Per-cell constraints run in a fixed order: presence → type → required
+(non-empty) → enum → pattern → min/max → unique. Mixed `columns:`
+arrays (a string and an object side-by-side) are rejected at template
+load time.
+
+Error types: `table-shape` (header / row-count / strict-mode),
+`table-cell` (per-cell constraint).
 
 ### `list`
 
-Validates a list within the section's content nodes.
+Validates a list within the section's content nodes. Like `table`, the
+constraints split into list-level vs per-item:
 
 ```yaml section-rules
-required: false
 list:
-  item:
+  items:                      # per-item rules
+    required: true            # item text non-empty
     pattern: "^\\*\\*[a-z_]+\\*\\* \\[.+\\]\\(.+\\)( — .+)?$"
+    enum: [draft, in_progress, done]
+  min: 1                      # list-level cardinality
+  max: 10
+  unique: true                # item-text uniqueness
 ```
 
-Each list item's text is matched against `item.pattern`. Every
-non-matching item produces an error.
+Each violation is anchored at the offending item's own line — not the
+list head — so editor squiggles land on the exact item.
 
-Error type: `list-item`.
+Error types: `list-item`, `unique-violation`.
+
+> **Migration from < 0.10.0** — the previous `list: { item: { pattern } }`
+> form (no `s`) now produces a `template-schema-invalid` error with a
+> `Did you mean 'items'?` suggestion. Rename `item:` to `items:`.
 
 ### `code`
 
-Requires a fenced code block within the section's content.
+Requires fenced code blocks within the section's content.
 
 ```yaml section-rules
-required: true
 code:
-  lang: gherkin
+  lang: gherkin               # filter by language (case-insensitive)
+  min: 1                      # default: at least one matching fence
+  max: 3                      # default: no cap
+  content:
+    pattern: "^Scenario:"     # regex applied to each matching fence
 ```
 
-When `lang` is specified, at least one fence with that language tag
-must exist. Without `lang`, any fence suffices.
+- `lang` — when set, every constraint targets fences with this language
+  tag. Without it, all fences are considered.
+- `min` defaults to 1 (preserves the pre-0.10 "at least one fence
+  required" behaviour). Set `min: 0` to make the fence optional.
+- `content.pattern` produces one `code-content-mismatch` issue per
+  failing fence, each anchored at its own fence line.
 
-Error type: `code-missing`.
+Error types: `code-missing` (cardinality), `code-content-mismatch`
+(content.pattern).
 
 ### Formula primitive
 
-An arithmetic/comparison expression evaluated against a table's
-extracted key-value map. Requires `table.key_column` and
-`table.value_column` to identify the source data.
+An arithmetic / comparison expression evaluated against the document's
+**frontmatter values**. Reference frontmatter field names directly in
+the expression.
+
+```yaml
+# frontmatter
+---
+rice_reach: 8
+rice_impact: 3
+rice_confidence: 1
+rice_effort: 4
+---
+```
 
 ```yaml section-rules
-required: true
-table:
-  columns: [metric, value]
-  key_column: metric
-  value_column: value
-formula: "total == reach * impact * confidence / effort"
+formula: "rice_reach * rice_impact * rice_confidence / rice_effort >= 5"
 ```
 
 The expression language supports:
@@ -255,14 +316,19 @@ The expression language supports:
 - Operators: `==`, `!=`, `<`, `>`, `<=`, `>=`, `+`, `-`, `*`, `/`
 - Parenthesized sub-expressions
 - Unary minus
-- Identifiers resolve from the table's key-value map (keys are
-  lowercased, spaces replaced with underscores)
+- Identifiers resolve from frontmatter (verbatim — no key
+  normalisation)
 - Equality (`==`, `!=`) uses epsilon `1e-9` for floating-point
   comparison
 
-Table keys are normalized: lowercased, trimmed, spaces replaced with
-underscores. Non-numeric values in the value column produce a
-`formula-violation` error before the formula is evaluated.
+> **Migration from < 0.10.0** — formula previously consumed a key-value
+> map extracted from a section's table via `table.key_column` /
+> `table.value_column`. Those keys were removed; lift the dimensions
+> into frontmatter and reference them directly.
+
+A non-numeric or missing frontmatter value referenced in the
+expression produces a `formula-violation` (the evaluator throws and
+the primitive surfaces the throw verbatim).
 
 Error type: `formula-violation`.
 
@@ -274,12 +340,15 @@ Error type: `formula-violation`.
 |---|---|
 | `required-missing` | A section with `required: true` (or conditional `required`) is missing from the document body |
 | `heading-mismatch` | A heading's text doesn't match the declared `heading.pattern` or `heading.enum` |
-| `table-shape` | A required table is missing or is missing required columns |
-| `list-item` | A required list is missing, or a list item doesn't match `item.pattern` |
-| `code-missing` | A required code fence is missing or no fence matches the required `lang` |
-| `formula-violation` | A formula expression evaluated to `false`, or a table value is non-numeric |
+| `table-shape` | A required table is missing, a required column header is missing, the row count falls outside `rows.min` / `rows.max`, or `strict: true` rejected an undeclared column |
+| `table-cell` | A per-cell `values:` constraint (`required` / `pattern` / `enum` / `unique` / `type` / `min` / `max`) failed on at least one row |
+| `list-item` | A required list is missing, or a list-level / per-item constraint failed (`items.pattern`, `items.enum`, `items.required`, `min`, `max`) |
+| `unique-violation` | A list with `unique: true` (or a table column with `values.unique: true`) contains duplicates |
+| `code-missing` | A required code fence is missing, no fence matches the required `lang`, or the fence count falls outside `min` / `max` |
+| `code-content-mismatch` | A code fence's body does not match `content.pattern` |
+| `formula-violation` | A formula expression evaluated to `false`, or evaluation threw because a referenced frontmatter value is missing / non-numeric |
 | `cardinality` | A repeatable heading's match count is below `min` or above `max` |
-| `template-schema-invalid` | The template's section-rules block itself is malformed (unknown key, bad regex, etc.) |
+| `template-schema-invalid` | The template's section-rules block itself is malformed (unknown key, bad regex, etc.). Carries a "Did you mean …?" suggestion when a known key is one or two edits away. |
 
 ---
 
