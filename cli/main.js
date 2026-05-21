@@ -11,6 +11,7 @@
  *   doctor                       — environment + vault + plugin health-check
  *   install-claude-code-plugin   — wraps `claude plugin marketplace add` + `claude plugin install`
  *   init [dir]                   — scaffold a minimal vault skeleton
+ *   entropy                      — measure vault entropy gradient (4 dims) + snapshot
  *   help [cmd]                   — usage banner (top-level or per-command)
  *   --version / -v               — print the package version
  */
@@ -54,6 +55,7 @@ Commands:
   doctor                       Diagnose environment, config, plugin state
   install-claude-code-plugin   Install this plugin into Claude Code
   init [dir]                   Scaffold a minimal vault skeleton in <dir>
+  entropy                      Measure vault entropy gradient + snapshot
   help [command]               Show top-level or per-command help
 
 Run \`vault-keeper help <command>\` for command-specific options.
@@ -100,6 +102,21 @@ Install this package into Claude Code via its plugin manifest. Equivalent to:
 
 Requires the \`claude\` CLI on \$PATH. If absent, the command prints the
 manual install steps instead of silently failing.
+`,
+  entropy: `vault-keeper entropy [options]
+
+Measure vault entropy across 4 dimensions (schema drift, vocab drift,
+lifecycle decay, distribution health). Snapshots persist to
+<vault>/.vault-keeper/snapshots/ for trend analysis.
+
+Options:
+  --root <path>     Vault root (else CLAUDE_PROJECT_DIR, else cwd)
+  --json            Emit machine-readable EntropyReport
+  --no-snapshot     Do not persist a snapshot
+  --diff            Compare latest vs previous snapshot
+  --history         List existing snapshots
+
+Exit code: always 0 on successful measurement. Entropy is a gradient.
 `,
   init: `vault-keeper init [dir]
 
@@ -157,6 +174,10 @@ async function main(argv = process.argv.slice(2)) {
       return runInstallPlugin(rest);
     case 'init':
       return runInit(rest);
+    case 'entropy': {
+      const mod = await import('./entropy.js');
+      return await mod.main(rest);
+    }
     default: {
       console.error(`Unknown command: ${subcommand}\n`);
       process.stderr.write(USAGE_MAIN);
