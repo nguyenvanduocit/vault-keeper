@@ -80,4 +80,30 @@ describe('diffSnapshots', () => {
     expect(delta.dimensions.schema.delta).toBe(12);
     expect(delta.elapsed_days).toBeCloseTo(1, 1);
   });
+
+  test('null overall_score on either side → overall_delta = null', () => {
+    const before = sampleReport(null, '2026-05-20T10:00:00.000Z');
+    const after = sampleReport(80, '2026-05-21T10:00:00.000Z');
+    const delta = diffSnapshots(before, after);
+    expect(delta.overall_delta).toBe(null);
+  });
+
+  test('null overall_score on after side → overall_delta = null', () => {
+    const before = sampleReport(80, '2026-05-20T10:00:00.000Z');
+    const after = sampleReport(null, '2026-05-21T10:00:00.000Z');
+    const delta = diffSnapshots(before, after);
+    expect(delta.overall_delta).toBe(null);
+  });
+
+  test('null per-dimension score → per-dimension delta = null', () => {
+    const before = sampleReport(80, '2026-05-20T10:00:00.000Z');
+    before.dimensions.schema.score = null;
+    const after = sampleReport(90, '2026-05-21T10:00:00.000Z');
+    const delta = diffSnapshots(before, after);
+    expect(delta.dimensions.schema.delta).toBe(null);
+    expect(delta.dimensions.schema.before).toBe(null);
+    expect(delta.dimensions.schema.after).toBe(90);
+    // Other dimensions still compute numerically.
+    expect(delta.dimensions.vocab.delta).toBe(10);
+  });
 });
