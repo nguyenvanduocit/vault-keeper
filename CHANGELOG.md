@@ -1,3 +1,10 @@
+## [0.12.1](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v0.12.0...v0.12.1) (2026-05-21)
+
+
+### Bug Fixes
+
+* sync Claude plugin version during release ([b2bcf9b](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/b2bcf9b1d9cfb7ce411bf3c7b2704fdb2f26e477))
+
 # [0.12.0](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v0.11.0...v0.12.0) (2026-05-21)
 
 
