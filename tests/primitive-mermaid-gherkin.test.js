@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
   applyBodySchema,
-  applyBodySchemaAsync,
   validateBodyTemplateSchema,
 } from "../lib/schema-engine.js";
 
@@ -28,7 +27,7 @@ describe("mermaid primitive", () => {
       "",
     ].join("\n");
 
-    const issues = await applyBodySchemaAsync(schemaWithRules({ mermaid: {} }), body);
+    const issues = await applyBodySchema(schemaWithRules({ mermaid: {} }), body);
 
     expect(errs(issues)).toHaveLength(0);
   });
@@ -44,7 +43,7 @@ describe("mermaid primitive", () => {
       "",
     ].join("\n");
 
-    const issues = await applyBodySchemaAsync(schemaWithRules({ mermaid: {} }), body);
+    const issues = await applyBodySchema(schemaWithRules({ mermaid: {} }), body);
     const syntax = errs(issues).find((i) => i.error_type === "mermaid-syntax");
 
     expect(syntax).toBeTruthy();
@@ -52,21 +51,12 @@ describe("mermaid primitive", () => {
   });
 
   test("reports missing Mermaid fence", async () => {
-    const issues = await applyBodySchemaAsync(
+    const issues = await applyBodySchema(
       schemaWithRules({ mermaid: {} }),
       "## Diagram\n\nNo diagram here.\n",
     );
 
     expect(errs(issues).map((i) => i.error_type)).toContain("mermaid-missing");
-  });
-
-  test("sync applyBodySchema points callers to async path", () => {
-    const issues = applyBodySchema(
-      schemaWithRules({ mermaid: {} }),
-      "## Diagram\n\n```mermaid\ngraph TD\n  A-->B\n```\n",
-    );
-
-    expect(errs(issues).map((i) => i.error_type)).toContain("async-validator-unavailable");
   });
 });
 
@@ -85,7 +75,7 @@ describe("gherkin primitive", () => {
       "",
     ].join("\n");
 
-    const issues = await applyBodySchemaAsync(schemaWithRules({ gherkin: {} }), body);
+    const issues = await applyBodySchema(schemaWithRules({ gherkin: {} }), body);
 
     expect(errs(issues)).toHaveLength(0);
   });
@@ -101,7 +91,7 @@ describe("gherkin primitive", () => {
       "",
     ].join("\n");
 
-    const issues = await applyBodySchemaAsync(schemaWithRules({ gherkin: {} }), body);
+    const issues = await applyBodySchema(schemaWithRules({ gherkin: {} }), body);
     const syntax = errs(issues).find((i) => i.error_type === "gherkin-syntax");
 
     expect(syntax).toBeTruthy();
@@ -109,7 +99,7 @@ describe("gherkin primitive", () => {
   });
 
   test("reports missing Gherkin fence", async () => {
-    const issues = await applyBodySchemaAsync(
+    const issues = await applyBodySchema(
       schemaWithRules({ gherkin: {} }),
       "## Diagram\n\nNo feature here.\n",
     );

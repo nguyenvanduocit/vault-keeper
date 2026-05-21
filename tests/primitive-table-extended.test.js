@@ -41,16 +41,16 @@ const TABLE_NAME_ROLE_STATUS = [
 ].join("\n");
 
 describe("table primitive — shorthand columns", () => {
-  test("required header missing → table-shape", () => {
-    const issues = errs(applyBodySchema(
+  test("required header missing → table-shape", async () => {
+    const issues = errs(await applyBodySchema(
       schemaWithTable({ columns: ["name", "role", "missing_col"] }),
       TABLE_NAME_ROLE_STATUS,
     ));
     expect(issues.some((i) => i.message.includes("missing_col"))).toBe(true);
   });
 
-  test("all required headers present → pass", () => {
-    expect(errs(applyBodySchema(
+  test("all required headers present → pass", async () => {
+    expect(errs(await applyBodySchema(
       schemaWithTable({ columns: ["name", "role", "status"] }),
       TABLE_NAME_ROLE_STATUS,
     ))).toHaveLength(0);
@@ -58,7 +58,7 @@ describe("table primitive — shorthand columns", () => {
 });
 
 describe("table primitive — per-column values constraints", () => {
-  test("values.required flags an empty cell", () => {
+  test("values.required flags an empty cell", async () => {
     const body = [
       "## Data",
       "",
@@ -68,15 +68,15 @@ describe("table primitive — per-column values constraints", () => {
       "| bob   | reviewer |",
       "",
     ].join("\n");
-    const issues = errs(applyBodySchema(
+    const issues = errs(await applyBodySchema(
       schemaWithTable({ columns: [{ name: "Name", required: true }, { name: "Role", required: true, values: { required: true } }] }),
       body,
     ));
     expect(issues.some((i) => i.message.includes("empty"))).toBe(true);
   });
 
-  test("values.enum rejects out-of-set cell", () => {
-    const issues = errs(applyBodySchema(
+  test("values.enum rejects out-of-set cell", async () => {
+    const issues = errs(await applyBodySchema(
       schemaWithTable({
         columns: [
           { name: "name", required: true },
@@ -88,8 +88,8 @@ describe("table primitive — per-column values constraints", () => {
     expect(issues.some((i) => i.message.includes("todo"))).toBe(true);
   });
 
-  test("values.unique flags duplicate cell across rows", () => {
-    const issues = errs(applyBodySchema(
+  test("values.unique flags duplicate cell across rows", async () => {
+    const issues = errs(await applyBodySchema(
       schemaWithTable({
         columns: [
           { name: "name", required: true },
@@ -101,7 +101,7 @@ describe("table primitive — per-column values constraints", () => {
     expect(issues.some((i) => i.message.includes("author"))).toBe(true);
   });
 
-  test("values.pattern + values.type can combine", () => {
+  test("values.pattern + values.type can combine", async () => {
     const body = [
       "## Data",
       "",
@@ -111,7 +111,7 @@ describe("table primitive — per-column values constraints", () => {
       "| bob   | NaN |",
       "",
     ].join("\n");
-    const issues = errs(applyBodySchema(
+    const issues = errs(await applyBodySchema(
       schemaWithTable({
         columns: [
           { name: "name", required: true },
@@ -125,16 +125,16 @@ describe("table primitive — per-column values constraints", () => {
 });
 
 describe("table primitive — rows cardinality", () => {
-  test("rows.min: 5 fires on 3-row table", () => {
-    const issues = errs(applyBodySchema(
+  test("rows.min: 5 fires on 3-row table", async () => {
+    const issues = errs(await applyBodySchema(
       schemaWithTable({ columns: ["name", "role", "status"], rows: { min: 5 } }),
       TABLE_NAME_ROLE_STATUS,
     ));
     expect(issues.some((i) => i.message.includes("at least 5"))).toBe(true);
   });
 
-  test("rows.max: 2 fires on 3-row table", () => {
-    const issues = errs(applyBodySchema(
+  test("rows.max: 2 fires on 3-row table", async () => {
+    const issues = errs(await applyBodySchema(
       schemaWithTable({ columns: ["name", "role", "status"], rows: { max: 2 } }),
       TABLE_NAME_ROLE_STATUS,
     ));
@@ -143,16 +143,16 @@ describe("table primitive — rows cardinality", () => {
 });
 
 describe("table primitive — strict mode", () => {
-  test("strict: true rejects an undeclared header", () => {
-    const issues = errs(applyBodySchema(
+  test("strict: true rejects an undeclared header", async () => {
+    const issues = errs(await applyBodySchema(
       schemaWithTable({ columns: ["name", "role"], strict: true }),
       TABLE_NAME_ROLE_STATUS, // also has "status"
     ));
     expect(issues.some((i) => i.message.includes("undeclared column 'status'"))).toBe(true);
   });
 
-  test("strict: false (default) keeps undeclared headers silent", () => {
-    expect(errs(applyBodySchema(
+  test("strict: false (default) keeps undeclared headers silent", async () => {
+    expect(errs(await applyBodySchema(
       schemaWithTable({ columns: ["name", "role"] }),
       TABLE_NAME_ROLE_STATUS,
     ))).toHaveLength(0);

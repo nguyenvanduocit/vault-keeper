@@ -314,9 +314,9 @@ graph TD
 Error types: `mermaid-missing`, `mermaid-cardinality`,
 `mermaid-syntax`.
 
-Programmatic note: Mermaid validation is asynchronous. The CLI and LSP use
-`applyBodySchemaAsync`; callers using the public API should do the same when
-their templates include `mermaid:` rules.
+Programmatic note: Mermaid validation is asynchronous. `applyBodySchema`
+returns a `Promise` — the CLI, the LSP, and any public-API caller must
+`await` it.
 
 ### `gherkin`
 

@@ -14,7 +14,7 @@
 
 import matter from "gray-matter";
 import { loadTemplateRules } from "../lib/template-rules.js";
-import { applyFieldSchema, applyBodySchemaAsync } from "../lib/schema-engine.js";
+import { applyFieldSchema, applyBodySchema } from "../lib/schema-engine.js";
 import {
   validateTemplateField,
   validateTemplateMetaLeak,
@@ -135,7 +135,7 @@ export async function validateBuffer({ text, filepath, projectRoot }) {
       // Body schema validation.
       if (Array.isArray(rules.bodySchema) && rules.bodySchema.length > 0) {
         const docMeta2 = { repoRelativePath: filepath };
-        const bodyIssues = await applyBodySchemaAsync(rules.bodySchema, body, docMeta2, fm);
+        const bodyIssues = await applyBodySchema(rules.bodySchema, body, docMeta2, fm);
         // Body issues carry 1-indexed body-relative `bodyLine` — translate
         // each to a document-absolute 0-indexed `line`.
         for (const bi of bodyIssues) {

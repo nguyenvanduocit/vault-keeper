@@ -29,60 +29,60 @@ const LIST_DUPES = "## Steps\n\n- alpha\n- alpha\n- beta\n";
 const LIST_EMPTY = "## Steps\n\nplain text only\n";
 
 describe("list primitive — list-level cardinality", () => {
-  test("min: 3 passes when exactly three items", () => {
-    expect(errs(applyBodySchema(schemaWithList({ min: 3 }), LIST_THREE))).toHaveLength(0);
+  test("min: 3 passes when exactly three items", async () => {
+    expect(errs(await applyBodySchema(schemaWithList({ min: 3 }), LIST_THREE))).toHaveLength(0);
   });
 
-  test("min: 5 fires when only three items present", () => {
-    expect(errs(applyBodySchema(schemaWithList({ min: 5 }), LIST_THREE))
+  test("min: 5 fires when only three items present", async () => {
+    expect(errs(await applyBodySchema(schemaWithList({ min: 5 }), LIST_THREE))
       .some((i) => i.message.includes("at least 5"))).toBe(true);
   });
 
-  test("max: 2 fires when three items present", () => {
-    expect(errs(applyBodySchema(schemaWithList({ max: 2 }), LIST_THREE))
+  test("max: 2 fires when three items present", async () => {
+    expect(errs(await applyBodySchema(schemaWithList({ max: 2 }), LIST_THREE))
       .some((i) => i.message.includes("at most 2"))).toBe(true);
   });
 });
 
 describe("list primitive — list-level unique", () => {
-  test("unique: true flags duplicate item with item's own bodyLine", () => {
-    const issues = errs(applyBodySchema(schemaWithList({ unique: true }), LIST_DUPES));
+  test("unique: true flags duplicate item with item's own bodyLine", async () => {
+    const issues = errs(await applyBodySchema(schemaWithList({ unique: true }), LIST_DUPES));
     const dup = issues.find((i) => i.error_type === "unique-violation");
     expect(dup).toBeDefined();
     // The duplicate `alpha` is on line 4 of the body (line 1 is the heading).
     expect(typeof dup.bodyLine).toBe("number");
   });
 
-  test("unique: true passes when all items distinct", () => {
-    expect(errs(applyBodySchema(schemaWithList({ unique: true }), LIST_THREE))).toHaveLength(0);
+  test("unique: true passes when all items distinct", async () => {
+    expect(errs(await applyBodySchema(schemaWithList({ unique: true }), LIST_THREE))).toHaveLength(0);
   });
 });
 
 describe("list primitive — items.required / pattern / enum", () => {
-  test("items.required flags empty list-item text", () => {
+  test("items.required flags empty list-item text", async () => {
     const body = "## Steps\n\n- alpha\n-\n- gamma\n";
-    const issues = errs(applyBodySchema(schemaWithList({ items: { required: true } }), body));
+    const issues = errs(await applyBodySchema(schemaWithList({ items: { required: true } }), body));
     expect(issues.some((i) => i.message.includes("empty"))).toBe(true);
   });
 
-  test("items.enum rejects items outside the allowed set", () => {
-    const issues = errs(applyBodySchema(
+  test("items.enum rejects items outside the allowed set", async () => {
+    const issues = errs(await applyBodySchema(
       schemaWithList({ items: { enum: ["alpha", "beta"] } }),
       LIST_THREE, // contains "gamma" which is not in the enum
     ));
     expect(issues.some((i) => i.message.includes("gamma"))).toBe(true);
   });
 
-  test("items.enum passes when every item is in the set", () => {
-    expect(errs(applyBodySchema(
+  test("items.enum passes when every item is in the set", async () => {
+    expect(errs(await applyBodySchema(
       schemaWithList({ items: { enum: ["alpha", "beta", "gamma"] } }),
       LIST_THREE,
     ))).toHaveLength(0);
   });
 
-  test("per-item issue carries its own bodyLine (not the list's)", () => {
+  test("per-item issue carries its own bodyLine (not the list's)", async () => {
     const body = "## Steps\n\n- alpha\n- BAD\n- gamma\n";  // BAD is line 4
-    const issues = errs(applyBodySchema(
+    const issues = errs(await applyBodySchema(
       schemaWithList({ items: { pattern: "^[a-z]+$" } }),
       body,
     ));
@@ -132,8 +132,8 @@ describe("list primitive — meta-validation surfaces typos", () => {
 });
 
 describe("list missing → list-item error (unchanged)", () => {
-  test("section with no list at all still surfaces list-item", () => {
-    expect(errs(applyBodySchema(schemaWithList({ items: { pattern: "^x" } }), LIST_EMPTY))
+  test("section with no list at all still surfaces list-item", async () => {
+    expect(errs(await applyBodySchema(schemaWithList({ items: { pattern: "^x" } }), LIST_EMPTY))
       .some((i) => i.error_type === "list-item")).toBe(true);
   });
 });

@@ -38,68 +38,68 @@ function node(depth, text, sectionRules = null, children = []) {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("applyBodySchema — required non-repeatable", () => {
-  test("required section present → no issues", () => {
+  test("required section present → no issues", async () => {
     const schema = [node(2, "Overview", { required: true })];
     const body = "## Overview\n\nSome content.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("required section missing → required-missing", () => {
+  test("required section missing → required-missing", async () => {
     const schema = [node(2, "Overview", { required: true })];
     const body = "## Other Section\n\nContent.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("required-missing");
     expect(issues[0].field).toContain("Overview");
   });
 
-  test("required section — case-insensitive matching", () => {
+  test("required section — case-insensitive matching", async () => {
     const schema = [node(2, "Overview", { required: true })];
     const body = "## overview\n\nContent.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("optional section missing → no issues", () => {
+  test("optional section missing → no issues", async () => {
     const schema = [node(2, "Notes", null)];
     const body = "## Something Else\n\nContent.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("optional section with rules, missing → no issues (not required)", () => {
+  test("optional section with rules, missing → no issues (not required)", async () => {
     const schema = [node(2, "Notes", { table: { columns: ["a", "b"] } })];
     const body = "## Other\n\nContent.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("multiple required sections — all present → no issues", () => {
+  test("multiple required sections — all present → no issues", async () => {
     const schema = [
       node(2, "Alpha", { required: true }),
       node(2, "Beta", { required: true }),
     ];
     const body = "## Alpha\n\nA content.\n\n## Beta\n\nB content.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("multiple required sections — one missing → one error", () => {
+  test("multiple required sections — one missing → one error", async () => {
     const schema = [
       node(2, "Alpha", { required: true }),
       node(2, "Beta", { required: true }),
     ];
     const body = "## Alpha\n\nA content.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].field).toContain("Beta");
   });
 
-  test("severity override in section-rules", () => {
+  test("severity override in section-rules", async () => {
     const schema = [node(2, "Hints", { required: true, severity: "warning" })];
     const body = "## Other\n\nContent.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].level).toBe("warning");
   });
@@ -110,45 +110,45 @@ describe("applyBodySchema — required non-repeatable", () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("applyBodySchema — conditional required (non-repeatable)", () => {
-  test("when condition true + section missing → required-missing", () => {
+  test("when condition true + section missing → required-missing", async () => {
     const schema = [node(2, "Timeline", { required: { when: "status in ['approved', 'shipped']" } })];
     const body = "## Other\n\nContent.";
     const fm = { status: "approved" };
-    const issues = applyBodySchema(schema, body, {}, fm);
+    const issues = await applyBodySchema(schema, body, {}, fm);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("required-missing");
     expect(issues[0].field).toContain("Timeline");
   });
 
-  test("when condition false + section missing → no issues", () => {
+  test("when condition false + section missing → no issues", async () => {
     const schema = [node(2, "Timeline", { required: { when: "status in ['approved', 'shipped']" } })];
     const body = "## Other\n\nContent.";
     const fm = { status: "draft" };
-    const issues = applyBodySchema(schema, body, {}, fm);
+    const issues = await applyBodySchema(schema, body, {}, fm);
     expect(issues).toHaveLength(0);
   });
 
-  test("when condition true + section present → no issues", () => {
+  test("when condition true + section present → no issues", async () => {
     const schema = [node(2, "Timeline", { required: { when: "status in ['approved']" } })];
     const body = "## Timeline\n\nDone by next week.";
     const fm = { status: "approved" };
-    const issues = applyBodySchema(schema, body, {}, fm);
+    const issues = await applyBodySchema(schema, body, {}, fm);
     expect(issues).toHaveLength(0);
   });
 
-  test("unconditional required still works (no when)", () => {
+  test("unconditional required still works (no when)", async () => {
     const schema = [node(2, "Overview", { required: true })];
     const body = "## Other\n\nContent.";
-    const issues = applyBodySchema(schema, body, {}, {});
+    const issues = await applyBodySchema(schema, body, {}, {});
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("required-missing");
   });
 
-  test("no frontmatter passed → when gate defaults to false (safe)", () => {
+  test("no frontmatter passed → when gate defaults to false (safe)", async () => {
     const schema = [node(2, "Timeline", { required: { when: "status in ['approved']" } })];
     const body = "## Other\n\nContent.";
     // No frontmatter arg — defaults to {}
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 });
@@ -158,24 +158,24 @@ describe("applyBodySchema — conditional required (non-repeatable)", () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("applyBodySchema — conditional required (repeatable)", () => {
-  test("when true + 0 matches → cardinality error", () => {
+  test("when true + 0 matches → cardinality error", async () => {
     const schema = [node(2, "Parent", { required: true }, [
       node(3, "<item>", { repeatable: true, required: { when: "phase in ['active']" } }),
     ])];
     const body = "## Parent\n\nNo items.";
     const fm = { phase: "active" };
-    const issues = applyBodySchema(schema, body, {}, fm);
+    const issues = await applyBodySchema(schema, body, {}, fm);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("cardinality");
   });
 
-  test("when false + 0 matches → no issues", () => {
+  test("when false + 0 matches → no issues", async () => {
     const schema = [node(2, "Parent", { required: true }, [
       node(3, "<item>", { repeatable: true, required: { when: "phase in ['active']" } }),
     ])];
     const body = "## Parent\n\nNo items.";
     const fm = { phase: "planning" };
-    const issues = applyBodySchema(schema, body, {}, fm);
+    const issues = await applyBodySchema(schema, body, {}, fm);
     expect(issues).toHaveLength(0);
   });
 });
@@ -185,74 +185,74 @@ describe("applyBodySchema — conditional required (repeatable)", () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("applyBodySchema — repeatable sections", () => {
-  test("repeatable with 0 matches and no min → no issues", () => {
+  test("repeatable with 0 matches and no min → no issues", async () => {
     const schema = [node(2, "Parent", { required: true }, [
       node(3, "<item>", { repeatable: true }),
     ])];
     const body = "## Parent\n\nSome content.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("repeatable with required: true and 0 matches → cardinality error", () => {
+  test("repeatable with required: true and 0 matches → cardinality error", async () => {
     const schema = [node(2, "Parent", { required: true }, [
       node(3, "<item>", { repeatable: true, required: true }),
     ])];
     const body = "## Parent\n\nSome content but no H3s.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("cardinality");
   });
 
-  test("repeatable with min: 2 and only 1 match → cardinality error", () => {
+  test("repeatable with min: 2 and only 1 match → cardinality error", async () => {
     const schema = [node(2, "Parent", { required: true }, [
       node(3, "<item>", { repeatable: true, min: 2 }),
     ])];
     const body = "## Parent\n\n### Item One\n\nContent.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("cardinality");
     expect(issues[0].message).toContain("2");
   });
 
-  test("repeatable with max: 2 and 3 matches → cardinality error", () => {
+  test("repeatable with max: 2 and 3 matches → cardinality error", async () => {
     const schema = [node(2, "Parent", { required: true }, [
       node(3, "<item>", { repeatable: true, max: 2 }),
     ])];
     const body = "## Parent\n\n### A\n\n### B\n\n### C\n\n";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("cardinality");
     expect(issues[0].message).toContain("2");
   });
 
-  test("repeatable with heading pattern — matching items pass", () => {
+  test("repeatable with heading pattern — matching items pass", async () => {
     const schema = [node(2, "Items", { required: true }, [
       node(3, "<item>", { repeatable: true, heading: { pattern: "^ITEM-\\d+" } }),
     ])];
     const body = "## Items\n\n### ITEM-001\n\nContent.\n\n### ITEM-002\n\nContent.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("repeatable with heading pattern — non-matching item → heading-mismatch", () => {
+  test("repeatable with heading pattern — non-matching item → heading-mismatch", async () => {
     const schema = [node(2, "Items", { required: true }, [
       node(3, "<item>", { repeatable: true, heading: { pattern: "^ITEM-\\d+" } }),
     ])];
     const body = "## Items\n\n### ITEM-001\n\nOK.\n\n### BadName\n\nFail.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("heading-mismatch");
     expect(issues[0].field).toContain("BadName");
   });
 
-  test("repeatable cardinality + heading pattern — both checked", () => {
+  test("repeatable cardinality + heading pattern — both checked", async () => {
     const schema = [node(2, "Criteria", { required: true }, [
       node(3, "<item>", { repeatable: true, min: 1, heading: { pattern: "^CR\\d+" } }),
     ])];
     // No H3 items → cardinality error
     const body = "## Criteria\n\nSome prose.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("cardinality");
   });
@@ -263,31 +263,31 @@ describe("applyBodySchema — repeatable sections", () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("applyBodySchema — table primitive", () => {
-  test("table with required columns — all present → no issues", () => {
+  test("table with required columns — all present → no issues", async () => {
     const schema = [node(2, "Data", { required: true, table: { columns: ["name", "value"] } })];
     const body = "## Data\n\n| Name | Value |\n|---|---|\n| a | 1 |";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("table with required columns — missing column → table-shape", () => {
+  test("table with required columns — missing column → table-shape", async () => {
     const schema = [node(2, "Data", { required: true, table: { columns: ["name", "score"] } })];
     const body = "## Data\n\n| Name | Value |\n|---|---|\n| a | 1 |";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues.some((i) => i.error_type === "table-shape")).toBe(true);
   });
 
-  test("table expected but no table in section → table-shape", () => {
+  test("table expected but no table in section → table-shape", async () => {
     const schema = [node(2, "Data", { required: true, table: { columns: ["a"] } })];
     const body = "## Data\n\nJust a paragraph.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues.some((i) => i.error_type === "table-shape")).toBe(true);
   });
 
-  test("table with no columns constraint — any table passes", () => {
+  test("table with no columns constraint — any table passes", async () => {
     const schema = [node(2, "Info", { required: true, table: {} })];
     const body = "## Info\n\n| X |\n|---|\n| 1 |";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 });
@@ -297,31 +297,31 @@ describe("applyBodySchema — table primitive", () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("applyBodySchema — list primitive", () => {
-  test("list present, no item pattern → passes", () => {
+  test("list present, no item pattern → passes", async () => {
     const schema = [node(2, "Tasks", { required: true, list: {} })];
     const body = "## Tasks\n\n- Task 1\n- Task 2";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("list missing → list-item error", () => {
+  test("list missing → list-item error", async () => {
     const schema = [node(2, "Tasks", { required: true, list: {} })];
     const body = "## Tasks\n\nJust prose.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues.some((i) => i.error_type === "list-item")).toBe(true);
   });
 
-  test("list with items pattern — all match → pass", () => {
+  test("list with items pattern — all match → pass", async () => {
     const schema = [node(2, "Steps", { required: true, list: { items: { pattern: "^Step \\d+" } } })];
     const body = "## Steps\n\n- Step 1 do this\n- Step 2 do that";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("list with items pattern — non-matching item → list-item error", () => {
+  test("list with items pattern — non-matching item → list-item error", async () => {
     const schema = [node(2, "Steps", { required: true, list: { items: { pattern: "^Step \\d+" } } })];
     const body = "## Steps\n\n- Step 1 ok\n- Bad item";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("list-item");
     expect(issues[0].message).toContain("Bad item");
@@ -333,40 +333,40 @@ describe("applyBodySchema — list primitive", () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("applyBodySchema — code primitive", () => {
-  test("code fence with correct lang → pass", () => {
+  test("code fence with correct lang → pass", async () => {
     const schema = [node(2, "Spec", { required: true, code: { lang: "gherkin" } })];
     const body = "## Spec\n\n```gherkin\nGiven something\n```";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("code fence with wrong lang → code-missing", () => {
+  test("code fence with wrong lang → code-missing", async () => {
     const schema = [node(2, "Spec", { required: true, code: { lang: "gherkin" } })];
     const body = "## Spec\n\n```yaml\nkey: val\n```";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("code-missing");
   });
 
-  test("code fence expected but no fence → code-missing", () => {
+  test("code fence expected but no fence → code-missing", async () => {
     const schema = [node(2, "Spec", { required: true, code: { lang: "yaml" } })];
     const body = "## Spec\n\nJust text.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("code-missing");
   });
 
-  test("code fence with no lang constraint — any fence passes", () => {
+  test("code fence with no lang constraint — any fence passes", async () => {
     const schema = [node(2, "Code", { required: true, code: {} })];
     const body = "## Code\n\n```\nsome code\n```";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("code lang matching is case-insensitive", () => {
+  test("code lang matching is case-insensitive", async () => {
     const schema = [node(2, "Block", { required: true, code: { lang: "YAML" } })];
     const body = "## Block\n\n```yaml\nk: v\n```";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 });
@@ -376,53 +376,53 @@ describe("applyBodySchema — code primitive", () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("applyBodySchema — nested recursion", () => {
-  test("H2 > required H3 — H3 present → no issues", () => {
+  test("H2 > required H3 — H3 present → no issues", async () => {
     const schema = [node(2, "Parent", { required: true }, [
       node(3, "Child", { required: true }),
     ])];
     const body = "## Parent\n\n### Child\n\nChild content.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("H2 > required H3 — H3 missing → required-missing", () => {
+  test("H2 > required H3 — H3 missing → required-missing", async () => {
     const schema = [node(2, "Parent", { required: true }, [
       node(3, "Child", { required: true }),
     ])];
     const body = "## Parent\n\nJust parent content.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("required-missing");
     expect(issues[0].field).toContain("Child");
     expect(issues[0].field).toContain("Parent");
   });
 
-  test("H2 > H3 > H4 — deep nesting validates correctly", () => {
+  test("H2 > H3 > H4 — deep nesting validates correctly", async () => {
     const schema = [node(2, "A", { required: true }, [
       node(3, "B", { required: true }, [
         node(4, "C", { required: true }),
       ]),
     ])];
     const body = "## A\n\n### B\n\n#### C\n\nDeep content.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("nested repeatable under non-repeatable", () => {
+  test("nested repeatable under non-repeatable", async () => {
     const schema = [node(2, "Container", { required: true }, [
       node(3, "<entry>", { repeatable: true, min: 1, heading: { pattern: "^E\\d+" } }),
     ])];
     const body = "## Container\n\n### E1\n\nFirst.\n\n### E2\n\nSecond.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("issue field carries full heading path", () => {
+  test("issue field carries full heading path", async () => {
     const schema = [node(2, "Section", { required: true }, [
       node(3, "Sub", { required: true }),
     ])];
     const body = "## Section\n\nContent.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].field).toBe("## Section › ### Sub");
   });
@@ -433,43 +433,43 @@ describe("applyBodySchema — nested recursion", () => {
 // ────────────────────────────────────────────────────────────────────────────
 
 describe("applyBodySchema — edge cases", () => {
-  test("empty schema → no issues", () => {
-    const issues = applyBodySchema([], "## Anything\n\nContent.");
+  test("empty schema → no issues", async () => {
+    const issues = await applyBodySchema([], "## Anything\n\nContent.");
     expect(issues).toHaveLength(0);
   });
 
-  test("null schema → no issues", () => {
-    const issues = applyBodySchema(null, "## Content\n\nBody.");
+  test("null schema → no issues", async () => {
+    const issues = await applyBodySchema(null, "## Content\n\nBody.");
     expect(issues).toHaveLength(0);
   });
 
-  test("empty body against required section → required-missing", () => {
+  test("empty body against required section → required-missing", async () => {
     const schema = [node(2, "Required", { required: true })];
-    const issues = applyBodySchema(schema, "");
+    const issues = await applyBodySchema(schema, "");
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("required-missing");
   });
 
-  test("null body → required-missing for required sections", () => {
+  test("null body → required-missing for required sections", async () => {
     const schema = [node(2, "Required", { required: true })];
-    const issues = applyBodySchema(schema, null);
+    const issues = await applyBodySchema(schema, null);
     expect(issues).toHaveLength(1);
     expect(issues[0].error_type).toBe("required-missing");
   });
 
-  test("schema node without sectionRules → section match attempted, no content validation", () => {
+  test("schema node without sectionRules → section match attempted, no content validation", async () => {
     const schema = [node(2, "Present", null)];
     const body = "## Present\n\nContent.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("body line is present on heading-mismatch issues", () => {
+  test("body line is present on heading-mismatch issues", async () => {
     const schema = [node(2, "Group", { required: true }, [
       node(3, "<item>", { repeatable: true, heading: { pattern: "^X-\\d+" } }),
     ])];
     const body = "## Group\n\n### BadHeading\n\nContent.";
-    const issues = applyBodySchema(schema, body);
+    const issues = await applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
     expect(issues[0].bodyLine).toBeDefined();
     expect(typeof issues[0].bodyLine).toBe("number");

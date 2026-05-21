@@ -25,8 +25,8 @@ function schemaWithFormula(expr) {
 const SCORE_SECTION = "## Score\n\nThe RICE score derived from frontmatter.\n";
 
 describe("formula on frontmatter", () => {
-  test("passes when expression holds against frontmatter values", () => {
-    const issues = applyBodySchema(
+  test("passes when expression holds against frontmatter values", async () => {
+    const issues = await applyBodySchema(
       schemaWithFormula("reach * impact * confidence / effort >= 5"),
       SCORE_SECTION,
       undefined,
@@ -35,8 +35,8 @@ describe("formula on frontmatter", () => {
     expect(errs(issues)).toHaveLength(0);
   });
 
-  test("fires formula-violation when expression evaluates false", () => {
-    const issues = applyBodySchema(
+  test("fires formula-violation when expression evaluates false", async () => {
+    const issues = await applyBodySchema(
       schemaWithFormula("a + b == 10"),
       SCORE_SECTION,
       undefined,
@@ -45,8 +45,8 @@ describe("formula on frontmatter", () => {
     expect(errs(issues).some((i) => i.error_type === "formula-violation")).toBe(true);
   });
 
-  test("fires formula-violation when a referenced field is missing", () => {
-    const issues = applyBodySchema(
+  test("fires formula-violation when a referenced field is missing", async () => {
+    const issues = await applyBodySchema(
       schemaWithFormula("score >= 5"),
       SCORE_SECTION,
       undefined,
@@ -55,8 +55,8 @@ describe("formula on frontmatter", () => {
     expect(errs(issues).some((i) => i.error_type === "formula-violation")).toBe(true);
   });
 
-  test("anchors formula-violation at the section heading line", () => {
-    const issues = applyBodySchema(
+  test("anchors formula-violation at the section heading line", async () => {
+    const issues = await applyBodySchema(
       schemaWithFormula("score == 0"),
       SCORE_SECTION,
       undefined,

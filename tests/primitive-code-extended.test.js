@@ -63,38 +63,38 @@ const SECTION_WITH_MIXED_LANGS = [
 ].join("\n");
 
 describe("code primitive — min/max", () => {
-  test("default (no min) requires at least one matching fence", () => {
-    const issues = applyBodySchema(schemaWithCode({ lang: "gherkin" }), SECTION_WITH_NO_FENCE);
+  test("default (no min) requires at least one matching fence", async () => {
+    const issues = await applyBodySchema(schemaWithCode({ lang: "gherkin" }), SECTION_WITH_NO_FENCE);
     const e = errs(issues);
     expect(e.some((i) => i.error_type === "code-missing")).toBe(true);
   });
 
-  test("min: 2 fires when only one fence exists", () => {
-    const issues = applyBodySchema(
+  test("min: 2 fires when only one fence exists", async () => {
+    const issues = await applyBodySchema(
       schemaWithCode({ lang: "gherkin", min: 2 }),
       SECTION_WITH_MIXED_LANGS,
     );
     expect(errs(issues).some((i) => i.message.includes("at least 2"))).toBe(true);
   });
 
-  test("min: 2 passes when two matching fences exist", () => {
-    const issues = applyBodySchema(
+  test("min: 2 passes when two matching fences exist", async () => {
+    const issues = await applyBodySchema(
       schemaWithCode({ lang: "gherkin", min: 2 }),
       SECTION_WITH_TWO_FENCES,
     );
     expect(errs(issues)).toHaveLength(0);
   });
 
-  test("max: 1 fires when two matching fences exist", () => {
-    const issues = applyBodySchema(
+  test("max: 1 fires when two matching fences exist", async () => {
+    const issues = await applyBodySchema(
       schemaWithCode({ lang: "gherkin", max: 1 }),
       SECTION_WITH_TWO_FENCES,
     );
     expect(errs(issues).some((i) => i.message.includes("at most 1"))).toBe(true);
   });
 
-  test("min: 0 makes the section's fence optional", () => {
-    const issues = applyBodySchema(
+  test("min: 0 makes the section's fence optional", async () => {
+    const issues = await applyBodySchema(
       schemaWithCode({ lang: "gherkin", min: 0 }),
       SECTION_WITH_NO_FENCE,
     );
@@ -103,7 +103,7 @@ describe("code primitive — min/max", () => {
 });
 
 describe("code primitive — content.pattern", () => {
-  test("each non-matching fence reports one issue with its own bodyLine", () => {
+  test("each non-matching fence reports one issue with its own bodyLine", async () => {
     const body = [
       "## Scenario",
       "",            // line 2
@@ -117,7 +117,7 @@ describe("code primitive — content.pattern", () => {
       "",
     ].join("\n");
 
-    const issues = applyBodySchema(
+    const issues = await applyBodySchema(
       schemaWithCode({ lang: "gherkin", content: { pattern: "^Scenario:" } }),
       body,
     );
@@ -126,16 +126,16 @@ describe("code primitive — content.pattern", () => {
     expect(mismatches[0].bodyLine).toBe(7);
   });
 
-  test("all matching fences → no content-mismatch", () => {
-    const issues = applyBodySchema(
+  test("all matching fences → no content-mismatch", async () => {
+    const issues = await applyBodySchema(
       schemaWithCode({ lang: "gherkin", content: { pattern: "^Scenario:" } }),
       SECTION_WITH_TWO_FENCES,
     );
     expect(errs(issues).filter((i) => i.error_type === "code-content-mismatch")).toHaveLength(0);
   });
 
-  test("content.pattern works without lang (applies to every fence)", () => {
-    const issues = applyBodySchema(
+  test("content.pattern works without lang (applies to every fence)", async () => {
+    const issues = await applyBodySchema(
       schemaWithCode({ content: { pattern: "^Scenario:" } }),
       SECTION_WITH_MIXED_LANGS,
     );
@@ -146,16 +146,16 @@ describe("code primitive — content.pattern", () => {
 });
 
 describe("code primitive — backward compatibility", () => {
-  test("`code: { lang: x }` alone keeps original behavior (min=1)", () => {
-    const issues = applyBodySchema(
+  test("`code: { lang: x }` alone keeps original behavior (min=1)", async () => {
+    const issues = await applyBodySchema(
       schemaWithCode({ lang: "gherkin" }),
       SECTION_WITH_TWO_FENCES,
     );
     expect(errs(issues)).toHaveLength(0);
   });
 
-  test("`code: {}` (no params) still requires ≥ 1 fence", () => {
-    const issues = applyBodySchema(schemaWithCode({}), SECTION_WITH_NO_FENCE);
+  test("`code: {}` (no params) still requires ≥ 1 fence", async () => {
+    const issues = await applyBodySchema(schemaWithCode({}), SECTION_WITH_NO_FENCE);
     expect(errs(issues).some((i) => i.error_type === "code-missing")).toBe(true);
   });
 });
