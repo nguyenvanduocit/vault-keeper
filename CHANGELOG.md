@@ -1,3 +1,10 @@
+# [0.11.0](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v0.10.0...v0.11.0) (2026-05-21)
+
+
+### Features
+
+* add vault help skill ([22aa7af](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/22aa7af15242a9009e04de71602424158096f310))
+
 # Changelog
 
 All notable changes to `claude-code-vault-keeper` are tracked here. The
