@@ -37,12 +37,12 @@ jobs:
 
     steps:
       - name: Checkout (full history — semantic-release reads all tags)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup Node 24 (ships npm >= 11.5.1, needed for OIDC publishing)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
