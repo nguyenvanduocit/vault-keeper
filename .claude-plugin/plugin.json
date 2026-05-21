@@ -1,14 +1,23 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "claude-code-vault-keeper",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Generic knowledge-vault tooling for Claude Code — LSP server + CLI validator + shared parsing lib (body parser, template rules). Config-driven vault root via .claude/vault-keeper.json; single source of truth for vault validation logic.",
   "author": {
     "name": "nguyenvanduocit",
     "email": "nguyenvanduocit@gmail.com"
   },
   "license": "MIT",
-  "keywords": ["lsp", "markdown", "vault", "knowledge-base", "template-validation", "monitor"],
+  "keywords": [
+    "lsp",
+    "markdown",
+    "vault",
+    "knowledge-base",
+    "template-validation",
+    "monitor"
+  ],
   "lspServers": "./.lsp.json",
-  "experimental": { "monitors": "./monitors/monitors.json" }
+  "experimental": {
+    "monitors": "./monitors/monitors.json"
+  }
 }

@@ -151,16 +151,23 @@ Before merging a PR that should publish a release:
 - `@semantic-release/release-notes-generator`
 - `@semantic-release/changelog`
 - `@semantic-release/npm`
+- `@semantic-release/exec`
 - `@semantic-release/git`
 - `@semantic-release/github`
 
-The release commit includes only:
+During `prepare`, [`scripts/sync-plugin-version.mjs`](../scripts/sync-plugin-version.mjs)
+copies semantic-release's `${nextRelease.version}` into
+`.claude-plugin/plugin.json`.
+
+The release commit includes:
 
 - `CHANGELOG.md`
 - `package.json`
+- `.claude-plugin/plugin.json`
 
 The npm package version is therefore the source of truth for published
-releases. The generated release tag points at the semantic-release commit.
+releases, and the Claude plugin manifest is synced from that version. The
+generated release tag points at the semantic-release commit.
 
 ## Failure modes
 
@@ -170,6 +177,7 @@ releases. The generated release tag points at the semantic-release commit.
 | npm publish fails with auth/OIDC errors | Trusted Publisher config does not match repo/workflow | Re-check npm package access settings: owner, repo, `release.yml`, blank environment |
 | semantic-release cannot determine previous release | Tags were not fetched or release history was rewritten | Ensure `actions/checkout` keeps `fetch-depth: 0`; avoid rewriting release tags |
 | Package publishes but CLI/LSP is stale | Source changed without rebuilding `server/main.bundled.cjs` before release | Run `bun run build`, commit the bundle if it changed, and let release rerun from `main` |
+| Claude plugin manifest version is stale | Release prepare did not sync `.claude-plugin/plugin.json` | Run `node scripts/sync-plugin-version.mjs <version>` locally, then fix the release config before rerunning release |
 | `npm pack --dry-run` misses files | `package.json#files` does not include the new path | Update `files` and rerun the dry-run pack check |
 
 If a release partially succeeds, verify npm first. npm versions are
