@@ -88,4 +88,19 @@ describe('measureEntropy — integration', () => {
     expect(report.stats.total_docs).toBe(0);
     expect(report.overall_score).toBe(null);
   });
+
+  test('default excludePatterns drop README.md from the count', async () => {
+    mkdirSync(join(tmp, '.claude'), { recursive: true });
+    writeFileSync(join(tmp, '.claude', 'vault-keeper.json'), VK_CONFIG);
+    mkdirSync(join(tmp, 'templates'), { recursive: true });
+    writeFileSync(join(tmp, 'templates', 'note-template.md'), TEMPLATE);
+    mkdirSync(join(tmp, 'notes'), { recursive: true });
+
+    writeDoc('a.md', { template: 'templates/note-template.md', title: 'A', status: 'draft' });
+    writeDoc('README.md', { template: 'templates/note-template.md', title: 'R', status: 'draft' });
+
+    const report = await measureEntropy({ vaultRoot: tmp });
+    // README.md is in default excludePatterns ('**/README.md'); only a.md counts.
+    expect(report.stats.total_docs).toBe(1);
+  });
 });
