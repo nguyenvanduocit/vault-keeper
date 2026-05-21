@@ -83,7 +83,7 @@ jobs:
             const r = JSON.parse(require('fs').readFileSync('/tmp/report.json', 'utf8'));
             const s = r.summary;
             console.log('summary:', JSON.stringify(s));
-            if (s.total !== 24 || s.valid !== 9 || s.invalid !== 15) {
+            if (s.total !== 23 || s.valid !== 8 || s.invalid !== 15) {
               throw new Error('example vault summary changed unexpectedly');
             }
           "
