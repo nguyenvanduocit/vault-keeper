@@ -1,3 +1,17 @@
+# [1.0.0](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v0.12.2...v1.0.0) (2026-05-21)
+
+
+* refactor!: collapse body-schema orchestrator to async-only ([f9a5191](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/f9a5191f71e5392deb59bd8a97f122840f85a2a8))
+
+
+### BREAKING CHANGES
+
+* applyBodySchema (exported from lib/index.js) is now
+async and returns Promise<Issue[]>; applyBodySchemaAsync is removed.
+Callers must await applyBodySchema.
+
+Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>
+
 ## [0.12.2](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v0.12.1...v0.12.2) (2026-05-21)
 
 
