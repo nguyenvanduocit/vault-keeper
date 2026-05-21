@@ -491,3 +491,33 @@ change.
 - [CLI validator](cli-validator.md) — invocation + JSON output.
 - [LSP features](lsp-features.md) — per-operation reference.
 - [Troubleshooting](troubleshooting.md) — common error categories.
+
+## Entropy gardener
+
+The `vault-keeper entropy` subcommand (`cli/entropy.js`) measures the vault on
+four chaos dimensions and persists snapshots; the `/vault.garden` skill consumes
+that output and runs a gardener-style measure → suggest → execute → remeasure loop.
+
+```
+cli/entropy.js                  → vault-keeper entropy [--json|--diff|--history]
+lib/entropy/                    pure deterministic measurement (no LLM)
+  ├── measure.js                orchestrator (only file with I/O)
+  ├── schema-drift.js           Shannon-entropy on frontmatter
+  ├── vocab-drift.js            fuzzy cluster tags + wiki-links
+  ├── lifecycle.js              stale / orphan / zombie detection
+  ├── emergence.js              non-template field/section candidates
+  ├── distribution.js           Gini + gzip compression composite
+  ├── score.js                  weighted aggregation → 0–100
+  ├── snapshot.js               read / write / diff snapshot JSON
+  └── defaults.js               engine-side default thresholds
+lib/vault-index.js              countIncomingLinks() — pure FN extracted
+                                from server/vault-index.js so CLI can use it
+skills/vault.garden/SKILL.md    LLM-orchestrated loop
+<vault>/.vault-keeper/snapshots/  git-trackable snapshot history
+```
+
+The split mirrors the rest of the repo: deterministic logic lives in `lib/`,
+judgment lives in the skill (where the LLM gets to reason). Snapshots live at
+the vault root (artifact space) and never under `.claude/` (config space).
+
+For the user-facing reference, see [vault-garden.md](vault-garden.md).
