@@ -3,8 +3,14 @@ import { existsSync, readFileSync } from "node:fs";
 
 describe("release config", () => {
   test("syncs and commits the Claude plugin manifest version", () => {
+    const packageJson = JSON.parse(readFileSync("package.json", "utf-8"));
+    const pluginManifest = JSON.parse(
+      readFileSync(".claude-plugin/plugin.json", "utf-8"),
+    );
     const releaseConfig = JSON.parse(readFileSync(".releaserc.json", "utf-8"));
     const plugins = releaseConfig.plugins;
+
+    expect(pluginManifest.version).toBe(packageJson.version);
 
     const execPlugin = plugins.find((plugin) => plugin[0] === "@semantic-release/exec");
     expect(execPlugin).toBeTruthy();
