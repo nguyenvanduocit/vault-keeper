@@ -499,7 +499,8 @@ function printResults(validationResults, summary, options = {}) {
       .forEach(result => {
         console.log(`\n📄 ${relative(process.cwd(), result.filepath)}`);
         result.errors.forEach(error => {
-          console.log(`   🚨 ${error.field}: ${error.message}`);
+          const loc = error.bodyLine ? `${error.field} (line ${error.bodyLine})` : error.field;
+          console.log(`   🚨 ${loc}: ${error.message}`);
           if (error.fix) {
             console.log(`      💡 Fix: ${error.fix}`);
           }

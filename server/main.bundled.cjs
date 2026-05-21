@@ -33506,8 +33506,8 @@ function validateSectionRulesLeak(body) {
     level: "error",
     field: "body",
     error_type: "section-rules-leak",
-    message: 'A "```yaml section-rules" code block belongs to templates only and must not appear in a document',
-    fix: 'Remove the "```yaml section-rules" block \u2014 per-section rules are declared in templates/, not in authored documents.',
+    message: 'Delete this "```yaml section-rules" fence \u2014 it is a template-only construct that leaked into the document.',
+    fix: 'Remove the entire fenced block (from the opening "```yaml section-rules" line through its closing "```") and any rule keys inside. Per-section rules belong in templates/, not in authored documents.',
     bodyLine: line
   }));
 }
