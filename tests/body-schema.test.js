@@ -420,15 +420,15 @@ describe("applyBodySchema — list primitive", () => {
     expect(issues.some((i) => i.error_type === "list-item")).toBe(true);
   });
 
-  test("list with item pattern — all match → pass", () => {
-    const schema = [node(2, "Steps", { required: true, list: { item: { pattern: "^Step \\d+" } } })];
+  test("list with items pattern — all match → pass", () => {
+    const schema = [node(2, "Steps", { required: true, list: { items: { pattern: "^Step \\d+" } } })];
     const body = "## Steps\n\n- Step 1 do this\n- Step 2 do that";
     const issues = applyBodySchema(schema, body);
     expect(issues).toHaveLength(0);
   });
 
-  test("list with item pattern — non-matching item → list-item error", () => {
-    const schema = [node(2, "Steps", { required: true, list: { item: { pattern: "^Step \\d+" } } })];
+  test("list with items pattern — non-matching item → list-item error", () => {
+    const schema = [node(2, "Steps", { required: true, list: { items: { pattern: "^Step \\d+" } } })];
     const body = "## Steps\n\n- Step 1 ok\n- Bad item";
     const issues = applyBodySchema(schema, body);
     expect(issues).toHaveLength(1);
@@ -644,7 +644,7 @@ describe("structural primitives — direct", () => {
 
   test("list primitive — items matching pattern → pass", () => {
     const list = { items: [{ text: "Step 1", line: 1 }, { text: "Step 2", line: 2 }] };
-    const issues = PRIMITIVES.list(list, { item: { pattern: "^Step \\d+" } }, { field: "test" });
+    const issues = PRIMITIVES.list(list, { items: { pattern: "^Step \\d+" } }, { field: "test" });
     expect(issues).toHaveLength(0);
   });
 
@@ -754,10 +754,21 @@ describe("validateBodyTemplateSchema", () => {
     expect(issues.some((i) => i.error_type === "template-schema-invalid" && i.message.includes("list"))).toBe(true);
   });
 
-  test("list.item.pattern invalid regex → template-schema-invalid", () => {
-    const schema = [node(2, "Section", { list: { item: { pattern: "[bad(" } } })];
+  test("list.items.pattern invalid regex → template-schema-invalid", () => {
+    const schema = [node(2, "Section", { list: { items: { pattern: "[bad(" } } })];
     const issues = validateBodyTemplateSchema(schema);
     expect(issues.some((i) => i.error_type === "template-schema-invalid" && i.message.includes("regex"))).toBe(true);
+  });
+
+  test("legacy `list.item` (no s) → unknown-key with fuzzy suggestion", () => {
+    const schema = [node(2, "Section", { list: { item: { pattern: "^x" } } })];
+    const issues = validateBodyTemplateSchema(schema);
+    const bad = issues.find((i) =>
+      i.error_type === "template-schema-invalid" &&
+      i.message.includes("Unknown key 'item' in 'list'"),
+    );
+    expect(bad).toBeDefined();
+    expect(bad.message).toContain("Did you mean 'items'?");
   });
 
   test("code not an object → template-schema-invalid", () => {
