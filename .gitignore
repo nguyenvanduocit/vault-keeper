@@ -3,3 +3,6 @@ node_modules/
 .baseline/
 *.log
 .DS_Store
+
+# This is a bun project; npm publish (via semantic-release) may emit one.
+package-lock.json

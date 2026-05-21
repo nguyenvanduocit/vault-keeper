@@ -1,61 +1,51 @@
 name: Release
 
-# Fires when a semver tag is pushed (`git tag v1.2.3 && git push --tags`)
-# OR via manual dispatch with a tag input. The workflow:
-#   1. Re-runs the full test + smoke gauntlet.
-#   2. Asserts the tag matches package.json's `version`.
-#   3. Publishes to npm with provenance (OIDC-signed; no NPM_TOKEN needed
-#      if the package has a Trusted Publisher on npmjs.com). Falls back to
-#      NPM_TOKEN if the secret is set.
-#   4. Creates a GitHub Release whose body is auto-extracted from
-#      CHANGELOG.md (the section matching the tag's semver).
+# Fully automated release driven by Conventional Commits.
+# Every push to `main` runs the test+smoke gauntlet, then semantic-release:
+#   1. Analyzes commits since the last git tag to compute the next version.
+#   2. Bumps package.json, prepends release notes to CHANGELOG.md, and
+#      commits them back to main with `[skip ci]` (no CI loop).
+#   3. Tags the release and publishes a GitHub Release with generated notes.
+#   4. Publishes to npm via OIDC Trusted Publishing — no NPM_TOKEN. npm
+#      auto-attaches provenance attestations (the --provenance flag is
+#      implicit under trusted publishing). Requires npm >= 11.5.1, which
+#      Node 24 ships out of the box.
+#      See https://docs.npmjs.com/trusted-publishers
+#
+# A push carrying only chore:/ci:/docs:/refactor:/test: commits produces
+# "no release" — that is expected, not a failure.
 on:
   push:
-    tags: ['v*.*.*']
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Existing tag to publish (e.g. v0.6.0)'
-        required: true
-        type: string
+    branches: [main]
+
+# Serialize releases so two quick pushes can't race to publish the same
+# version. Never cancel an in-flight release mid-publish.
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
-  contents: write      # to create the GitHub Release
-  id-token: write      # to mint the OIDC token for `npm publish --provenance`
+  contents: write        # push the version-bump commit + tag, create the Release
+  id-token: write        # mint the OIDC token for npm Trusted Publishing + provenance
+  issues: write          # semantic-release comments on resolved issues
+  pull-requests: write   # semantic-release comments on merged PRs
 
 jobs:
-  publish:
-    name: Build, test, publish ${{ github.ref_name }}
+  release:
+    name: semantic-release
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout (at tag or default ref)
+      - name: Checkout (full history — semantic-release reads all tags)
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
 
-      - name: Setup Node 24 (ships npm ≥11 — needed for OIDC Trusted Publisher)
-        # Node 22 ships npm 10.x, which lacks the OIDC ID-token minting
-        # path used by npm Trusted Publishers — the publish step would
-        # fail ENEEDAUTH even with id-token:write granted. Node 24 ships
-        # npm 11.x out of the box, sidestepping a flaky `npm install -g
-        # npm@latest` self-upgrade.
-        # See https://docs.npmjs.com/trusted-publishers
+      - name: Setup Node 24 (ships npm >= 11.5.1, needed for OIDC publishing)
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
-
-      - name: Confirm npm version supports OIDC (>=11.5.1)
-        run: |
-          NPM_VER=$(npm --version)
-          echo "npm version: $NPM_VER"
-          node -e "
-            const v = process.argv[1].split('.').map(Number);
-            const ok = v[0] > 11 || (v[0] === 11 && (v[1] > 5 || (v[1] === 5 && v[2] >= 1)));
-            if (!ok) { console.error('npm $NPM_VER is below 11.5.1 — OIDC will fail'); process.exit(1); }
-          " $NPM_VER
 
       - name: Setup Bun (for `bun test`)
         uses: oven-sh/setup-bun@v2
@@ -65,7 +55,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build LSP bundle (also runs via prepublishOnly, but eager + cheap)
+      - name: Build LSP bundle
         run: bun run build
 
       - name: Run tests
@@ -74,52 +64,9 @@ jobs:
       - name: Run smokes
         run: bun run smoke
 
-      - name: Verify tag matches package.json version
-        run: |
-          set -eu
-          REF_NAME="${{ inputs.tag || github.ref_name }}"
-          TAG_VERSION="${REF_NAME#v}"
-          PKG_VERSION=$(node -p "require('./package.json').version")
-          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
-            echo "::error::tag=$TAG_VERSION but package.json says $PKG_VERSION"
-            exit 1
-          fi
-          echo "Publishing $REF_NAME ($PKG_VERSION)"
-
-      - name: Extract CHANGELOG section for this version
-        id: changelog
-        run: |
-          set -eu
-          REF_NAME="${{ inputs.tag || github.ref_name }}"
-          VERSION="${REF_NAME#v}"
-          # Pull the section between `## [<VERSION>]` and the next `## [` (or EOF).
-          # Survives whatever wording follows the version header on its line.
-          awk -v v="$VERSION" '
-            $0 ~ "^## \\[" v "\\]" { capture=1; next }
-            capture && /^## \[/ { exit }
-            capture { print }
-          ' CHANGELOG.md > /tmp/release-body.md
-          if [ ! -s /tmp/release-body.md ]; then
-            echo "No CHANGELOG section for version $VERSION — falling back to autogenerated notes."
-            echo "fallback=true" >> $GITHUB_OUTPUT
-          else
-            echo "fallback=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Publish to npm (with OIDC-signed provenance)
-        run: npm publish --provenance --access public
+      - name: Release
         env:
-          # If a Trusted Publisher is configured for this package on
-          # npmjs.com, NODE_AUTH_TOKEN is unnecessary — OIDC handles auth.
-          # If not, the user can drop an automation token into the
-          # NPM_TOKEN repo secret and this env line takes over.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ inputs.tag || github.ref_name }}
-          name: ${{ inputs.tag || github.ref_name }}
-          body_path: /tmp/release-body.md
-          generate_release_notes: ${{ steps.changelog.outputs.fallback == 'true' }}
-          fail_on_unmatched_files: false
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Trusted Publishing handles npm auth via OIDC — no NPM_TOKEN.
+          NPM_CONFIG_PROVENANCE: 'true'
+        run: bunx semantic-release
