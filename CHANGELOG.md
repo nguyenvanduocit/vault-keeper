@@ -1,3 +1,10 @@
+# [0.12.0](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v0.11.0...v0.12.0) (2026-05-21)
+
+
+### Features
+
+* validate mermaid and gherkin fences ([0fa0650](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/0fa06500004bd29f0888e9b9b29ef273484318ff))
+
 # [0.11.0](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v0.10.0...v0.11.0) (2026-05-21)
 
 
