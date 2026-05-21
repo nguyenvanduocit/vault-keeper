@@ -254,13 +254,20 @@ const issues = applyFieldSchema(schema, frontmatter, docMeta);
 ### Body validation
 
 ```js
-import { applyBodySchema, parseBodySchema } from 'claude-code-vault-keeper';
+import { applyBodySchema, applyBodySchemaAsync, parseBodySchema } from 'claude-code-vault-keeper';
 
 // parseBodySchema extracts BodySchemaNode[] from a template's markdown body
 const bodySchema = parseBodySchema(templateBodyMarkdown);
 
 const bodyIssues = applyBodySchema(bodySchema, documentBodyMarkdown);
 // → BodyIssue[] with { level, field, message, error_type, bodyLine? }
+```
+
+Use `applyBodySchemaAsync` when templates include async body validators such
+as `mermaid:`:
+
+```js
+const bodyIssues = await applyBodySchemaAsync(bodySchema, documentBodyMarkdown);
 ```
 
 ### Template meta-validation

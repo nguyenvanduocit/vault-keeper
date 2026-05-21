@@ -30,7 +30,7 @@ import { glob } from 'glob';
 import { resolveProjectRoot } from '../lib/vault-config.js';
 import { parseDocument, resolveDocPath } from '../lib/doc-io.js';
 import { loadTemplateRules } from '../lib/template-rules.js';
-import { applyFieldSchema, applyBodySchema } from '../lib/schema-engine.js';
+import { applyFieldSchema, applyBodySchemaAsync } from '../lib/schema-engine.js';
 import {
   CONFIG,
   inferDocType,
@@ -144,7 +144,7 @@ async function validateDocument(filepath, options = {}) {
 
       // Body section-rules validation.
       if (rules.bodySchema?.length) {
-        allIssues.push(...applyBodySchema(rules.bodySchema, doc.body, docMeta, fm));
+        allIssues.push(...await applyBodySchemaAsync(rules.bodySchema, doc.body, docMeta, fm));
       }
     }
   }

@@ -43,6 +43,7 @@ describe("public API — barrel", () => {
     // Schema engine
     expect(typeof mod.applyFieldSchema).toBe("function");
     expect(typeof mod.applyBodySchema).toBe("function");
+    expect(typeof mod.applyBodySchemaAsync).toBe("function");
     expect(typeof mod.validateTemplateSchema).toBe("function");
     expect(typeof mod.validateBodyTemplateSchema).toBe("function");
 
@@ -110,7 +111,7 @@ describe("public API — exports map", () => {
   const expectedSubpaths = {
     ".": ["applyFieldSchema", "validateDocument"],
     "./doc-io": ["parseDocument", "resolveDocPath"],
-    "./schema-engine": ["applyFieldSchema", "applyBodySchema", "validateTemplateSchema", "validateBodyTemplateSchema"],
+    "./schema-engine": ["applyFieldSchema", "applyBodySchema", "applyBodySchemaAsync", "validateTemplateSchema", "validateBodyTemplateSchema"],
     "./template-rules": ["loadTemplateRules"],
     "./template-section-rules": [
       "parseBodySchema",

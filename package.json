@@ -91,10 +91,13 @@
     "obsidian"
   ],
   "dependencies": {
+    "@cucumber/gherkin": "^39.1.0",
+    "@cucumber/messages": "^32.3.1",
     "glob": "^10.3.10",
     "gray-matter": "^4.0.3",
     "js-yaml": "^4.1.0",
     "mdast-util-to-string": "^4.0.0",
+    "mermaid": "^11.15.0",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "unified": "^11.0.5"

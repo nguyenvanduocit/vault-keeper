@@ -291,6 +291,60 @@ code:
 Error types: `code-missing` (cardinality), `code-content-mismatch`
 (content.pattern).
 
+### `mermaid`
+
+Validates Mermaid fenced code blocks with Mermaid's own parser.
+
+```yaml section-rules
+mermaid:
+  lang: [mermaid, mmd]        # default
+  min: 1                      # default: at least one matching fence
+  max: 2                      # default: no cap
+```
+
+This accepts ordinary Mermaid fences such as:
+
+````markdown
+```mermaid
+graph TD
+  A-->B
+```
+````
+
+Error types: `mermaid-missing`, `mermaid-cardinality`,
+`mermaid-syntax`.
+
+Programmatic note: Mermaid validation is asynchronous. The CLI and LSP use
+`applyBodySchemaAsync`; callers using the public API should do the same when
+their templates include `mermaid:` rules.
+
+### `gherkin`
+
+Validates Gherkin fenced code blocks with Cucumber's parser.
+
+```yaml section-rules
+gherkin:
+  lang: [gherkin, feature]    # default
+  defaultDialect: en          # optional Cucumber dialect
+  min: 1                      # default: at least one matching fence
+  max: 3                      # default: no cap
+```
+
+This accepts feature syntax inside markdown fences:
+
+````markdown
+```gherkin
+Feature: Login
+  Scenario: successful login
+    Given a registered user
+    When they submit valid credentials
+    Then they see the dashboard
+```
+````
+
+Error types: `gherkin-missing`, `gherkin-cardinality`,
+`gherkin-syntax`.
+
 ### Formula primitive
 
 An arithmetic / comparison expression evaluated against the document's

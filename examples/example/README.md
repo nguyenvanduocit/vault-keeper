@@ -25,10 +25,11 @@ Conventions:
 | [`templates/task-template.md`](templates/task-template.md) | A mid-density template — engineering tasks linked to PRDs. |
 | [`templates/note-template.md`](templates/note-template.md) | The minimum viable template — identity-only required fields, one `$path` pattern, no conditional rules. |
 | [`templates/decision-template.md`](templates/decision-template.md) | Advanced recipe surface: **compound DSL with `and`**, **DSL `not in`**, **`min`** on arrays, **`severity: warning`** override. |
+| [`templates/spec-template.md`](templates/spec-template.md) | Parser-backed fenced-code validation: `mermaid:` diagrams and `gherkin:` feature syntax. |
 
 ## Fixture map — diagnostics demonstrated
 
-### Valid fixtures (5)
+### Valid fixtures (7)
 
 | File | Demonstrates |
 |---|---|
@@ -38,8 +39,9 @@ Conventions:
 | [`docs/tasks/t-002-verify-checkout.md`](docs/tasks/t-002-verify-checkout.md) | Done verification task linked to PRD-001 |
 | [`docs/notes/note-001-onboarding.md`](docs/notes/note-001-onboarding.md) | Free-form note against the minimal template |
 | [`docs/decisions/d-001-microservice-split.md`](docs/decisions/d-001-microservice-split.md) | Ratified architecture decision — every advanced conditional satisfied at once |
+| [`docs/specs/spec-001-checkout-behavior.md`](docs/specs/spec-001-checkout-behavior.md) | Valid Mermaid flowchart + valid Gherkin feature block |
 
-### Invalid fixtures (14) — one violation per file
+### Invalid fixtures (16) — most files isolate one violation
 
 | File | Diagnostic kind | Field code |
 |---|---|---|
@@ -59,6 +61,7 @@ Conventions:
 | [`docs/decisions/d-002-not-enough-approvers-invalid.md`](docs/decisions/d-002-not-enough-approvers-invalid.md) | Conditional `min` count violation | `approvers` |
 | [`docs/decisions/d-003-missing-summary-invalid.md`](docs/decisions/d-003-missing-summary-invalid.md) | Conditional with DSL `not in` | `decision_summary` |
 | [`docs/decisions/d-004-warn-due-date-invalid.md`](docs/decisions/d-004-warn-due-date-invalid.md) | Conditional `severity: warning` | `due_date` |
+| [`docs/specs/spec-002-bad-parser-blocks-invalid.md`](docs/specs/spec-002-bad-parser-blocks-invalid.md) | Mermaid + Gherkin parser syntax violations | `## Diagram`, `## Behavior` |
 | [`docs/assets/Bad_Asset.json`](docs/assets/Bad_Asset.json) | Asset filename slug violation | `filename` |
 
 ## Running

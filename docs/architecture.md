@@ -443,13 +443,19 @@ If you need to add a new rule, follow the order:
 
 1. **Define the rule shape** — add a field to a template's `fields:`
    block, or add a key to a section-rules code fence.
-2. **If the primitive is brand new**, add it to the `PRIMITIVES`
+2. **If the field primitive is brand new**, add it to the `PRIMITIVES`
    registry in `lib/primitives/index.js`. Put the implementation in a
    focused `lib/primitives/<name>.js` module. The runtime primitive must
    expose a pure function `(value, param, ctx) => Issue[]`.
-3. **For body-level primitives**, add the key to `SECTION_RULES_KEYS`
-   in `lib/meta/allowed-keys.js`, add any inner-key allow-lists to the
-   primitive module, and dispatch it from `lib/apply/body-schema.js`.
+3. **For body-level content validators**, create a primitive spec in
+   `lib/primitives/<name>.js` and add it to `BODY_SECTION_PRIMITIVES` in
+   `lib/primitives/index.js`. The spec owns its runtime and template contract:
+   `name`, `ruleType`, `select({docNode, frontmatter, ...parsers})`,
+   `validate(value, param, ctx)`, optional `innerKeys`, optional
+   `validateConfig(param, path, issues)`, and `async: true` when the runtime
+   validator returns a promise. `SECTION_RULES_KEYS`,
+   `lib/apply/body-schema.js`, and `lib/meta/body-schema.js` dispatch from
+   that registry, so they usually need no edits.
 4. **Surface in the CLI** — usually automatic if enforcement is in
    `applyFieldSchema` or `applyBodySchema`.
 5. **Surface in the LSP** — usually automatic via

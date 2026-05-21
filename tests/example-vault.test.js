@@ -200,6 +200,14 @@ describe('examples/example/ — fixture-cum-documentation', () => {
       match: (i) =>
         i.field === 'filename' && /violates slug convention/.test(i.message),
     },
+    {
+      name: 'mermaid syntax violation',
+      match: (i) => i.error_type === 'mermaid-syntax',
+    },
+    {
+      name: 'gherkin syntax violation',
+      match: (i) => i.error_type === 'gherkin-syntax',
+    },
   ];
 
   test('every diagnostic kind has at least one fixture', () => {

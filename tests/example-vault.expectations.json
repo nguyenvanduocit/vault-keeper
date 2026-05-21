@@ -112,6 +112,17 @@
     "warnings": []
   },
 
+  "docs/specs/spec-001-checkout-behavior.md": {
+    "valid": true,
+    "errors": [],
+    "warnings": []
+  },
+  "docs/specs/spec-002-bad-parser-blocks-invalid.md": {
+    "valid": false,
+    "errors": ["## Behavior", "## Behavior", "## Diagram"],
+    "warnings": []
+  },
+
   "docs/tasks/t-001-impl-checkout.md": {
     "valid": true,
     "errors": [],
