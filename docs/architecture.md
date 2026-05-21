@@ -11,7 +11,7 @@ claude-code-vault-keeper/
 │   ├── plugin.json              # Plugin manifest
 │   └── marketplace.json         # Marketplace entry
 ├── .lsp.json                    # LSP server config (Claude Code reads this)
-├── package.json                 # `bin: vault-keeper-validate`, scripts, deps
+├── package.json                 # `bin: vault-keeper`, exports, scripts, deps
 │
 ├── server/                      # LSP runtime (editor side)
 │   ├── main.bundled.cjs         #   SHIPPED ARTIFACT — self-contained ~1.5 MB bundle
@@ -30,7 +30,11 @@ claude-code-vault-keeper/
 │   └── smoke.js                 #   End-to-end LSP regression test
 │
 ├── lib/                         # Shared parsing / loading (LSP + CLI)
-│   ├── schema-engine.js         #   Composable schema validation engine
+│   ├── schema-engine.js         #   Public schema-engine barrel
+│   ├── primitives/              #   Runtime primitive specs + registry
+│   ├── meta/                    #   Template meta-validation
+│   ├── apply/                   #   Field/body schema application
+│   ├── helpers/                 #   Issue, constraint, and heading helpers
 │   ├── body-shapes.js           #   Generic markdown shape parsers
 │   ├── expression-eval.js       #   Formula expression evaluator
 │   ├── canonical-formatter.js   #   Document formatter
@@ -58,7 +62,16 @@ claude-code-vault-keeper/
 | **LSP** | `node server/main.bundled.cjs --stdio` (via `.lsp.json`) | Editor buffer (may be unsaved) |
 | **CLI** | `bun cli/validate-documents.js` | Files on disk |
 
-Both run the **same** per-doc validators. The CLI additionally runs:
+Both entry points share the same document-level contract:
+
+1. Parse frontmatter and markdown body.
+2. Run cross-cutting validators that do not need the whole vault.
+3. Load the referenced template.
+4. Apply frontmatter schema.
+5. Apply body schema.
+6. Return `Issue[]` objects with stable `error_type` values.
+
+The CLI additionally runs vault-wide checks:
 
 - Cross-document orphan detection (incoming-link graph).
 - Asset slug pass (non-markdown files).
@@ -88,9 +101,9 @@ server/validator.js
         │     └── validateSectionRulesLeak
         ├── lib/template-rules.js loadTemplateRules
         │     └─→ { fields, strict, sections, tier, bodySchema }
-        ├── lib/schema-engine.js applyFieldSchema
+        ├── lib/apply/field-schema.js applyFieldSchema
         │     └─→ frontmatter issues (type, enum, pattern, required, min/max, ...)
-        ├── lib/schema-engine.js applyBodySchema
+        ├── lib/apply/body-schema.js applyBodySchema
         │     └─→ body issues (required sections, heading match, table/list/code/formula)
         └─── issues[]
                 │
@@ -118,9 +131,9 @@ cli/validate-documents.js#main
         │             ├── lib/doc-io.js parseDocument
         │             ├── lib/validators.js (template field, leak, slug, paths)
         │             ├── lib/template-rules.js loadTemplateRules
-        │             ├── lib/schema-engine.js applyFieldSchema
+        │             ├── lib/apply/field-schema.js applyFieldSchema
         │             │     └── composable field primitives
-        │             ├── lib/schema-engine.js applyBodySchema
+        │             ├── lib/apply/body-schema.js applyBodySchema
         │             │     └── body section-rules validation
         │             └── $path pattern check (via applyFieldSchema)
         ├── findAllFiles(target) ──→ asset slug pass (non-md)
@@ -135,22 +148,107 @@ cli/validate-documents.js#main
 
 ### `lib/schema-engine.js`
 
-The composable schema validation engine. A closed registry of rule
-primitives — each is a pure function `(value, param, ctx) => Issue[]`.
+The public schema-engine barrel. It preserves the historic
+`claude-code-vault-keeper/schema-engine` import surface while the
+implementation lives in smaller modules.
 
 Exports:
 
-- `PRIMITIVES` — the primitive registry object.
-- `SYNTHETIC_RESOLVERS` — resolvers for `$`-prefixed fields (currently
-  only `$path`).
-- `applyFieldSchema({ fields, strict }, frontmatter, docMeta)` —
-  validate frontmatter against a fields schema.
-- `applyBodySchema(templateBodySchema, docMarkdownBody, docMeta)` —
-  validate a document body against a body schema.
-- `validateTemplateSchema(fieldsSchema)` — meta-validate a `fields:`
-  block.
-- `validateBodyTemplateSchema(bodySchema)` — meta-validate body
-  section-rules.
+- `PRIMITIVES` from `lib/primitives/index.js`.
+- `SYNTHETIC_RESOLVERS` from `lib/apply/synthetic.js`.
+- `applyFieldSchema` from `lib/apply/field-schema.js`.
+- `applyBodySchema` from `lib/apply/body-schema.js`.
+- `validateTemplateSchema` from `lib/meta/field-schema.js`.
+- `validateBodyTemplateSchema` from `lib/meta/body-schema.js`.
+
+Do not put new engine logic in this file. It should stay a compatibility
+barrel; implementation belongs in `primitives/`, `apply/`, `meta/`, or
+`helpers/`.
+
+### `lib/primitives/*`
+
+Runtime primitive implementations and their template-time shape metadata.
+`lib/primitives/index.js` is the canonical registry for primitive ordering
+and public helper exports. Each primitive module owns its own validation
+function and, where needed, inner-key allow-lists used by meta-validation.
+
+Primitive modules should stay domain-neutral. They may know about generic
+shapes such as strings, arrays, headings, tables, lists, code fences, dates,
+and arithmetic expressions. They should not know about PRDs, decisions,
+tasks, owners, statuses, or project-specific workflow states. Those belong in
+templates.
+
+Current primitive ownership:
+
+| Module | Owns |
+|---|---|
+| `scalar.js` | `type`, `required`, `enum`, `pattern`, `min`, `max`, `uniqueItems`, `exists`, `description` |
+| `chronological.js` | `time` / `datetime` helpers plus `before` and `after` |
+| `heading.js` | Heading text `pattern` / `enum` checks |
+| `table.js` | Table columns, row cardinality, strict headers, per-cell values |
+| `list.js` | List cardinality, uniqueness, per-item required/pattern/enum |
+| `code.js` | Code fence language, count, and content pattern checks |
+| `formula.js` | Formula expression evaluation against supplied values |
+| `repeatable.js` | Marker primitive for repeatable section schemas |
+
+`PRIMITIVES` order is intentional. Diagnostic ordering tests and example-vault
+expectations depend on JavaScript object insertion order, so append or move
+entries deliberately.
+
+### `lib/apply/*`
+
+Schema application orchestrators:
+
+- `field-schema.js` walks a template `fields:` block, resolves synthetic
+  `$` fields, evaluates `when` gates, applies primitive constraints, and
+  enforces strict undeclared-field checks.
+- `body-schema.js` matches the parsed template heading tree against a
+  document body, handles repeatable section cardinality, and dispatches to
+  structural primitives (`heading`, `table`, `list`, `code`, `formula`).
+- `synthetic.js` owns synthetic field resolvers such as `$path`.
+
+`apply/` code is responsible for orchestration, not primitive semantics. For
+example, `body-schema.js` decides which section a `table` rule applies to;
+`primitives/table.js` decides whether that table satisfies its declared
+columns and values.
+
+Important field-schema rules:
+
+- Missing optional values skip the remaining constraints for that field.
+- `required` runs before all other primitives and short-circuits on missing
+  values.
+- Expanded constraints can use `value`, `when`, `severity`, and `message`.
+- `when` expressions are evaluated against document frontmatter.
+- Strict mode reports every undeclared top-level frontmatter key.
+
+Important body-schema rules:
+
+- A single H1 wrapper in both template and document is unwrapped so template
+  title text does not have to match document title text.
+- Non-repeatable sections match by normalized heading text at the same depth.
+- Repeatable sections claim every unclaimed document heading at that depth
+  within the matched parent.
+- `required` may be conditional through the same `when` DSL used by
+  frontmatter fields.
+- Body diagnostics carry heading paths in `field` and, when available,
+  body-relative line anchors in `bodyLine`.
+
+### `lib/meta/*`
+
+Template meta-validation:
+
+- `field-schema.js` validates malformed `fields:` declarations before
+  documents use them.
+- `body-schema.js` validates malformed `section-rules` blocks.
+- `allowed-keys.js` owns the top-level body section-rules key set.
+
+Meta-validation catches template authoring errors before runtime validation
+tries to apply them. This is where unknown primitive names, bad regexes,
+invalid enum shapes, invalid `when` expressions, bad formula expressions, and
+unknown nested section-rule keys become `template-schema-invalid` issues.
+
+The meta layer should report structured issues and continue walking. It should
+not throw for normal template mistakes.
 
 ### `lib/body-shapes.js`
 
@@ -192,6 +290,12 @@ runs meta-validation on both fields and body schema, and returns the
 complete schema object or `null`.
 
 Returns: `{ fields, strict, sections, tier, bodySchema, templateErrors }`.
+
+This module is the boundary between authored markdown templates and the
+runtime schema engine. If template loading fails because the file is missing
+or frontmatter YAML is malformed, it returns `null`. If the template loads but
+declares an invalid schema, it returns a schema object with
+`templateErrors`.
 
 ### `lib/template-section-rules.js`
 
@@ -275,6 +379,10 @@ Per-document pipeline that mirrors the CLI's per-doc subset. Operates
 on in-memory text (the buffer may be unsaved). Excludes cross-doc
 rules.
 
+Use this path for editor-like integrations where the source of truth is a
+buffer string. Use `validateDocument` from the CLI orchestrator for disk-backed
+validation.
+
 ### `server/vault-index.js`
 
 Lazy + incrementally-refreshed index of every vault document. Powers
@@ -336,11 +444,12 @@ If you need to add a new rule, follow the order:
 1. **Define the rule shape** — add a field to a template's `fields:`
    block, or add a key to a section-rules code fence.
 2. **If the primitive is brand new**, add it to the `PRIMITIVES`
-   registry in `lib/schema-engine.js`. The primitive must be a pure
-   function `(value, param, ctx) => Issue[]`.
+   registry in `lib/primitives/index.js`. Put the implementation in a
+   focused `lib/primitives/<name>.js` module. The runtime primitive must
+   expose a pure function `(value, param, ctx) => Issue[]`.
 3. **For body-level primitives**, add the key to `SECTION_RULES_KEYS`
-   in `lib/schema-engine.js` and handle it in the body validation
-   logic.
+   in `lib/meta/allowed-keys.js`, add any inner-key allow-lists to the
+   primitive module, and dispatch it from `lib/apply/body-schema.js`.
 4. **Surface in the CLI** — usually automatic if enforcement is in
    `applyFieldSchema` or `applyBodySchema`.
 5. **Surface in the LSP** — usually automatic via
@@ -348,6 +457,27 @@ If you need to add a new rule, follow the order:
    bundle (`bun run build`).
 6. **Test** — add unit tests for the primitive + integration tests
    with fixture templates.
+
+Keep the ownership boundaries intact:
+
+- New primitive semantics go in `lib/primitives/<name>.js`.
+- New field/body traversal behavior goes in `lib/apply/*`.
+- New template authoring checks go in `lib/meta/*`.
+- New document-wide checks that do not belong to a template go in
+  `lib/validators.js`.
+- New full-vault checks belong in `cli/validate-documents.js`, not in the LSP
+  path.
+
+Before shipping an engine change, run:
+
+```bash
+bun test ./tests
+bun run smoke
+```
+
+If the change affects `server/main.js` or provider code, rebuild the bundled
+server with `bun run build` and include `server/main.bundled.cjs` in the
+change.
 
 ## See also
 

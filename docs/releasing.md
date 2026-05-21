@@ -1,119 +1,200 @@
 # Releasing
 
-`claude-code-vault-keeper` ships to npm via GitHub Actions. The release
-flow is **tag-driven**: pushing a semver tag (`vX.Y.Z`) triggers
-[`.github/workflows/release.yml`](../.github/workflows/release.yml), which
-verifies the tag matches `package.json`, runs the full test + smoke
-gauntlet, publishes to npm with OIDC-signed provenance, and cuts a GitHub
-Release whose body is auto-extracted from `CHANGELOG.md`.
+`claude-code-vault-keeper` ships to npm through
+[semantic-release](https://semantic-release.gitbook.io/semantic-release/)
+on every push to `main`. There is no manual version bump, changelog edit,
+or hand-pushed release tag in the normal flow.
 
-## One-time setup
+## Source of truth
 
-The workflow needs ONE of the two npm authentication paths below. Pick
-whichever is easier — provenance (OIDC) is the modern default, NPM token
-is the universal fallback.
+Release behavior is split across three files:
 
-### Option A — OIDC Trusted Publisher (recommended)
+| File | Owns |
+|---|---|
+| [`.github/workflows/release.yml`](../.github/workflows/release.yml) | When release runs, CI gates before publish, GitHub/npm permissions |
+| [`.releaserc.json`](../.releaserc.json) | Version calculation, changelog generation, npm publish, GitHub Release |
+| [`package.json`](../package.json) | Package name, current checked-in version, publish files, semantic-release dependencies |
 
-No long-lived secret on GitHub. Setup:
+The version in `package.json` is maintained by semantic-release. Human
+release work should happen through commit messages and pull requests, not by
+editing version files.
+
+## Release workflow
+
+The release job runs only for pushes to `main`. It does not run for pull
+requests, feature branches, or manual dispatch.
+
+1. Check out full git history so semantic-release can read existing tags.
+2. Set up Node 24 and Bun.
+3. Install dependencies from `bun.lock`.
+4. Build the bundled LSP server.
+5. Run the Bun test suite and smoke tests.
+6. Run `semantic-release`.
+
+`semantic-release` analyzes Conventional Commits since the last release
+tag, computes the next version, updates `CHANGELOG.md` and `package.json`,
+commits those files back to `main` with `[skip ci]`, creates the git tag
+and GitHub Release, then publishes to npm.
+
+The workflow uses its own concurrency group (`release`) with
+`cancel-in-progress: false`. A newer push must not cancel a release that may
+already be publishing to npm.
+
+## Required setup
+
+The workflow publishes to npm through OIDC Trusted Publishing. No
+`NPM_TOKEN` secret is expected.
+
+Set this up once on npm:
 
 1. Sign in at <https://www.npmjs.com>.
-2. Go to the package page →
-   [npmjs.com/package/claude-code-vault-keeper/access](https://www.npmjs.com/package/claude-code-vault-keeper/access).
-3. **Trusted publishers** → **Add trusted publisher** → GitHub Actions.
-4. Fields:
+2. Go to the package access page:
+   <https://www.npmjs.com/package/claude-code-vault-keeper/access>.
+3. Open **Trusted publishers** -> **Add trusted publisher** -> GitHub
+   Actions.
+4. Use these fields:
    - Organization or user: `nguyenvanduocit`
    - Repository: `claude-code-vault-keeper`
    - Workflow filename: `release.yml`
-   - Environment: *(leave blank)*
-5. Save. From now on, the workflow's `id-token: write` permission +
-   `npm publish --provenance` is sufficient.
+   - Environment: leave blank
+5. Save.
 
-The published package gets a verified provenance badge — consumers can
-verify the tarball was built from the exact commit in this repo.
+The workflow grants `id-token: write` and sets `NPM_CONFIG_PROVENANCE=true`,
+so npm can verify the package was built by this repository's GitHub
+Actions run.
 
-### Option B — Classic NPM_TOKEN
+## Release permissions
 
-Quicker to set up but rotates manually.
+The release workflow requests only the permissions needed by semantic-release:
 
-1. <https://www.npmjs.com/settings/{your-user}/tokens> → **Generate New
-   Token** → **Automation**.
-2. Copy the token (`npm_…`).
-3. GitHub → repo Settings → Secrets and variables → Actions → **New
-   repository secret**:
-   - Name: `NPM_TOKEN`
-   - Value: paste the npm token.
+| Permission | Why it is needed |
+|---|---|
+| `contents: write` | Push the release commit, create the git tag, create the GitHub Release |
+| `id-token: write` | Mint the OIDC token npm uses for Trusted Publishing |
+| `issues: write` | Let semantic-release comment on resolved issues |
+| `pull-requests: write` | Let semantic-release comment on merged PRs |
 
-The release workflow reads `NPM_TOKEN` from `secrets.NPM_TOKEN` and uses
-it as `NODE_AUTH_TOKEN` for `npm publish`.
+Do not add `NPM_TOKEN` unless the publishing model intentionally changes away
+from Trusted Publishing.
+
+## Commit messages
+
+Releases are driven by Conventional Commits:
+
+| Commit type | Release result |
+|---|---|
+| `fix: ...` | Patch release |
+| `feat: ...` | Minor release |
+| `feat!: ...` or `BREAKING CHANGE:` footer | Major release |
+| `chore:`, `ci:`, `docs:`, `refactor:`, `test:` | No release by default |
+
+A push containing only non-releasing commit types exits successfully with
+"no release"; that is expected.
+
+Examples:
+
+```text
+fix: preserve bodyLine on code content mismatches
+feat: expose vault config loader as a public subpath
+feat!: remove legacy validation_rules template support
+```
+
+For breaking changes, prefer an explicit footer when the subject line would
+otherwise be awkward:
+
+```text
+feat: simplify schema-engine public exports
+
+BREAKING CHANGE: claude-code-vault-keeper/lib/* deep imports are no longer exported.
+```
 
 ## Cutting a release
 
-Run the following from `main`. Everything is reversible up to the
-`git push --tags` step; the npm publish itself is **immutable** (you can
-deprecate a version but not delete it after 72 h).
-
-1. **Update CHANGELOG.md** — add a `## [X.Y.Z] — YYYY-MM-DD` section at
-   the top with the deltas (Added / Changed / Removed / Fixed /
-   Internal). The release workflow extracts this section verbatim as the
-   GitHub Release body.
-
-2. **Bump versions in sync** — `package.json` AND
-   `.claude-plugin/plugin.json` MUST agree (the release workflow
-   asserts `package.json` matches the tag; the plugin manifest is for
-   Claude Code marketplace consumers and should track it).
-
-   ```bash
-   # Example: 0.6.0 → 0.6.1
-   npm version --no-git-tag-version 0.6.1
-   # then hand-edit .claude-plugin/plugin.json to 0.6.1
-   ```
-
-3. **Commit + push to `main`** — let CI run green.
-
-   ```bash
-   git add CHANGELOG.md package.json .claude-plugin/plugin.json
-   git commit -m "chore(release): 0.6.1"
-   git push
-   ```
-
-4. **Tag + push the tag**. This is the actual release trigger:
-
-   ```bash
-   git tag -a v0.6.1 -m "v0.6.1 — <one-line summary>"
-   git push --tags
-   ```
-
-5. **Watch the release workflow run** —
+1. Merge the intended commits to `main`.
+2. Let the release workflow run:
    <https://github.com/nguyenvanduocit/claude-code-vault-keeper/actions/workflows/release.yml>.
-   It re-runs tests, asserts the tag-vs-package version, publishes to
-   npm, then opens a GitHub Release.
+3. Verify the result:
+   - `npm view claude-code-vault-keeper version`
+   - `bunx claude-code-vault-keeper@latest --version`
+   - GitHub Releases:
+     <https://github.com/nguyenvanduocit/claude-code-vault-keeper/releases>
 
-6. **Verify** —
-   - `npm view claude-code-vault-keeper version` → matches the tag.
-   - `bunx claude-code-vault-keeper@X.Y.Z --version` → matches.
-   - <https://github.com/nguyenvanduocit/claude-code-vault-keeper/releases/tag/vX.Y.Z>
-     has the CHANGELOG content as its body.
+Do not run `npm version`, hand-edit `CHANGELOG.md` for the next release, or
+push a `vX.Y.Z` tag manually unless you are deliberately repairing a failed
+release with full knowledge of semantic-release state.
 
-## Manual override
+## Pre-merge checklist
 
-The same workflow accepts `workflow_dispatch` with a `tag` input — useful
-if a tag was already pushed but the workflow needs a rerun (e.g. after
-fixing a Trusted Publisher misconfig). Trigger from the Actions tab → run
-workflow → enter `v0.6.1`.
+Before merging a PR that should publish a release:
+
+1. Confirm at least one commit has a release-triggering Conventional Commit
+   type (`fix`, `feat`, or a breaking-change marker).
+2. Confirm the LSP bundle was rebuilt if source under `server/` changed:
+   `bun run build`.
+3. Run the same local gates as CI:
+
+   ```bash
+   bun install --frozen-lockfile
+   bun test ./tests
+   bun run smoke
+   npm pack --dry-run
+   ```
+
+4. Inspect `npm pack --dry-run` output when package boundaries changed. The
+   `files` allowlist in `package.json` controls what users receive.
+
+## What gets committed during release
+
+[`.releaserc.json`](../.releaserc.json) configures the release plugins:
+
+- `@semantic-release/commit-analyzer`
+- `@semantic-release/release-notes-generator`
+- `@semantic-release/changelog`
+- `@semantic-release/npm`
+- `@semantic-release/git`
+- `@semantic-release/github`
+
+The release commit includes only:
+
+- `CHANGELOG.md`
+- `package.json`
+
+The npm package version is therefore the source of truth for published
+releases. The generated release tag points at the semantic-release commit.
+
+## Failure modes
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| Release job says "no release" | Only non-releasing commit types were merged | Merge a `fix:`, `feat:`, or breaking-change commit if a release is intended |
+| npm publish fails with auth/OIDC errors | Trusted Publisher config does not match repo/workflow | Re-check npm package access settings: owner, repo, `release.yml`, blank environment |
+| semantic-release cannot determine previous release | Tags were not fetched or release history was rewritten | Ensure `actions/checkout` keeps `fetch-depth: 0`; avoid rewriting release tags |
+| Package publishes but CLI/LSP is stale | Source changed without rebuilding `server/main.bundled.cjs` before release | Run `bun run build`, commit the bundle if it changed, and let release rerun from `main` |
+| `npm pack --dry-run` misses files | `package.json#files` does not include the new path | Update `files` and rerun the dry-run pack check |
+
+If a release partially succeeds, verify npm first. npm versions are
+effectively immutable after publish; do not delete/recreate tags until you
+know whether the version exists on npm.
 
 ## What CI runs on every push / PR
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml):
 
-- `bun test` — full unit + integration + cli-main suite.
-- `bun run smoke` — server LSP smoke + example LSP smoke.
-- `npm pack --dry-run` — catches `files` allowlist regressions before
-  release.
-- Node 18 / 20 / 22 compat job — installs runtime deps via `npm` (no
-  bun), then exercises `vault-keeper --version`, `doctor`, `validate
-  --root examples/example`, and an `init + validate` round-trip. Catches
-  Node-version-specific breakage early.
+- `bun test ./tests` — unit, integration, provider, and CLI tests.
+- `bun run smoke` — bundled server smoke + example LSP smoke.
+- `npm pack --dry-run` — catches package `files` allowlist regressions.
+- Node 18 / 20 / 22 compatibility jobs — install via npm, build the LSP
+  bundle, run CLI sanity checks, validate the bundled example vault, and
+  exercise `init + validate`.
 
-Concurrency is set so a new push to the same branch cancels the previous
-in-flight run.
+The CI workflow uses `actions/checkout@v6` and `actions/setup-node@v6`.
+Concurrency is enabled so a newer push to the same ref cancels older CI
+runs. The release workflow has separate concurrency and does not cancel an
+in-flight publish.
+
+## Manual repair policy
+
+Manual tag manipulation is a last resort. If semantic-release fails before
+publishing to npm, fix the workflow/config problem and push another commit to
+`main`. If npm already has the version, publish a new patch instead of trying
+to reuse the failed version.

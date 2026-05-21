@@ -13,6 +13,14 @@ schema violation. Wiring it into a CI pipeline is straightforward.
 For machine-readable output use `--json` and pipe through `jq`. See
 [cli-validator](cli-validator.md#json-output---json) for the JSON shape.
 
+`--strict` is the recommended CI mode. It turns warnings into a failing
+result so drift cannot accumulate quietly. For local adoption of an existing
+vault, start without `--strict`, fix hard errors first, then enable strict
+once warnings are intentional.
+
+The validator is read-only. It reports issues but does not rewrite files,
+create templates, or mutate frontmatter.
+
 ## Generic Bash runner
 
 The minimal CI step is three lines:
@@ -45,9 +53,9 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: oven-sh/setup-bun@v1
+      - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
@@ -75,6 +83,27 @@ jobs:
 The validator failing exit-code-1 marks the job red. The
 `if: always()` on the artifact upload preserves the JSON even on
 failure so you can inspect what broke.
+
+### Package install alternatives
+
+If the validator is installed as a project dependency instead of vendored in
+`./vendor/claude-code-vault-keeper`, the workflow can call the package binary:
+
+```yaml
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Validate vault
+        run: |
+          bunx -p claude-code-vault-keeper vault-keeper validate \
+            --root "$GITHUB_WORKSPACE" \
+            --strict \
+            --json > vault-validation.json
+```
+
+Use the vendored checkout form when CI needs to test this repository's current
+source. Use the package-binary form when another vault repository only needs
+the published validator.
 
 ### Posting a PR comment with the failures
 

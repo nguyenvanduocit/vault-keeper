@@ -89,10 +89,32 @@ per logical module:
 | `claude-code-vault-keeper/lsp-validator` | `validateBuffer` |
 | `claude-code-vault-keeper/package.json` | The manifest (read `version` etc.) |
 
-Deep imports of original files (`claude-code-vault-keeper/lib/<x>.js`,
-`claude-code-vault-keeper/cli/<x>.js`, `claude-code-vault-keeper/server/<x>.js`)
-still work via wildcard entries in the `exports` map — but the named
-subpaths above are the supported surface. Prefer them in new code.
+The old `claude-code-vault-keeper/lib/<x>.js` deep-import surface is no
+longer exported. Use the package barrel or the named subpaths above for
+library code. Wildcard exports remain for `./cli/*` and `./server/*` only
+where those entry points are intentionally exposed.
+
+## Import policy
+
+Use the package barrel unless you have a concrete reason to pin to a smaller
+subpath. The barrel is the supported public API and carries semver
+expectations.
+
+Use subpaths when one of these is true:
+
+- You are writing a small script and want the dependency boundary to be
+  obvious (`claude-code-vault-keeper/formatter`, for example).
+- You are building an integration that should not import CLI/LSP helpers by
+  accident.
+- You need `package.json` metadata without importing runtime code.
+
+Avoid `./cli/*` and `./server/*` wildcard paths for new library code. They are
+exported for intentional integration points and compatibility, but the stable
+library surface is the barrel plus named subpaths in the table above.
+
+The `./schema-engine` subpath is also a barrel. It intentionally hides the
+internal split across `lib/primitives/`, `lib/apply/`, and `lib/meta/`.
+External code should not depend on those private paths.
 
 ## Validating a single file
 
