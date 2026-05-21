@@ -218,11 +218,12 @@ Node ≥ 18.
   or editor integrations. See [`docs/programmatic-usage.md`](docs/programmatic-usage.md).
 - **No domain knowledge.** Every rule comes from a template you wrote. Drop
   `vault-keeper` into any markdown folder and it adapts.
-- **Six Claude Code skills** — verbs you type in a Claude session:
+- **Eight Claude Code skills** — verbs you type in a Claude session:
   `/vault.setup` (onboarding), `/vault.new <type>` (scaffold doc),
   `/vault.health` (read-only report), `/vault.fix` (auto-format),
-  `/vault.sync` (validate-then-push), `/vault.monitor-git-sync`
-  (passive watcher). See [`skills/README.md`](skills/README.md).
+  `/vault.changelog` (remote changelog), `/vault.sync` (validate-then-push),
+  `/vault.monitor-git-sync` (passive watcher), `/vault.help` (overview +
+  doc links). See [`skills/README.md`](skills/README.md).
 
 ---
 
