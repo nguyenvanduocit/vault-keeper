@@ -75,6 +75,20 @@ Everything lives under `entropy:` in `.claude/vault-keeper.json`:
 
 All fields optional; sensible defaults are baked into `lib/entropy/defaults.js`.
 
+## Health flags
+
+`EntropyReport.health_flags` carries alarms that don't move dimension scores
+but that the gardener needs to see. The plugin populates the alarm; the
+gardener decides what to do.
+
+| Flag | Trigger | What to do |
+|------|---------|------------|
+| `missing_templates: string[]` | A doc's `template:` field points to a file that doesn't exist or fails to load | Either restore the template, or update the doc's `template:` to a valid path |
+
+A vault with broken refs would otherwise score 100 (schema-drift sees no
+template; distribution counts the doc as templated). `health_flags` makes
+the broken state visible. Sorted ascending, deduped.
+
 ## Snapshots
 
 Each run writes `<vault>/.vault-keeper/snapshots/<ISO-timestamp>.json` plus a

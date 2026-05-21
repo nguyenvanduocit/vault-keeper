@@ -89,6 +89,19 @@ function renderHuman(report) {
   }
   const emergCount = report.emergence.field_candidates.length + report.emergence.section_candidates.length;
   lines.push(`  Pattern garden   ${emergCount} candidate${emergCount === 1 ? '' : 's'} emerging`);
+
+  // Health flags: surface alarms that DON'T move dimension scores but that
+  // the gardener needs to see (e.g. docs referencing templates that don't
+  // exist would otherwise be silently dropped from the templated set).
+  const missing = report.health_flags?.missing_templates ?? [];
+  if (missing.length > 0) {
+    lines.push('');
+    lines.push('Health flags:');
+    const head = missing.slice(0, 3).join(', ');
+    const tail = missing.length > 3 ? `, ... (+${missing.length - 3} more)` : '';
+    lines.push(`  ${missing.length} missing template ref${missing.length === 1 ? '' : 's'}: ${head}${tail}`);
+  }
+
   lines.push('');
   lines.push(`${report.stats.total_docs} docs · ${report.stats.total_templates} templates · scan ${report.stats.scan_duration_ms}ms`);
   return lines.join('\n');

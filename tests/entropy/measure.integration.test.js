@@ -103,4 +103,35 @@ describe('measureEntropy — integration', () => {
     // README.md is in default excludePatterns ('**/README.md'); only a.md counts.
     expect(report.stats.total_docs).toBe(1);
   });
+
+  test('missing template ref surfaces in health_flags', async () => {
+    mkdirSync(join(tmp, '.claude'), { recursive: true });
+    writeFileSync(join(tmp, '.claude', 'vault-keeper.json'), VK_CONFIG);
+    mkdirSync(join(tmp, 'templates'), { recursive: true });
+    writeFileSync(join(tmp, 'templates', 'note-template.md'), TEMPLATE);
+    mkdirSync(join(tmp, 'notes'), { recursive: true });
+
+    // Real ref + dangling ref.
+    writeDoc('a.md', { template: 'templates/note-template.md', title: 'A', status: 'draft' });
+    writeDoc('b.md', { template: 'templates/nope.md', title: 'B', status: 'draft' });
+
+    const report = await measureEntropy({ vaultRoot: tmp });
+    expect(report.health_flags).toBeDefined();
+    expect(report.health_flags.missing_templates).toContain('templates/nope.md');
+    // Existing template is NOT in the missing list.
+    expect(report.health_flags.missing_templates).not.toContain('templates/note-template.md');
+  });
+
+  test('clean vault → health_flags.missing_templates is empty array', async () => {
+    mkdirSync(join(tmp, '.claude'), { recursive: true });
+    writeFileSync(join(tmp, '.claude', 'vault-keeper.json'), VK_CONFIG);
+    mkdirSync(join(tmp, 'templates'), { recursive: true });
+    writeFileSync(join(tmp, 'templates', 'note-template.md'), TEMPLATE);
+    mkdirSync(join(tmp, 'notes'), { recursive: true });
+
+    writeDoc('a.md', { template: 'templates/note-template.md', title: 'A', status: 'draft' });
+
+    const report = await measureEntropy({ vaultRoot: tmp });
+    expect(report.health_flags.missing_templates).toEqual([]);
+  });
 });
