@@ -213,4 +213,14 @@ describe('loadVaultConfig — entropy block', () => {
     const cfg = loadVaultConfig(tmp);
     expect(Object.isFrozen(cfg.entropy)).toBe(true);
   });
+
+  test('rejects array entropy as null (defense-in-depth)', () => {
+    mkdirSync(join(tmp, '.claude'), { recursive: true });
+    writeFileSync(
+      join(tmp, '.claude', 'vault-keeper.json'),
+      JSON.stringify({ entropy: [1, 2, 3] }),
+    );
+    const cfg = loadVaultConfig(tmp);
+    expect(cfg.entropy).toBe(null);
+  });
 });
