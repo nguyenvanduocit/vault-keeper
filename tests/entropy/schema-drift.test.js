@@ -63,7 +63,7 @@ describe('measureSchemaDrift', () => {
     expect(out.global_drift_score).toBe(0);
   });
 
-  test('Shannon entropy norm computed when ≥2 unique values', () => {
+  test('Shannon entropy norm computed for ENUM field when ≥2 unique values', () => {
     const out = measureSchemaDrift(
       [
         doc({ status: 'reading', title: 'A' }),
@@ -73,6 +73,16 @@ describe('measureSchemaDrift', () => {
       ],
       [enumTemplate],
     );
-    expect(out.perTemplate['templates/book-template.md'].fields.status.entropy_norm).toBeCloseTo(1, 5);
+    const f = out.perTemplate['templates/book-template.md'].fields;
+    // enum field: full histogram + entropy reported
+    expect(f.status.entropy_norm).toBeCloseTo(1, 5);
+    expect(Object.keys(f.status.value_distribution).sort()).toEqual(['done', 'reading']);
+    expect(f.status.distinct_values).toBe(2);
+    // title is required but NOT enum-constrained: even with 4 distinct values
+    // it carries no histogram and no entropy — value diversity on a free field
+    // is expected, not drift, so only the distinct count is reported.
+    expect(f.title.entropy_norm).toBeNull();
+    expect(f.title.value_distribution).toEqual({});
+    expect(f.title.distinct_values).toBe(4);
   });
 });
