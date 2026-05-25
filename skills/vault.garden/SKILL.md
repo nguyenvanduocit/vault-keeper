@@ -61,9 +61,9 @@ Internal proposal shape (do not show user yet):
   "id": "g1",
   "verb": "graft",
   "scope": "vocab",
-  "summary": "Merge #book + #books → #book (45 uses across 12 files)",
+  "summary": "Merge #OLAP + #olap → #olap (45 uses across 12 files)",
   "evidence": { "...": "..." },
-  "actions": [ { "kind": "find_replace_tag", "from": "#books", "to": "#book", "files_affected": 12 } ],
+  "actions": [ { "kind": "find_replace_tag", "from": "#OLAP", "to": "#olap", "files_affected": 12 } ],
   "confidence": 0.92,
   "reversibility": "reversible",
   "delegated_to": "skill_direct"

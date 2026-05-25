@@ -45,6 +45,18 @@ describe('resolveEntropyConfig', () => {
     expect(cfg.lifecycle.default.stale_after_days).toBe(90);
   });
 
+  test('vocab.ignore default is empty array', () => {
+    const cfg = resolveEntropyConfig(null);
+    expect(cfg.vocab.ignore).toEqual([]);
+    expect(cfg.vocab.distance_threshold).toBe(0.2);
+  });
+
+  test('user vocab.ignore merges, keeps default distance_threshold', () => {
+    const cfg = resolveEntropyConfig({ vocab: { ignore: ['x:*'] } });
+    expect(cfg.vocab.ignore).toEqual(['x:*']);
+    expect(cfg.vocab.distance_threshold).toBe(0.2);
+  });
+
   test('returned config is frozen', () => {
     const cfg = resolveEntropyConfig(null);
     expect(Object.isFrozen(cfg)).toBe(true);

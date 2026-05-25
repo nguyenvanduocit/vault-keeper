@@ -55,7 +55,7 @@ Everything lives under `entropy:` in `.claude/vault-keeper.json`:
   "vaultFolders": ["notes"],
   "entropy": {
     "weights": { "schema": 0.30, "vocab": 0.25, "lifecycle": 0.30, "distribution": 0.15 },
-    "vocab":   { "distance_threshold": 0.2 },
+    "vocab":   { "distance_threshold": 0.2, "ignore": ["jira:*", "imported:*"] },
     "lifecycle": {
       "default": {
         "stale_after_days": 90,
@@ -74,6 +74,22 @@ Everything lives under `entropy:` in `.claude/vault-keeper.json`:
 ```
 
 All fields optional; sensible defaults are baked into `lib/entropy/defaults.js`.
+
+### `entropy.vocab.ignore` (string[])
+
+minimatch glob patterns matched against the **raw tag value** and **wiki-link
+target** (e.g. `jira:*` matches the tag `jira:PRIN-37`; `imported:*` matches
+`imported:2026-05-20`). A term that matches ANY pattern is treated as an
+out-of-scope reference and excluded from **all** vocab analysis — it never
+appears in `tag_clusters` / `link_clusters`, never in `fuzzy_suggestions`, and
+never enters the `drift_score` denominator. Default is empty (`[]`) — the tool
+provides the mechanism; each vault declares which machine-identifier namespaces
+(Jira keys, kanban IDs, Confluence page IDs, import timestamps …) are not real
+vocabulary. No vault-specific knowledge is baked into the engine.
+
+```json
+"vocab": { "distance_threshold": 0.2, "ignore": ["jira:*", "imported:*"] }
+```
 
 ## Health flags
 
