@@ -135,3 +135,46 @@ describe('measureEntropy — integration', () => {
     expect(report.health_flags.missing_templates).toEqual([]);
   });
 });
+
+describe('measureEntropy — lifecycle dates from git (injectable getDocDates)', () => {
+  const NOW = new Date('2026-05-21T10:00:00.000Z');
+  const daysAgo = (n) => new Date(NOW.getTime() - n * 86400 * 1000);
+
+  test('git last-commit date >90 days ago flags doc stale even when fs mtime is "now"', async () => {
+    mkdirSync(join(tmp, '.claude'), { recursive: true });
+    writeFileSync(join(tmp, '.claude', 'vault-keeper.json'), VK_CONFIG);
+    mkdirSync(join(tmp, 'templates'), { recursive: true });
+    writeFileSync(join(tmp, 'templates', 'note-template.md'), TEMPLATE);
+    mkdirSync(join(tmp, 'notes'), { recursive: true });
+
+    // File freshly written → fs.stat mtime is "now"; the OLD git date is what
+    // must win. Inject a getDocDates that returns the git-derived (stale) date.
+    writeDoc('a.md', { template: 'templates/note-template.md', title: 'A', status: 'draft' });
+
+    const report = await measureEntropy({
+      vaultRoot: tmp,
+      now: NOW,
+      getDocDates: async () => ({ mtime: daysAgo(120), created_at: daysAgo(120) }),
+    });
+
+    const stale = report.dimensions.lifecycle.details.stale_docs;
+    expect(stale.length).toBe(1);
+    expect(stale[0].days_idle).toBe(120);
+  });
+
+  test('non-git fallback: fresh disk mtime keeps doc fresh (default lookup, tmp is not a git repo)', async () => {
+    mkdirSync(join(tmp, '.claude'), { recursive: true });
+    writeFileSync(join(tmp, '.claude', 'vault-keeper.json'), VK_CONFIG);
+    mkdirSync(join(tmp, 'templates'), { recursive: true });
+    writeFileSync(join(tmp, 'templates', 'note-template.md'), TEMPLATE);
+    mkdirSync(join(tmp, 'notes'), { recursive: true });
+
+    writeDoc('a.md', { template: 'templates/note-template.md', title: 'A', status: 'draft' });
+
+    // No getDocDates injected → default git lookup runs; tmpdir is not a git
+    // repo (or the file is untracked), so it falls back to fs.stat → mtime now.
+    const report = await measureEntropy({ vaultRoot: tmp, now: NOW });
+    const stale = report.dimensions.lifecycle.details.stale_docs;
+    expect(stale.length).toBe(0);
+  });
+});
