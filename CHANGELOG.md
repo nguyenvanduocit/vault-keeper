@@ -1,3 +1,16 @@
+# [1.2.0](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v1.1.0...v1.2.0) (2026-05-25)
+
+
+### Bug Fixes
+
+* **entropy:** restrict value_distribution + entropy_norm to enum fields ([f108851](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/f108851e896ac22326762bdc23a3d6d8e5b02c07))
+
+
+### Features
+
+* **entropy:** derive lifecycle dates from git commit history ([0699829](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/069982919540fb1717e9a83054883e57b4dfe36d))
+* **entropy:** split vocab drift into decidable collapse + advisory fuzzy + ignore config ([86263be](https://github.com/nguyenvanduocit/claude-code-vault-keeper/commit/86263be47c487fad233cf9c2efc1634528ba65aa))
+
 # [1.1.0](https://github.com/nguyenvanduocit/claude-code-vault-keeper/compare/v1.0.0...v1.1.0) (2026-05-21)
 
 
